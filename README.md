@@ -23,7 +23,7 @@ Some assets from the screenshots are not work for mine.<br />
 Cerberus gun with textures is courtesy of [Andrew Maximov](https://twitter.com/divers1ty): [link](http://artisaverb.info/Cerberus.html)<br />
 The green environment map is courtesy of [Jon Tojek](https://twitter.com/Tojek_VFX): [link](http://tojek.com/vfx/?attachment_id=139)<br />
 <br />
-My intention is not to hurt anyone's rights. If I happen to unintentionally use some of your work without right, open an issue here on Github or reach me publicly via Twitter: [@dariomanesku](https://twitter.com/dariomanesku).
+My intention is not to hurt anyone's rights. If I happen to unintentionally use some of your work without rights, open an issue here on Github or reach me publicly via Twitter: [@dariomanesku](https://twitter.com/dariomanesku).
 
 [License (BSD 2-clause)](https://github.com/dariomanesku/cmft/blob/master/LICENSE)
 -------------------------------------------------------------------------------
