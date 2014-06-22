@@ -3,27 +3,34 @@
 
 Work in progress.
 -----------------
-This project is made to go along with [cmft](https://github.com/dariomanesku/cmft). For now check [cmft page](https://github.com/dariomanesku/cmft).
+This project is made to go along with [cmft](https://github.com/dariomanesku/cmft). For now check [cmft page](https://github.com/dariomanesku/cmft).<br />
+There are stil features to be added until the release. Stay tuned.
 
 Screenshots.
 ------------
 
+![cmftViewerG01](https://github.com/dariomanesku/cmftViewer/raw/master/screenshots/cmftViewer_g01.jpg)
+![cmftViewerG02](https://github.com/dariomanesku/cmftViewer/raw/master/screenshots/cmftViewer_g02.jpg)
+![cmftViewer7](https://github.com/dariomanesku/cmftViewer/raw/master/screenshots/cmftViewer7.jpg)
+![cmftViewer8](https://github.com/dariomanesku/cmftViewer/raw/master/screenshots/cmftViewer8.jpg)
+![cmftViewerF01](https://github.com/dariomanesku/cmftViewer/raw/master/screenshots/cmftViewer_f01.jpg)
 ![cmftViewer0](https://github.com/dariomanesku/cmftViewer/raw/master/screenshots/cmftViewer0.jpg)
 ![cmftViewer2](https://github.com/dariomanesku/cmftViewer/raw/master/screenshots/cmftViewer2.jpg)
 ![cmftViewer3](https://github.com/dariomanesku/cmftViewer/raw/master/screenshots/cmftViewer3.jpg)
 ![cmftViewer4](https://github.com/dariomanesku/cmftViewer/raw/master/screenshots/cmftViewer4.jpg)
 ![cmftViewer5](https://github.com/dariomanesku/cmftViewer/raw/master/screenshots/cmftViewer5.jpg)
 ![cmftViewer6](https://github.com/dariomanesku/cmftViewer/raw/master/screenshots/cmftViewer6.jpg)
-![cmftViewer7](https://github.com/dariomanesku/cmftViewer/raw/master/screenshots/cmftViewer7.jpg)
-![cmftViewer8](https://github.com/dariomanesku/cmftViewer/raw/master/screenshots/cmftViewer8.jpg)
+
+Contributors.
+------------
+ - [Kurt Kupser](http://kurtkupser.squarespace.com/) - Grenade model. [link](http://ben3d.co.uk/flintlock)
+ - [Ben Cooney](http://ben3d.co.uk/) - Flintlock model. [link](http://ben3d.co.uk/flintlock)
+ - [Andrew Maximov](https://twitter.com/divers1ty): - Cerberus gun model. [link](http://artisaverb.info/Cerberus.html)
+ - [Jon Tojek](https://twitter.com/Tojek_VFX): - Shack environment map. [link](http://tojek.com/vfx/?attachment_id=139)
 
 Disclaimer.
 ---------
-Some assets from the screenshots are not work for mine.<br />
-Cerberus gun with textures is courtesy of [Andrew Maximov](https://twitter.com/divers1ty): [link](http://artisaverb.info/Cerberus.html)<br />
-The green environment map is courtesy of [Jon Tojek](https://twitter.com/Tojek_VFX): [link](http://tojek.com/vfx/?attachment_id=139)<br />
-<br />
-My intention is not to hurt anyone's rights. If I happen to unintentionally use some of your work without rights, open an issue here on Github or reach me publicly via Twitter: [@dariomanesku](https://twitter.com/dariomanesku).
+Licence applies only to the cmftViewer project, NOT including the assets supplied by the mentioned contributors. If you wish to use their work for any purpose, you must contact them personally.
 
 [License (BSD 2-clause)](https://github.com/dariomanesku/cmft/blob/master/LICENSE)
 -------------------------------------------------------------------------------
