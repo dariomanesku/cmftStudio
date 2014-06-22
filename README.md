@@ -23,7 +23,7 @@ Screenshots.
 
 Contributors.
 ------------
- - **[Kurt Kupser](http://kurtkupser.squarespace.com/)** - Grenade model \[[link](http://ben3d.co.uk/flintlock)\].
+ - **[Kurt Kupser](http://kurtkupser.squarespace.com/)** - Grenade model \[[link](http://kurtkupser.squarespace.com/#/thermite-grenade/)\].
  - **[Ben Cooney](http://ben3d.co.uk/)** - Flintlock model \[[link](http://ben3d.co.uk/flintlock)\].
  - **[Andrew Maximov](https://twitter.com/divers1ty)** - Cerberus gun model \[[link](http://artisaverb.info/Cerberus.html)\].
  - **[Jon Tojek](https://twitter.com/Tojek_VFX)** - Shack environment map \[[link](http://tojek.com/vfx/?attachment_id=139)\].
