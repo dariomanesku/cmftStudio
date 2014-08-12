@@ -6,23 +6,25 @@ Work in progress.
 This project is made to go along with [cmft](https://github.com/dariomanesku/cmft). For now check [cmft page](https://github.com/dariomanesku/cmft).<br />
 There are stil features to be added until the release. Stay tuned.
 
-Newest screenshot:
+Newest screenshots:
 ------------
-![cmftStudioG01](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio.jpg)
+![cmftStudio0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio0.jpg)
+![cmftStudio1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio1.jpg)
+![cmftStudio1O](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio1_cmft_output.jpg)
 
 Older screenshots:
 ------------
-![cmftStudioG01](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer_g01.jpg)
-![cmftStudioG02](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer_g02.jpg)
-![cmftStudio7](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer7.jpg)
-![cmftStudio8](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer8.jpg)
-![cmftStudioF01](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer_f01.jpg)
-![cmftStudio0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer0.jpg)
-![cmftStudio2](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer2.jpg)
-![cmftStudio3](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer3.jpg)
-![cmftStudio4](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer4.jpg)
-![cmftStudio5](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer5.jpg)
-![cmftStudio6](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer6.jpg)
+![cmftViewerG01](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer_g01.jpg)
+![cmftViewerG02](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer_g02.jpg)
+![cmftViewer7](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer7.jpg)
+![cmftViewer8](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer8.jpg)
+![cmftViewerF01](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer_f01.jpg)
+![cmftViewer0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer0.jpg)
+![cmftViewer2](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer2.jpg)
+![cmftViewer3](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer3.jpg)
+![cmftViewer4](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer4.jpg)
+![cmftViewer5](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer5.jpg)
+![cmftViewer6](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer6.jpg)
 
 Contributors.
 ------------
