@@ -6,10 +6,12 @@ Work in progress.
 This project is made to go along with [cmft](https://github.com/dariomanesku/cmft). For now check [cmft page](https://github.com/dariomanesku/cmft).<br />
 There are stil features to be added until the release. Stay tuned.
 
-Screenshots.
+Newest screenshots:
 ------------
-
 ![cmftStudioG01](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio.jpg)
+
+Older screenshots:
+------------
 ![cmftStudioG01](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer_g01.jpg)
 ![cmftStudioG02](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer_g02.jpg)
 ![cmftStudio7](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer7.jpg)
