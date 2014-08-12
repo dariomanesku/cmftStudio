@@ -6,7 +6,7 @@ Work in progress.
 This project is made to go along with [cmft](https://github.com/dariomanesku/cmft). For now check [cmft page](https://github.com/dariomanesku/cmft).<br />
 There are stil features to be added until the release. Stay tuned.
 
-Newest screenshots:
+Newest screenshot:
 ------------
 ![cmftStudioG01](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio.jpg)
 
