@@ -8,10 +8,10 @@ There are stil features to be added until the release. Stay tuned.
 
 Newest screenshots:
 ------------
-![cmftStudio0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio0.jpg)
+![cmftStudio2](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio2_gray.jpg)
 ![cmftStudio1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio1.jpg)
 ![cmftStudio1O](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio1_cmft_output.jpg)
-![cmftStudio2](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio2_gray.jpg)
+![cmftStudio0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio0.jpg)
 
 Older screenshots:
 ------------
