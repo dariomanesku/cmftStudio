@@ -10,9 +10,10 @@ cmftStudio:
 ------------
 ![cmftStudioCover](https://github.com/dariomanesku/cmftStudio/raw/master/res/cmftStudio_cover.jpg)
 
-Latest screenshot:
+Latest screenshots:
 ------------
-![cmftStudioAplha](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha.jpg)
+![cmftStudioAplha1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha1.jpg)
+![cmftStudioAplha0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha0.jpg)
 
 Older screenshots:
 ------------
