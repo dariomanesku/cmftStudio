@@ -10,8 +10,8 @@ Download
 --------
 
  * [cmftStudio - Windows 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_win64.zip)<br />
- * [cmftStudio - Sample project 0](https://github.com/dariomanesku/cmftStudio-bin/raw/master/SampleProject0.csp)<br />
- * [cmftStudio - Sample project 1](https://github.com/dariomanesku/cmftStudio-bin/raw/master/SampleProject1.csp)<br />
+ * [cmftStudio - Sample project 0](https://www.dropbox.com/s/qoy4h6bbp0bcdh4/SampleProject0.csp?dl=0)<br />
+ * [cmftStudio - Sample project 1](https://www.dropbox.com/s/ojzyufs4ooh76g5/SampleProject1.csp?dl=0)<br />
 
 
 cmftStudio
