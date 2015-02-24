@@ -1,19 +1,44 @@
 [cmft](https://github.com/dariomanesku/cmft)Studio
 ========================================================================================
 
-Work in progress.
------------------
-This project is made to go along with [cmft](https://github.com/dariomanesku/cmft). For now check [cmft page](https://github.com/dariomanesku/cmft).<br />
-There are stil features to be added until the release. Stay tuned.
+What is it?
+-----------
 
-cmftStudio:
-------------
+GUI counterpart for [cmft](https://github.com/dariomanesku/cmft).<br \>
+
+Download
+--------
+
+ * [cmftStudio - Windows 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_win64.zip)<br />
+ * [cmftStudio - Sample project 0](https://github.com/dariomanesku/cmftStudio-bin/raw/master/SampleProject0.csp)<br />
+ * [cmftStudio - Sample project 1](https://github.com/dariomanesku/cmftStudio-bin/raw/master/SampleProject1.csp)<br />
+
+
+cmftStudio
+----------
 ![cmftStudioCover](https://github.com/dariomanesku/cmftStudio/raw/master/res/cmftStudio_cover.jpg)
+
+
+Building
+--------
+
+	git clone http://github.com/dariomanesku/cmftStudio.git
+	git clone http://github.com/dariomanesku/cmft.git
+	git clone http://github.com/dariomanesku/dm.git
+	git clone http://github.com/dariomanesku/bgfx.git
+	git clone http://github.com/dariomanesku/bx.git
+	cd cmftStudio
+	make
+
+- After calling `make`, *\_projects* folder will be created with all supported project files. Deleting *\_projects* folder is safe at any time.<br \>
+- All compiler generated files will be in *\_build* folder. Again, deleting *\_build* folder is safe at any time.<br \>
+
 
 Latest screenshots:
 ------------
 ![cmftStudioAplha1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha1.jpg)
 ![cmftStudioAplha0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha0.jpg)
+
 
 Older screenshots:
 ------------
@@ -35,12 +60,14 @@ Older screenshots:
 ![cmftViewer5](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer5.jpg)
 ![cmftViewer6](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer6.jpg)
 
+
 Contributors.
 ------------
  - **[Kurt Kupser](http://kurtkupser.squarespace.com/)** - Grenade model \[[link](http://kurtkupser.squarespace.com/#/thermite-grenade/)\].
  - **[Ben Cooney](http://ben3d.co.uk/)** - Flintlock model \[[link](http://ben3d.co.uk/flintlock)\].
  - **[Andrew Maximov](https://twitter.com/divers1ty)** - Cerberus gun model \[[link](http://artisaverb.info/Cerberus.html)\].
  - **[Jon Tojek](https://twitter.com/Tojek_VFX)** - Shack environment map \[[link](http://tojek.com/vfx/?attachment_id=139)\].
+
 
 Disclaimer.
 ---------
