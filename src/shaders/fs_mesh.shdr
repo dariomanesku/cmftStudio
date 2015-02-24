@@ -1,0 +1,333 @@
+/*
+ * Copyright 2014-2015 Dario Manesku. All rights reserved.
+ * License: http://www.opensource.org/licenses/BSD-2-Clause
+ */
+
+#include "shader.shdr"
+#include "utils.shdr"
+
+SAMPLER2D(u_texColor,        0);
+SAMPLER2D(u_texNormal,       1);
+SAMPLER2D(u_texSurface,      2);
+SAMPLER2D(u_texReflectivity, 3);
+SAMPLER2D(u_texAO,           8);
+SAMPLER2D(u_texEmissive,     9);
+
+#ifdef SKYBOX_TRANSITION
+SAMPLERCUBE(u_texPmremPrev, 4); // Previous Pmrem.
+SAMPLERCUBE(u_texSkybox,    5); // Previous Iem.
+#endif //SKYBOX_TRANSITION
+
+SAMPLERCUBE(u_texPmrem, 6);
+SAMPLERCUBE(u_texIem,   7);
+
+vec3 fresnel(vec3 _reflectivity, float _dot, float _strenght)
+{
+    return _reflectivity + (1.0 - _reflectivity)*pow(1.0 - _dot, 5.0)*_strenght;
+}
+
+vec3 tangentToObject(vec3 _vt, vec3 _vb, vec3 _vn, vec3 _bumpNormal)
+{
+    _vn = normalize(_vn);
+
+    _vt -= dot(_vt, _vn)*_vn;
+    _vt = normalize(_vt);
+
+    _vb -= dot(_vb, _vn)*_vn + dot(_vb, _vt)*_vt;
+    _vb = normalize(_vb);
+
+    _bumpNormal = _bumpNormal.x * _vt
+                + _bumpNormal.y * _vb
+                + _bumpNormal.z * _vn
+                ;
+    return normalize(_bumpNormal);
+}
+
+float specularOcclusion(float _ndotv, float _ao, float _roughness)
+{
+    return clamp(pow(_ndotv + _ao, _roughness) - 1.0 + _ao, 0.0, 1.0);
+}
+
+void main()
+{
+    // Input.
+    //-----
+
+    vec2 texcoord = v_texcoord0 * u_texMultiplier;
+    vec3 v = normalize(v_view);
+    vec3 n;
+    #ifdef NORMAL_MAP
+        if (0.0 == u_sampleNormal)
+        {
+            n = normalize(v_normal);
+        }
+        else
+        {
+            n.xy = texture2D(u_texNormal, texcoord).xy * 2.0 - 1.0;
+            n.xy *= u_normalMul;
+            n.z = sqrt(1.0 - clamp(dot(n.xy, n.xy), 0.0, 1.0));
+            n = tangentToObject(v_tangent, v_bitangent, v_normal, n);
+        }
+    #else
+        n = normalize(v_normal);
+    #endif //NORMAL_MAP
+
+    struct FragmentState
+    {
+        // Samples.
+        vec3 inAlbedo;
+        vec3 inReflectivity;
+        vec3 inEmissive;
+        float inSurface;
+        float inOcclusion;
+
+        // Material.
+        vec3 albedo;
+        vec3 reflectivity;
+        vec3 fresnel;
+        float specularOcclusion;
+
+        // Environment light.
+        vec3 inRadiance;
+        vec3 inIrradiance;
+        vec3 envDiffuse;
+        vec3 envSpecular;
+
+        // Direct light.
+        vec3 directDiffuse;
+        vec3 directSpecular;
+
+        // Total.
+        vec3 totalDiffuse;
+        vec3 totalSpecular;
+        vec3 color;
+    };
+    FragmentState f;
+
+    // Samples.
+    //-----
+    {
+        // Albedo.
+        f.inAlbedo = u_albedoColor;
+        if (0.0 != u_sampleAlbedo)
+        {
+            f.inAlbedo *= toLinear(texture2D(u_texColor, texcoord).xyz);
+        }
+
+        // Reflectivity.
+        f.inReflectivity = vec3_splat(u_reflectivity);
+        if (0.0 == u_metalOrSpec)
+        {
+            if (0.0 != u_sampleReflectivity)
+            {
+                vec4 refl = texture2D(u_texReflectivity, texcoord);
+                float rr = dot(u_swizReflectivity, refl);
+                rr = mix(rr, 1.0 - rr, u_invMetalness);
+                f.inReflectivity *= vec3_splat(rr);
+            }
+        }
+        else
+        {
+            f.inReflectivity *= u_reflectivityColor;
+            if (0.0 != u_sampleReflectivity)
+            {
+                vec4 refl = texture2D(u_texReflectivity, texcoord);
+                vec3 specular = toLinear(refl).rgb;
+                f.inReflectivity *= specular;
+            }
+        }
+
+        f.inReflectivity = clamp(f.inReflectivity, 0.0, 0.999); //TODO: Fix this.
+
+        // Emissive.
+        f.inEmissive = vec3_splat(0.0);
+        if (0.0 != u_sampleEmissive)
+        {
+            f.inEmissive += toLinear(texture2D(u_texEmissive, texcoord)).xyz;
+            f.inEmissive *= u_emissiveColor * u_emissiveIntensity;
+        }
+
+        // Surface.
+        f.inSurface = u_gloss;
+        if (0.0 != u_sampleGloss)
+        {
+            float ss = dot(u_swizSurface, texture2D(u_texSurface, texcoord));
+            ss = mix(ss, 1.0 - ss, u_invGloss);
+            f.inSurface *= ss;
+        }
+        f.inSurface = clamp(f.inSurface, 0.0, 1.0);
+
+        // Occlusion.
+        f.inOcclusion = 1.0;
+        if (0.0 != u_sampleAo)
+        {
+            f.inOcclusion = dot(u_swizAo, texture2D(u_texAO, texcoord));
+            f.inOcclusion = clamp(f.inOcclusion - u_aoBias, 0.0, 1.0);
+        }
+    }
+
+    // Material.
+    //-----
+    {
+        float ndotv = clamp(dot(n, v), 0.0, 1.0);
+        if (0.0 == u_metalOrSpec)
+        {
+            // Metalness model.
+            f.reflectivity = mix(vec3_splat(0.04), f.inAlbedo, f.inReflectivity);
+            f.albedo  = f.inAlbedo * (vec3_splat(1.0) - f.inReflectivity);
+            f.fresnel = fresnel(f.reflectivity, ndotv, f.inSurface);
+        }
+        else
+        {
+            // Specular model.
+            f.reflectivity = f.inReflectivity;
+            f.albedo  = f.inAlbedo * (vec3_splat(1.0) - f.inReflectivity);
+            f.fresnel = fresnel(f.reflectivity, ndotv, f.inSurface*u_fresnel);
+        }
+
+        f.specularOcclusion = specularOcclusion(ndotv, f.inOcclusion, f.inSurface);
+    }
+
+    // Environment light.
+    //-----
+    {
+        vec3 vr = -reflect(v, n);
+        float lod = (1.0 - f.inSurface)*(u_mipCount - 1.0);
+
+        #ifdef SKYBOX_TRANSITION
+            vec3 vrPrev = vr;
+            float lodPrev = (1.0 - f.inSurface)*(u_prevMipCount - 1.0);
+            if (0.0 != u_prevEdgeFixup)
+            {
+                vrPrev = fixCubeLookup(vrPrev, lodPrev, u_prevMipSize);
+            }
+
+            if (0.0 != u_edgeFixup)
+            {
+                vr = fixCubeLookup(vr, lod, u_mipSize);
+            }
+
+            vec3 radFrom = toLinear(textureCubeLod(u_texPmremPrev, vrPrev, lodPrev)).xyz;
+            vec3 radTo   = toLinear(textureCubeLod(u_texPmrem,     vr,     lod    )).xyz;
+            f.inRadiance = mix(radFrom, radTo, u_envTransition);
+
+            vec3 irrFrom = toLinear(textureCube(u_texSkybox, n)).xyz;
+            vec3 irrTo   = toLinear(textureCube(u_texIem,    n)).xyz;
+            f.inIrradiance = mix(irrFrom, irrTo, u_envTransition);
+
+        #else
+            if (0.0 != u_edgeFixup)
+            {
+                vr = fixCubeLookup(vr, lod, u_mipSize);
+            }
+
+            f.inRadiance   = toLinear(textureCubeLod(u_texPmrem, vr, lod)).xyz;
+            f.inIrradiance = toLinear(textureCube(u_texIem, n)).xyz;
+
+        #endif //SKYBOX_TRANSITION
+
+        f.envDiffuse  = f.albedo  * f.inIrradiance * u_doEnvDiff;
+        f.envSpecular = f.fresnel * f.inRadiance   * u_doEnvSpec;
+
+        #ifdef NORMAL_MAP
+            // Attnenuate if reflected vector points under the surface.
+            float vrdotn = dot(vr, normalize(v_normal));
+            float specAttn = min(1.0 + u_specAttn*vrdotn, 1.0);
+            specAttn *= specAttn;
+            f.envSpecular *= specAttn;
+        #endif //NORMAL_MAP
+
+        f.envDiffuse  *= u_ambientLightStrenght;
+        f.envSpecular *= u_ambientLightStrenght;
+    }
+
+    // Directional light.
+    //-----
+    {
+        f.directDiffuse  = vec3_splat(0.0);
+        f.directSpecular = vec3_splat(0.0);
+
+        #ifdef DIRECTIONAL_LIGHT
+            float specPower = 10.0/log2(f.inSurface*0.95 + 0.0001);
+            specPower *= specPower;
+
+            vec4 lightDirEnabled[MAX_NUM_LIGHTS];
+            vec4 lightColorStrenght[MAX_NUM_LIGHTS];
+            lightDirEnabled[0] = u_lightDirEnabled0;
+            lightDirEnabled[1] = u_lightDirEnabled1;
+            lightDirEnabled[2] = u_lightDirEnabled2;
+            lightDirEnabled[3] = u_lightDirEnabled3;
+            lightDirEnabled[4] = u_lightDirEnabled4;
+            lightDirEnabled[5] = u_lightDirEnabled5;
+            lightColorStrenght[0] = u_lightColorStrenght0;
+            lightColorStrenght[1] = u_lightColorStrenght1;
+            lightColorStrenght[2] = u_lightColorStrenght2;
+            lightColorStrenght[3] = u_lightColorStrenght3;
+            lightColorStrenght[4] = u_lightColorStrenght4;
+            lightColorStrenght[5] = u_lightColorStrenght5;
+
+            for (int ii = 0; ii < MAX_NUM_LIGHTS; ++ii)
+            {
+                vec3 l = normalize(lightDirEnabled[ii].xyz);
+                vec3 h = normalize(v + l);
+                vec3 r = -reflect(l, n);
+                float ndotl = clamp(dot(n, l), 0.0, 1.0); // Diffuse
+                float vdoth = clamp(dot(v, h), 0.0, 1.0); // Specular fresnel
+                float ndoth = clamp(dot(n, h), 0.0, 1.0); // Blinn
+                float rdotv = clamp(dot(r, v), 0.0, 1.0); // Phong
+
+                // Diffuse.
+                vec3 diff = f.albedo*ndotl;
+
+                // Specular.
+                vec3 spec = f.reflectivity * fresnel(f.reflectivity, vdoth, 1.0);
+                if (0.0 == u_lightingModel) //phong
+                {
+                    spec *= pow(rdotv, specPower) * (specPower+1.0)*0.5;
+                }
+                else if (1.0 == u_lightingModel) //phongbrdf
+                {
+                    spec *= pow(rdotv, specPower)*ndotl * (specPower+2.0)*0.5;
+                }
+                else if (2.0 == u_lightingModel) //blinn
+                {
+                    spec *= pow(ndoth, specPower) * (specPower+7.0)*8.0;
+                }
+                else //if (3.0 == u_lightingModel). //blinnbrdf
+                {
+                    spec *= pow(ndoth, specPower)*ndotl * (specPower+8.0)*0.125;
+                }
+
+                // Specular attenuation.
+                float specAttn = 1.0 - pow(1.0 - ndotl, 3.0);
+                spec *= specAttn;
+
+                // Total.
+                vec3 light = lightColorStrenght[ii].rgb * lightColorStrenght[ii].a * lightDirEnabled[ii].w;
+                f.directDiffuse  += diff * light;
+                f.directSpecular += spec * light;
+            }
+        #endif // DIRECTIONAL_LIGHT
+    }
+
+    // Total.
+    //-----
+    {
+        f.totalDiffuse  = (f.directDiffuse + f.envDiffuse)*f.inOcclusion;
+        f.totalSpecular = f.directSpecular + f.envSpecular*f.specularOcclusion;
+
+        f.color = f.totalDiffuse + f.totalSpecular + f.inEmissive;
+    }
+
+    // Output.
+    //-----
+    {
+        #ifdef RGBE8_OUTPUT
+            gl_FragColor = encodeRGBE8(f.color);
+        #else
+            gl_FragColor = vec4(toGamma(f.color), 1.0);
+        #endif //RGBE8_OUTPUT
+    }
+}
+
+/* vim: set sw=4 ts=4 expandtab: */

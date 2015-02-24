@@ -1,0 +1,14 @@
+/*
+ * Copyright 2014-2015 Dario Manesku. All rights reserved.
+ * License: http://www.opensource.org/licenses/BSD-2-Clause
+ */
+
+#ifndef CMFTSTUDIO_SHADER_SHDR_HEADER_GUARD
+#define CMFTSTUDIO_SHADER_SHDR_HEADER_GUARD
+
+#include <bgfx_shader.sh>
+#include "uniforms.shdr"
+
+#endif // CMFTSTUDIO_SHADER_SHDR_HEADER_GUARD
+
+/* vim: set sw=4 ts=4 expandtab: */

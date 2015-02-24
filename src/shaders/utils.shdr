@@ -1,0 +1,82 @@
+/*
+ * Copyright 2014-2015 Dario Manesku. All rights reserved.
+ * License: http://www.opensource.org/licenses/BSD-2-Clause
+ */
+
+#ifndef CMFTSTUDIO_UTILS_SHDR_HEADER_GUARD
+#define CMFTSTUDIO_UTILS_SHDR_HEADER_GUARD
+
+#include "../../../bgfx/examples/common/shaderlib.sh"
+
+float lumf(vec3 _rgb)
+{
+    return dot(vec3(0.2126729, 0.7151522, 0.0721750), _rgb);
+}
+
+vec3 grayscaleFade(vec3 _src, vec3 _dst, float _a)
+{
+    float grayPhase = 0.3;
+    return mix(mix(luma(_src), _src, smoothstep(1.0-grayPhase, 0.0, _a))
+             , mix(luma(_dst), _dst, smoothstep(    grayPhase, 1.0, _a))
+             , _a
+             );
+}
+
+vec4 blur9(sampler2D _sampler
+         , vec2 _uv0
+         , vec4 _uv1
+         , vec4 _uv2
+         , vec4 _uv3
+         , vec4 _uv4
+         , float _weight0
+         , float _weight1
+         , float _weight2
+         , float _weight3
+         , float _weight4
+         )
+{
+    vec4 blur;
+    blur  = texture2D(_sampler, _uv0)   *_weight0;
+    blur += texture2D(_sampler, _uv1.xy)*_weight1;
+    blur += texture2D(_sampler, _uv1.zw)*_weight1;
+    blur += texture2D(_sampler, _uv2.xy)*_weight2;
+    blur += texture2D(_sampler, _uv2.zw)*_weight2;
+    blur += texture2D(_sampler, _uv3.xy)*_weight3;
+    blur += texture2D(_sampler, _uv3.zw)*_weight3;
+    blur += texture2D(_sampler, _uv4.xy)*_weight4;
+    blur += texture2D(_sampler, _uv4.zw)*_weight4;
+    return blur;
+}
+
+// Ref: http://the-witness.net/news/2012/02/seamless-cube-map-filtering/
+vec3 fixCubeLookup(vec3 _v, float _lod, float _topLevelCubeSize)
+{
+    float ax = abs(_v.x);
+    float ay = abs(_v.y);
+    float az = abs(_v.z);
+    float vmax = max(max(ax, ay), az);
+    float scale = 1.0 - exp2(_lod) / _topLevelCubeSize;
+    if (ax != vmax) { _v.x *= scale; }
+    if (ay != vmax) { _v.y *= scale; }
+    if (az != vmax) { _v.z *= scale; }
+    return _v;
+}
+
+vec3 vecFromLatLong(vec2 _uv)
+{
+    float pi    = 3.14159265;
+    float twoPi = 2.0*pi;
+    float phi   = _uv.x * twoPi;
+    float theta = _uv.y * pi;
+
+    vec3 result;
+    result.x = -sin(theta)*sin(phi);
+    result.y = cos(theta);
+    result.z = -sin(theta)*cos(phi);
+
+    return result;
+}
+
+#endif // CMFTSTUDIO_UTILS_SHDR_HEADER_GUARD
+
+/* vim: set sw=4 ts=4 expandtab: */

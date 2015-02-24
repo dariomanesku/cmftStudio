@@ -1,0 +1,88 @@
+/*
+ * Copyright 2014-2015 Dario Manesku. All rights reserved.
+ * License: http://www.opensource.org/licenses/BSD-2-Clause
+ */
+
+#ifndef CMFTSTUDIO_TONEMAP_SHDR_HEADER_GUARD
+#define CMFTSTUDIO_TONEMAP_SHDR_HEADER_GUARD
+
+#include "utils.shdr" //toGamma(), toFilmic()
+
+vec3 toReinhard1(vec3 _rgb)
+{
+    float lumRgb = lumf(_rgb);
+    float lumScale = lumRgb/(lumRgb+1.0);
+    return toGamma(_rgb*lumScale/lumRgb);
+}
+
+vec3 toReinhard2(vec3 _rgb, float _whiteSq)
+{
+    float lumRgb = lumf(_rgb);
+    float lumScale = (lumRgb * (1.0 + lumRgb / _whiteSq))/(1.0 + lumRgb);
+    return toGamma(_rgb*lumScale/lumRgb);
+}
+
+vec3 toUncharted2(vec3 _x)
+{
+    float a = 0.22;
+    float b = 0.30;
+    float c = 0.10;
+    float d = 0.20;
+    float e = 0.01;
+    float f = 0.30;
+    float w = 11.2;
+    return ((_x*(a*_x+c*b)+d*e)/(_x*(a*_x+b)+d*f))-e/f;
+}
+
+vec3 toUncharted2(float _x)
+{
+    vec3 x = vec3_splat(_x);
+    float a = 0.22;
+    float b = 0.30;
+    float c = 0.10;
+    float d = 0.20;
+    float e = 0.01;
+    float f = 0.30;
+    float w = 11.2;
+    return ((x*(a*x+c*b)+d*e)/(x*(a*x+b)+d*f))-e/f;
+}
+
+vec3 tonemap(vec3 _rgb, float _whiteSq)
+{
+    if (0.0 == u_toneMapping) // Linear
+    {
+        return _rgb;
+    }
+    if (1.0 == u_toneMapping) // Gamma
+    {
+        return toGamma(_rgb);
+    }
+    else if (2.0 == u_toneMapping) // Reinhard
+    {
+        return toReinhard1(_rgb);
+    }
+    else if (3.0 == u_toneMapping) // Reinhard2
+    {
+        return toReinhard2(_rgb, _whiteSq);
+    }
+    else if (4.0 == u_toneMapping) // Filmic
+    {
+        return toFilmic(_rgb);
+    }
+    else //if (5.0 == u_toneMapping). // Uncharted2
+    {
+        float exposureBias = 2.0f;
+        vec3 curr = exposureBias*toUncharted2(_rgb);
+
+        float w = 11.2;
+        vec3 whiteScale = 1.0f/toUncharted2(w);
+
+        _rgb = curr*whiteScale;
+
+        return toGamma(_rgb);
+    }
+}
+
+#endif // CMFTSTUDIO_TONEMAP_SHDR_HEADER_GUARD
+
+/* vim: set sw=4 ts=4 expandtab: */

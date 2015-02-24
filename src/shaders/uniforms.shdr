@@ -1,0 +1,124 @@
+/*
+ * Copyright 2014-2015 Dario Manesku. All rights reserved.
+ * License: http://www.opensource.org/licenses/BSD-2-Clause
+ */
+
+#ifndef CMFTSTUDIO_UNIFORMS_SHDR_HEADER_GUARD
+#define CMFTSTUDIO_UNIFORMS_SHDR_HEADER_GUARD
+
+uniform vec4 u_uniforms[56];
+
+#define MAX_NUM_LIGHTS 6
+
+#define u_mtx0                 u_uniforms[0]
+#define u_mtx1                 u_uniforms[1]
+#define u_mtx2                 u_uniforms[2]
+#define u_mtx3                 u_uniforms[3]
+#define u_offsets0             u_uniforms[4].xy
+#define u_offsets1             u_uniforms[5].xy
+#define u_offsets2             u_uniforms[6].xy
+#define u_offsets3             u_uniforms[7].xy
+#define u_offsets4             u_uniforms[8].xy
+#define u_offsets5             u_uniforms[9].xy
+#define u_offsets6             u_uniforms[10].xy
+#define u_offsets7             u_uniforms[11].xy
+#define u_offsets8             u_uniforms[12].xy
+#define u_offsets9             u_uniforms[13].xy
+#define u_offsets10            u_uniforms[14].xy
+#define u_offsets11            u_uniforms[15].xy
+#define u_offsets12            u_uniforms[16].xy
+#define u_offsets13            u_uniforms[17].xy
+#define u_offsets14            u_uniforms[18].xy
+#define u_offsets15            u_uniforms[19].xy
+#define u_weight0              u_uniforms[20].x
+#define u_weight1              u_uniforms[20].y
+#define u_weight2              u_uniforms[20].z
+#define u_weight3              u_uniforms[20].w
+#define u_weight4              u_uniforms[21].x
+#define u_weight5              u_uniforms[21].y
+#define u_weight6              u_uniforms[21].z
+#define u_weight7              u_uniforms[21].w
+#define u_skyboxTransition     u_uniforms[22].x
+#define u_enabled              u_uniforms[22].y
+#define u_lod                  u_uniforms[22].z
+#define u_prevLod              u_uniforms[22].w
+#define u_tonemapGamma         u_uniforms[23].x
+#define u_tonemapMinLum        u_uniforms[23].y
+#define u_tonemapLumRange      u_uniforms[23].z
+#define u_texelHalf            u_uniforms[23].w
+#define u_camPos               u_uniforms[24].xyz
+#define u_time                 u_uniforms[24].w
+#define u_rgba                 u_uniforms[25]
+#define u_doLightAdapt         u_uniforms[26].x
+#define u_envTransition        u_uniforms[26].y
+#define u_edgeFixup            u_uniforms[26].z
+#define u_prevEdgeFixup        u_uniforms[26].w
+#define u_brightness           u_uniforms[27].x
+#define u_contrast             u_uniforms[27].y
+#define u_saturation           u_uniforms[27].z
+#define u_unused270            u_uniforms[27].w
+#define u_backgroundSelection  u_uniforms[28].x
+#define u_fov                  u_uniforms[28].y
+#define u_blurCoeff            u_uniforms[28].z
+#define u_toneMapping          u_uniforms[28].w
+#define u_mipCount             u_uniforms[29].x
+#define u_prevMipCount         u_uniforms[29].y
+#define u_mipSize              u_uniforms[29].z
+#define u_prevMipSize          u_uniforms[29].w
+#define u_exposure             u_uniforms[30].x
+#define u_gamma                u_uniforms[30].y
+#define u_vignette             u_uniforms[30].z
+#define u_unused300            u_uniforms[30].w
+#define u_middleGray           u_uniforms[31].x
+#define u_whiteSqr             u_uniforms[31].y
+#define u_treshold             u_uniforms[31].z
+#define u_doBloom              u_uniforms[31].w
+#define u_doEnvDiff            u_uniforms[32].x
+#define u_doEnvSpec            u_uniforms[32].y
+#define u_ambientLightStrenght u_uniforms[32].z
+#define u_lightingModel        u_uniforms[32].w
+#define u_matCam               u_uniforms[33].xyz
+#define u_selectedLight        u_uniforms[33].w
+#define u_lightColorStrenght0  u_uniforms[34]
+#define u_lightDirEnabled0     u_uniforms[35]
+#define u_lightColorStrenght1  u_uniforms[36]
+#define u_lightDirEnabled1     u_uniforms[37]
+#define u_lightColorStrenght2  u_uniforms[38]
+#define u_lightDirEnabled2     u_uniforms[39]
+#define u_lightColorStrenght3  u_uniforms[40]
+#define u_lightDirEnabled3     u_uniforms[41]
+#define u_lightColorStrenght4  u_uniforms[42]
+#define u_lightDirEnabled4     u_uniforms[43]
+#define u_lightColorStrenght5  u_uniforms[44]
+#define u_lightDirEnabled5     u_uniforms[45]
+
+// Material.
+#define u_albedoColor          u_uniforms[46].xyz
+#define u_sampleAlbedo         u_uniforms[46].w
+#define u_reflectivityColor    u_uniforms[47].xyz
+#define u_sampleReflectivity   u_uniforms[47].w
+#define u_emissiveColor        u_uniforms[48].xyz
+#define u_sampleEmissive       u_uniforms[48].w
+#define u_gloss                u_uniforms[49].x
+#define u_sampleGloss          u_uniforms[49].y
+#define u_normalMul            u_uniforms[49].z
+#define u_sampleNormal         u_uniforms[49].w
+#define u_reflectivity         u_uniforms[50].x
+#define u_metalOrSpec          u_uniforms[50].y
+#define u_fresnel              u_uniforms[50].z
+#define u_specAttn             u_uniforms[50].w
+#define u_invGloss             u_uniforms[51].x
+#define u_invMetalness         u_uniforms[51].y
+#define u_texMultiplier        u_uniforms[51].z
+#define u_unusedM0             u_uniforms[51].w
+#define u_sampleAo             u_uniforms[52].x
+#define u_aoBias               u_uniforms[52].y
+#define u_emissiveIntensity    u_uniforms[52].z
+#define u_unusedM1             u_uniforms[52].w
+#define u_swizSurface          u_uniforms[53]
+#define u_swizReflectivity     u_uniforms[54]
+#define u_swizAo               u_uniforms[55]
+
+#endif // CMFTSTUDIO_UNIFORMS_SHDR_HEADER_GUARD
+
+/* vim: set sw=4 ts=4 expandtab: */
