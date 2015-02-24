@@ -34,13 +34,13 @@ Building
 - All compiler generated files will be in *\_build* folder. Again, deleting *\_build* folder is safe at any time.<br \>
 
 
-Latest screenshots:
+Latest screenshots
 ------------
 ![cmftStudioAplha1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha1.jpg)
 ![cmftStudioAplha0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha0.jpg)
 
 
-Older screenshots:
+Older screenshots
 ------------
 ![cmftStudio3](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_vn0.jpg)
 ![cmftStudio4](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_vn1.jpg)
