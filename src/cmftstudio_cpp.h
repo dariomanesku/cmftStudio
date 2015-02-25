@@ -1674,6 +1674,9 @@ private:
                         // Asign it.
                         inst->set(material, ii);
                     }
+
+                    m_settings.m_selectedMeshIdx = m_meshInstList.count()-1;
+                    m_modelScene.changeModel(m_meshInstList[m_settings.m_selectedMeshIdx]);
                 }
                 else if (0 == strcmp("obj", m_widgets.m_meshBrowser.m_fileExt))
                 {
