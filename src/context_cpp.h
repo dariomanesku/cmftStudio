@@ -1238,32 +1238,28 @@ namespace cs
                 }
             }
 
+            // Get normalized scale.
             if (FLT_MAX == m_normScale)
             {
                 float min = FLT_MAX;
                 float max = -FLT_MAX;
 
+                const uint32_t stride = m_decl.getStride();
+
                 for (uint32_t ii = 0, end = m_groups.count(); ii < end; ++ii)
                 {
                     Group& group = m_groups[ii];
 
-                    //Get normalized scale.
-                    const uint32_t stride = m_decl.getStride();
-                    for (uint32_t ii = 0; ii < group.m_vertexSize; ii+=stride)
-                    {
-                        const float* meshData = (float*)((uint8_t*)group.m_vertexData + ii);
+                    Aabb aabb;
+                    calcAabb(aabb, group.m_vertexData, group.m_numVertices, stride);
 
-                        float pos[4];
-                        bgfx::vertexUnpack(pos, bgfx::Attrib::Position, m_decl, meshData, 0);
+                    min = bx::fmin(min, aabb.m_min[0]);
+                    min = bx::fmin(min, aabb.m_min[1]);
+                    min = bx::fmin(min, aabb.m_min[2]);
 
-                        min = bx::fmin(min, pos[0]);
-                        min = bx::fmin(min, pos[1]);
-                        min = bx::fmin(min, pos[2]);
-
-                        max = bx::fmax(max, pos[0]);
-                        max = bx::fmax(max, pos[1]);
-                        max = bx::fmax(max, pos[2]);
-                    }
+                    max = bx::fmax(max, aabb.m_max[0]);
+                    max = bx::fmax(max, aabb.m_max[1]);
+                    max = bx::fmax(max, aabb.m_max[2]);
                 }
 
                 m_normScale = 1.0f/(max-min);
