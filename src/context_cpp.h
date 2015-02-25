@@ -1337,16 +1337,7 @@ namespace cs
                 }
 
                 // Transform.
-                if (NULL != _mtx)
-                {
-                    bgfx::setTransform(_mtx);
-                }
-                else
-                {
-                    float mtx[16];
-                    bx::mtxIdentity(mtx);
-                    bgfx::setTransform(mtx);
-                }
+                bgfx::setTransform(_mtx);
 
                 // Buffers.
                 bgfx::setIndexBuffer(group.m_ibh, prim.m_startIndex, prim.m_numIndices);
@@ -1416,16 +1407,7 @@ namespace cs
                 cs::setEnv(_nextEnv);
 
                 // Transform.
-                if (NULL != _mtx)
-                {
-                    bgfx::setTransform(_mtx);
-                }
-                else
-                {
-                    float mtx[16];
-                    bx::mtxIdentity(mtx);
-                    bgfx::setTransform(mtx);
-                }
+                bgfx::setTransform(_mtx);
 
                 // Buffers.
                 bgfx::setIndexBuffer(group.m_ibh, prim.m_startIndex, prim.m_numIndices);
