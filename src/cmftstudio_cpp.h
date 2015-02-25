@@ -1887,7 +1887,7 @@ public:
         cs::allocInit();
         cmft::setAllocator(cs::g_mainAlloc);
 
-        const double splashScreenDuration = 2.0;
+        const double splashScreenDuration = 1.5;
         const float modalWindowAnimDuration = 0.06f;
         float posUd    = 0.20f;
         float scaleUd  = 0.20f;
