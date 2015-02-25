@@ -1,17 +1,16 @@
 [cmft](https://github.com/dariomanesku/cmft)Studio - cubemap filtering tool
 ========================================================================================
 
-GUI counterpart of [cmft](https://github.com/dariomanesku/cmft).<br \>
-<br \>
-Cross-platform open-source cubemap filtering tool.<br \>
-It reaches very fast processing speeds by utilizing both multi-core CPU and OpenCL GPU at the same time!<br \>
+GUI counterpart of [cmft](https://github.com/dariomanesku/cmft) - cross-platform open-source cubemap filtering tool.
+
+It reaches very fast processing speeds by utilizing both multi-core CPU and OpenCL GPU at the same time!
 
 Download
 --------
 
- * [cmftStudio - Windows (64bit)](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_win64.zip)<br />
- * cmftStudio - OS X (64bit) - Soon to be available.<br />
- * cmftStudio - Linux (64bit) - Soon to be available.<br />
+ * [cmftStudio - Windows 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_win64.zip)<br />
+ * cmftStudio - Linux 64bit - Soon to be available.<br />
+ * cmftStudio - OSX 64bit - Soon to be available.<br />
  * *In case you need 32bit binaries, compile from source.*<br />
  <br />
  * [cmftStudio - Sample project 0](https://www.dropbox.com/s/qoy4h6bbp0bcdh4/SampleProject0.csp?dl=0)<br />
@@ -32,8 +31,8 @@ Building
 	cd cmftStudio
 	make
 
-- After calling `make`, '\_projects' folder will be created with all supported project files. Deleting '\_projects' folder is safe at any time.<br \>
-- All compiler generated files will be in '\_build' folder. Again, deleting '\_build' folder is safe at any time.<br \>
+- After calling `make`, *\_projects* folder will be created with all supported project files. Deleting *\_projects* folder is safe at any time.<br \>
+- All compiler generated files will be in *\_build* folder. Again, deleting *\_build* folder is safe at any time.<br \>
 
 ### Windows
 
@@ -78,14 +77,14 @@ Older screenshots taken durring development
 
 
 Environment maps
-----------------
+------------
 
 - [NoEmotion HDRs](http://noemotionhdrs.net/).<br />
 - [sIBL Archive - Hdrlabs.com](http://www.hdrlabs.com/sibl/archive.html).<br />
 
 
 Recommended tools
------------------
+------------
 
 - [PVRTexTool](http://community.imgtec.com/developers/powervr/) - for opening \*.dds and \*.ktx files.<br />
 - [GIMP](http://www.gimp.org) - for opening \*.tga files.<br />
@@ -93,7 +92,7 @@ Recommended tools
 
 
 Similar projects
-----------------
+------------
 
 - [CubeMapGen](http://developer.amd.com/tools-and-sdks/archive/legacy-cpu-gpu-tools/cubemapgen/) - A well known tool for cubemap filtering from AMD.<br \>
 - [Marmoset Skyshop](http://www.marmoset.co/skyshop) - Commercial plugin for Unity3D Game engine.
@@ -131,7 +130,7 @@ Contact
 Reach me via Twitter: [@dariomanesku](https://twitter.com/dariomanesku).
 
 
-Disclaimer.
+Disclaimer
 ---------
 
 Licence applies only to cmftStudio project, NOT including the assets supplied in the sample projects. If you wish to use available third party resources, for any purpose, you must contact their respected authors/companies personally.
