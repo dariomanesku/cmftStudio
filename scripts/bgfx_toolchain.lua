@@ -235,9 +235,6 @@ function bgfx_toolchain(_buildDir, _projDir, _bxDir, _libDir)
 		targetsuffix "Release"
 
 	configuration { "vs*" }
-		flags {
-			"EnableSSE2",
-		}
 		includedirs { _bxDir .. "include/compat/msvc" }
 		defines {
 			"WIN32",
@@ -255,12 +252,18 @@ function bgfx_toolchain(_buildDir, _projDir, _bxDir, _libDir)
 		}
 
 	configuration { "vs*", "Debug" }
-		buildoptions { "/Oy-" }
-
-	configuration { "vs*", "Release" }
 		buildoptions
 		{
-			"/Oy", -- Suppresses creation of frame pointers on the call stack.
+			"/Oy-"
+		}
+
+	configuration { "vs*", "Release" }
+		flags
+		{
+			"NoFramePointer"
+		}
+		buildoptions
+		{
 			"/Ob2", -- The Inline Function Expansion.
 			"/Ox",  -- Full optimization.
 			"/Oi",  -- Enable intrinsics.
@@ -271,6 +274,10 @@ function bgfx_toolchain(_buildDir, _projDir, _bxDir, _libDir)
 		includedirs { _bxDir .. "include/compat/msvc/pre1600" }
 
 	configuration { "x32", "vs*" }
+		flags
+		{
+			"EnableSSE2",
+		}
 		targetdir (_buildDir .. "win32_" .. _ACTION .. "/bin")
 		objdir (_buildDir .. "win32_" .. _ACTION .. "/obj")
 		libdirs {
