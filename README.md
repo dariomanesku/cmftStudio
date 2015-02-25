@@ -130,11 +130,6 @@ Contact
 Reach me via Twitter: [@dariomanesku](https://twitter.com/dariomanesku).
 
 
-Disclaimer
----------
-
-Licence applies only to cmftStudio project, NOT including the assets supplied in the sample projects. If you wish to use available third party resources, for any purpose, you must contact their respected authors/companies personally.
-
 [License (BSD 2-clause)](https://github.com/dariomanesku/cmftstudio/blob/master/LICENSE)
 -------------------------------------------------------------------------------
 
@@ -162,3 +157,9 @@ Licence applies only to cmftStudio project, NOT including the assets supplied in
     LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
     OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
     ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+Disclaimer
+---------
+
+Licence applies only to cmftStudio project, NOT including the assets supplied in the sample projects. If you wish to use available third party resources, for any purpose, you must contact their respected authors/companies personally.
