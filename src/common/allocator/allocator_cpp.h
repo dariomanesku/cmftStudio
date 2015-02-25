@@ -59,7 +59,7 @@ struct Memory
         configFromFile(g_config, "cmftstudio.conf");
         configFromFile(g_config, "cmftStudio.conf");
 
-        const size_t size = DM_MAX(DM_MEGABYTES(512), g_config.m_memorySize);
+        const size_t size = DM_MAX(DM_MEGABYTES(512), size_t(g_config.m_memorySize));
 
         // Alloc.
         m_orig = ::malloc(size);
