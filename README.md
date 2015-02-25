@@ -54,7 +54,7 @@ Screenshots
 ![cmftStudioAplha0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha0.jpg)
 
 
-Older screenshots taken durring development
+Older screenshots taken during development
 ------------
 
 ![cmftStudio3](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_vn0.jpg)
