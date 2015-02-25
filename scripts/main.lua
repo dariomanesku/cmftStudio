@@ -184,6 +184,12 @@ project "cmftStudio"
             "DelayImp",
         }
 
+    configuration { "vs*", "x32" }
+        links
+        {
+            "psapi",
+        }
+
     configuration { "vs2010" }
         linkoptions
         { -- this is needed only for testing with GLES2/3 on Windows with VS201x
