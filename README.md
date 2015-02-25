@@ -47,11 +47,10 @@ Building
 - OS X build does not work yet. Will be available soon.
 
 
-Screenshots
+Screenshot
 ------------
 
 ![cmftStudioAplha1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha1.jpg)
-![cmftStudioAplha0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha0.jpg)
 
 
 Older screenshots taken during development
