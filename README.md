@@ -16,7 +16,7 @@ Download
  <br />
  * [cmftStudio - Sample project 0](https://www.dropbox.com/s/qoy4h6bbp0bcdh4/SampleProject0.csp?dl=0)<br />
  * [cmftStudio - Sample project 1](https://www.dropbox.com/s/ojzyufs4ooh76g5/SampleProject1.csp?dl=0)<br />
-
+ <br />
 
 ![cmftStudioCover](https://github.com/dariomanesku/cmftStudio/raw/master/res/cmftStudio_cover.jpg)
 
@@ -80,8 +80,8 @@ Older screenshots taken durring development
 Environment maps
 ----------------
 
-- [Noemotion hdrs](http://noemotionhdrs.net/).<br />
-- [Hdrlabs.com archive](http://www.hdrlabs.com/sibl/archive.html).<br />
+- [NoEmotion HDRs](http://noemotionhdrs.net/).<br />
+- [sIBL Archive - Hdrlabs.com](http://www.hdrlabs.com/sibl/archive.html).<br />
 
 
 Recommended tools
@@ -95,7 +95,7 @@ Recommended tools
 Similar projects
 ----------------
 
-- [CubeMapGen](http://developer.amd.com/tools-and-sdks/archive/legacy-cpu-gpu-tools/cubemapgen/) - A well known for cubemap filtering from AMD.<br \>
+- [CubeMapGen](http://developer.amd.com/tools-and-sdks/archive/legacy-cpu-gpu-tools/cubemapgen/) - A well known tool for cubemap filtering from AMD.<br \>
 - [Marmoset Skyshop](http://www.marmoset.co/skyshop) - Commercial plugin for Unity3D Game engine.
 - [Knald Lys](https://www.knaldtech.com/lys-open-beta/) - Commercial tool from KnaldTech.
 
@@ -106,8 +106,6 @@ Contribution
 Everyone is welcome to contribute to cmftStudio by submitting code, bug reports, feature requests, testing on different platforms, profiling, etc.
 
 When contributing to the cmftStudio project you must agree to the BSD 2-clause licensing terms.
-
-* Cover photo design by Marko Radak. Check out his [personal website](http://markoradak.com/).
 
 
 Resources
@@ -135,6 +133,7 @@ Reach me via Twitter: [@dariomanesku](https://twitter.com/dariomanesku).
 
 Disclaimer.
 ---------
+
 Licence applies only to cmftStudio project, NOT including the assets supplied in the sample projects. If you wish to use available third party resources, for any purpose, you must contact their respected authors/companies personally.
 
 [License (BSD 2-clause)](https://github.com/dariomanesku/cmftstudio/blob/master/LICENSE)
