@@ -120,7 +120,7 @@ Thanks to
 ------------
 
 * [Marko Radak](http://markoradak.com/) - Initial cover photo design and realization.
-* Dorian Cioban - Additional cover photo improvements.
+* [Dorian Cioban](https://www.linkedin.com/in/doriancioban) - Additional cover photo improvements.
 * All authors of used assets in the project.
 
 
