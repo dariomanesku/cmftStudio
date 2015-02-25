@@ -1,7 +1,8 @@
 [cmft](https://github.com/dariomanesku/cmft)Studio - cubemap filtering tool
 ========================================================================================
 
-GUI counterpart for [cmft](https://github.com/dariomanesku/cmft).<br \>
+GUI counterpart of [cmft](https://github.com/dariomanesku/cmft).<br \>
+<br \>
 Cross-platform open-source cubemap filtering tool.<br \>
 It reaches very fast processing speeds by utilizing both multi-core CPU and OpenCL GPU at the same time!<br \>
 
@@ -11,11 +12,11 @@ Download
  * [cmftStudio - Windows (64bit)](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_win64.zip)<br />
  * cmftStudio - OS X (64bit) - Soon to be available.<br />
  * cmftStudio - Linux (64bit) - Soon to be available.<br />
+ * *In case you need 32bit binaries, compile from source.*<br />
  <br />
  * [cmftStudio - Sample project 0](https://www.dropbox.com/s/qoy4h6bbp0bcdh4/SampleProject0.csp?dl=0)<br />
  * [cmftStudio - Sample project 1](https://www.dropbox.com/s/ojzyufs4ooh76g5/SampleProject1.csp?dl=0)<br />
 
-*In case you need 32bit binaries, compile from source.*
 
 ![cmftStudioCover](https://github.com/dariomanesku/cmftStudio/raw/master/res/cmftStudio_cover.jpg)
 
@@ -45,22 +46,6 @@ Building
 ### OS X
 
 - OS X build does not work yet. Will be available soon.
-
-
-Recommended tools
-------------
-
-- [PVRTexTool](http://community.imgtec.com/developers/powervr/) - for opening \*.dds and \*.ktx files.<br />
-- [GIMP](http://www.gimp.org) - for opening \*.tga files.<br />
-- [Luminance HDR](http://qtpfsgui.sourceforge.net/) - for opening \*.hdr files.<br />
-
-
-Similar projects
-------------
-
-- [CubeMapGen](http://developer.amd.com/tools-and-sdks/archive/legacy-cpu-gpu-tools/cubemapgen/) - A well known for cubemap filtering from AMD.<br \>
-- [Marmoset Skyshop](http://www.marmoset.co/skyshop) - Commercial plugin for Unity3D Game engine.
-- [Knald Lys](https://www.knaldtech.com/lys-open-beta/) - Commercial tool from KnaldTech.
 
 
 Screenshots
