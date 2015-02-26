@@ -36,7 +36,7 @@ Building
 
 ### Windows
 
-- Visual Studio solutions can be found in *\_projects/vs20**/*.<br \>
+- Visual Studio solutions can be found in *\_projects/vs20XX/*.<br \>
 
 ### Linux
 
