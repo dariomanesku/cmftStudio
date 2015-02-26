@@ -53,6 +53,13 @@ Screenshot
 ![cmftStudioAplha1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha1.jpg)
 
 
+Planned features
+------------
+
+ * Add support for rendering transparent materials.
+ * Add GGX specular filter and shading model.
+
+
 Older screenshots taken during development
 ------------
 
