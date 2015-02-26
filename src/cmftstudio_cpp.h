@@ -2113,9 +2113,9 @@ public:
                 m_projTransition.m_currEnv  = cs::acquire(m_envList[m_settings.m_selectedEnvMap]);
                 m_projTransition.m_currInst = cs::acquire(&m_meshInstList[m_settings.m_selectedMeshIdx]);
 
-                for (uint16_t ii = m_materialList.count(); ii--; ) { cs::release(m_materialList[ii]); }
-                for (uint16_t ii = m_textureList.count();  ii--; ) { cs::release(m_textureList[ii]);  }
-                for (uint16_t ii = m_envList.count();      ii--; ) { cs::release(m_envList[ii]);      }
+                for (uint16_t ii = m_materialList.count(); ii--; ) { cs::release(m_materialList[ii]);  }
+                for (uint16_t ii = m_textureList.count();  ii--; ) { cs::release(m_textureList[ii]);   }
+                for (uint16_t ii = m_envList.count();      ii--; ) { cs::release(m_envList[ii]);       }
                 for (uint16_t ii = m_meshInstList.count(); ii--; ) { cs::release(&m_meshInstList[ii]); }
 
                 stateEnter(State::SendResourcesToGpu);
