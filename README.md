@@ -19,6 +19,11 @@ Download
 
 ![cmftStudioCover](https://github.com/dariomanesku/cmftStudio/raw/master/res/cmftStudio_cover.jpg)
 
+Remark !
+--------
+
+On Windows + OpenGL + Radeon GPU there seems to be some kind of rendering problem. For now, on Windows, use DirectX9 or DirectX11 rendering backends until the problem gets fixed. More details [here](https://twitter.com/dariomanesku/status/571303845478985728).
+
 
 Building
 --------
