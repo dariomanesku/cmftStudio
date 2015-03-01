@@ -18,9 +18,9 @@ BGFX_DIR        = (ROOT_DIR .. "bgfx/") -- TODO put all the content from bgfx.lu
 BX_DIR          = (ROOT_DIR .. "bx/")   -- TODO similarly for this.
 DM_DIR          = (ROOT_DIR .. "dm/")
 
-local BGFX_PREMAKE_DIR        = (BGFX_DIR       .. "scripts/")
-local CMFT_PREMAKE_DIR        = (CMFT_DIR       .. "scripts/")
-local CMFTSTUDIO_PREMAKE_DIR  = (CMFTSTUDIO_DIR .. "scripts/")
+local BGFX_SCRIPTS_DIR       = (BGFX_DIR       .. "scripts/")
+local CMFT_SCRIPTS_DIR       = (CMFT_DIR       .. "scripts/")
+local CMFTSTUDIO_SCRIPTS_DIR = (CMFTSTUDIO_DIR .. "scripts/")
 
 -- Required for bgfx and example-common
 function copyLib()
@@ -84,31 +84,30 @@ configuration { "x64", "vs*" }
 configuration {}
 
 -- Use cmft toolchain for cmft and cmftStudio
-dofile (CMFT_PREMAKE_DIR .. "toolchain.lua")
+dofile (CMFTSTUDIO_SCRIPTS_DIR .. "bgfx_toolchain.lua")
+dofile (CMFT_SCRIPTS_DIR       .. "toolchain.lua")
+dofile (CMFT_SCRIPTS_DIR       .. "cmft.lua")
+dofile (BGFX_SCRIPTS_DIR       .. "bgfx.lua")
 compat(BX_DIR)
 
 --
 -- bgfx project.
 --
 project ("bgfx")
-dofile (CMFTSTUDIO_PREMAKE_DIR .. "bgfx_toolchain.lua")
-bgfx_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR, BX_DIR, DEPENDENCY_DIR)
-dofile (BGFX_PREMAKE_DIR .. "bgfx.lua")
+bgfx_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR, DEPENDENCY_DIR, BX_DIR)
 bgfxProject("", "StaticLib", "")
 
 --
 -- example-common project.
 --
 project ("example-common")
-dofile (CMFTSTUDIO_PREMAKE_DIR .. "bgfx_toolchain.lua")
-bgfx_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR, BX_DIR, DEPENDENCY_DIR)
-dofile (BGFX_PREMAKE_DIR .. "example-common.lua")
+bgfx_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR, DEPENDENCY_DIR, BX_DIR)
+dofile (BGFX_SCRIPTS_DIR .. "example-common.lua")
 
 --
 -- cmft project.
 --
 project ("cmft")
-dofile (CMFT_PREMAKE_DIR .. "cmft.lua")
 cmft_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR)
 cmftProject(CMFT_DIR)
 
@@ -139,7 +138,8 @@ project "rawcompress"
 project "cmftStudio"
     uuid("c8847cba-775c-40fd-bcb2-f40f9abb04a7")
     kind "WindowedApp"
-    cmft_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR)
+    --cmft_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR)
+    bgfx_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR, DEPENDENCY_DIR, BX_DIR)
 
     configuration {}
 
@@ -221,10 +221,10 @@ project "cmftStudio"
 strip()
 
 if _OPTIONS["with-tools"] then
-    dofile (BGFX_PREMAKE_DIR .. "makedisttex.lua")
-    dofile (BGFX_PREMAKE_DIR .. "shaderc.lua")
-    dofile (BGFX_PREMAKE_DIR .. "texturec.lua")
-    dofile (BGFX_PREMAKE_DIR .. "geometryc.lua")
+    dofile (BGFX_SCRIPTS_DIR .. "makedisttex.lua")
+    dofile (BGFX_SCRIPTS_DIR .. "shaderc.lua")
+    dofile (BGFX_SCRIPTS_DIR .. "texturec.lua")
+    dofile (BGFX_SCRIPTS_DIR .. "geometryc.lua")
 end
 
 -- vim: set sw=4 ts=4 expandtab:
