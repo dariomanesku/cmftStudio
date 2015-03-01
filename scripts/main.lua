@@ -39,14 +39,13 @@ solution "cmftStudio"
 language "C++"
 configurations { "Debug", "Release" }
 platforms { "x32", "x64" }
-location (CMFTSTUDIO_PROJECTS_DIR .. _ACTION)
-
-configuration { }
 
 defines
 {
-    "BX_CONFIG_ENABLE_MSVC_LEVEL4_WARNINGS=1",
     "ENTRY_CONFIG_IMPLEMENT_DEFAULT_ALLOCATOR=0",
+    "BX_CONFIG_ENABLE_MSVC_LEVEL4_WARNINGS=1",
+    "ENTRY_DEFAULT_WIDTH=1920",
+    "ENTRY_DEFAULT_HEIGHT=1027",
 }
 
 configuration { "Debug" }
@@ -84,24 +83,21 @@ configuration { "x64", "vs*" }
 configuration {}
 
 -- Use cmft toolchain for cmft and cmftStudio
-dofile (CMFTSTUDIO_SCRIPTS_DIR .. "bgfx_toolchain.lua")
+dofile (CMFTSTUDIO_SCRIPTS_DIR .. "bx_toolchain.lua")
 dofile (CMFT_SCRIPTS_DIR       .. "toolchain.lua")
 dofile (CMFT_SCRIPTS_DIR       .. "cmft.lua")
 dofile (BGFX_SCRIPTS_DIR       .. "bgfx.lua")
-compat(BX_DIR)
+
+bx_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR, DEPENDENCY_DIR, BX_DIR)
 
 --
 -- bgfx project.
 --
-project ("bgfx")
-bgfx_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR, DEPENDENCY_DIR, BX_DIR)
-bgfxProject("", "StaticLib", "")
+bgfxProject("", "StaticLib", {})
 
 --
 -- example-common project.
 --
-project ("example-common")
-bgfx_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR, DEPENDENCY_DIR, BX_DIR)
 dofile (BGFX_SCRIPTS_DIR .. "example-common.lua")
 
 --
@@ -117,7 +113,6 @@ cmftProject(CMFT_DIR)
 project "rawcompress"
     uuid "4b0e6dae-6486-44ea-a57b-840de7c3a9fe"
     kind "ConsoleApp"
-    cmft_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR)
 
     includedirs
     {
@@ -138,8 +133,6 @@ project "rawcompress"
 project "cmftStudio"
     uuid("c8847cba-775c-40fd-bcb2-f40f9abb04a7")
     kind "WindowedApp"
-    --cmft_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR)
-    bgfx_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR, DEPENDENCY_DIR, BX_DIR)
 
     configuration {}
 
@@ -164,7 +157,6 @@ project "cmftStudio"
         CMFTSTUDIO_SRC_DIR .. "**.h",
         BGFX_DIR .. "3rdparty/forsyth-too/**.cpp",
         BGFX_DIR .. "3rdparty/forsyth-too/**.h",
-        CMFTSTUDIO_RES_DIR .. "icon/*",
     }
 
     links
@@ -182,6 +174,10 @@ project "cmftStudio"
         links
         { -- this is needed only for testing with GLES2/3 on Windows with VS2008
             "DelayImp",
+        }
+        files
+        {
+            CMFTSTUDIO_RES_DIR .. "icon/*"
         }
 
     configuration { "vs*", "x32" }
@@ -210,10 +206,11 @@ project "cmftStudio"
         {
             BGFX_DIR .. "examples/common/**.mm",
         }
-        links {
+        links
+        {
             "Cocoa.framework",
             "OpenGL.framework",
---          "SDL2",
+            --"SDL2",
         }
 
     configuration {}

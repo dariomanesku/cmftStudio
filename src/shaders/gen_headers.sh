@@ -4,7 +4,7 @@
 # License: http://www.opensource.org/licenses/BSD-2-Clause
 #
 
-FILENAME="shaders.h"
+FILENAME="headers/shaders.h"
 
 echo "Generating '$FILENAME'..."
 
@@ -16,7 +16,7 @@ echo "#define CMFTSTUDIO_SHADERS_H_HEADER_GUARD" >> $FILENAME
 echo "" >> $FILENAME
 
 # Append each header.
-for HEADER in $(ls *.h)
+for HEADER in $(ls headers/*.h)
 do
 	echo "#include \"$HEADER\"" >> $FILENAME
 done

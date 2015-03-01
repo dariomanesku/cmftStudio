@@ -6,7 +6,7 @@
 #ifndef CMFTSTUDIO_STACK_H_HEADER_GUARD
 #define CMFTSTUDIO_STACK_H_HEADER_GUARD
 
-#include "../common/appconfig.h"
+#include "../appconfig.h"
 #include "allocator_config.h"
 
 #include <stdint.h>

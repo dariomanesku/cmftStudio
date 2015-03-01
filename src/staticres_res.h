@@ -10,7 +10,7 @@
     #include "res/sphere.h"
     #include "res/sphereSurfaceTex.h"
     #include "res/loading_screen.h"
-    #include "res/sunicon.h"
+    #include "res/sun_icon.h"
     #include "res/logo_skybox.h"
     #include "res/logo_pmrem.h"
     #include "res/logo_iem.h"

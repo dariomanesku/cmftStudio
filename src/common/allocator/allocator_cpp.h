@@ -64,7 +64,7 @@ struct Memory
         // Alloc.
         m_orig = ::malloc(size);
 
-        CS_PRINT_MEM_STATS("Init: Allocating %d.%dMB - (0x%08x)", dm::U_UMB(size), m_orig);
+        CS_PRINT_MEM_STATS("Init: Allocating %lu.%luMB - (0x%08x)", dm::U_UMB(size), m_orig);
 
         // Align.
         void*  alignedPtr;
@@ -102,7 +102,7 @@ struct Memory
         m_stack.printStats();
         m_segregatedLists.printStats();
         m_heap.printStats();
-        printf("External: alloc/free %d/%d, total %d.%02dMB\n\n", m_externalAlloc, m_externalFree, dm::U_UMB(m_externalSize));
+        printf("External: alloc/free %lu.%lu, total %d.%02dMB\n\n", m_externalAlloc, m_externalFree, dm::U_UMB(m_externalSize));
         #endif //CS_ALLOC_PRINT_STATS
 
         // Do not call free, let it stay until the very end of execution. OS will clean it up.
@@ -116,7 +116,7 @@ struct Memory
         const size_t stackTotal = m_stack.total();
         const size_t heapUsage  = m_heap.getUsage();
         const size_t heapTotal  = m_heap.total();
-        printf("Usage: Stack %d.%dMB / %d.%dMB - Heap %d.%dMB / %d.%dMB\n"
+        printf("Usage: Stack %lu.%luMB / %lu.%luMB - Heap %lu.%luMB / %lu.%luMB\n"
               , dm::U_UMB(stackUsage), dm::U_UMB(stackTotal)
               , dm::U_UMB(heapUsage),  dm::U_UMB(heapTotal)
               );
@@ -135,7 +135,7 @@ struct Memory
         m_externalSize += _size;
         #endif //CS_ALLOC_PRINT_STATS
 
-        CS_PRINT_EXT("EXTERNAL ALLOC: %d.%dMB - (0x%08x)", dm::U_UMB(_size), ptr);
+        CS_PRINT_EXT("EXTERNAL ALLOC: %lu.%luMB - (0x%08x)", dm::U_UMB(_size), ptr);
 
         return ptr;
     }
@@ -213,7 +213,7 @@ struct Memory
         if (!this->contains(_ptr))
         {
             void* ptr = ::realloc(_ptr, _size);
-            CS_PRINT_EXT("EXTERNAL REALLOC: %d.%dMB - (0x%08x - 0x%08x)", dm::U_UMB(_size), _ptr, ptr);
+            CS_PRINT_EXT("EXTERNAL REALLOC: %lu.%luMB - (0x%08x - 0x%08x)", dm::U_UMB(_size), _ptr, ptr);
             return ptr;
         }
 
@@ -371,7 +371,7 @@ struct Memory
             size_t alignedSize;
             dm::alignPtrAndSize(alignedPtr, alignedSize, _mem, _size, CS_NATURAL_ALIGNMENT);
 
-            CS_PRINT_MEM_STATS("Init: Using %d.%dMB for static storage.", dm::U_UMB(alignedSize));
+            CS_PRINT_MEM_STATS("Init: Using %lu.%luMB for static storage.", dm::U_UMB(alignedSize));
 
             m_ptr   = (uint8_t*)alignedPtr;
             m_last  = m_ptr;
@@ -389,7 +389,7 @@ struct Memory
             const size_t size = dm::alignSizeNext(_size, CS_NATURAL_ALIGNMENT);
 
             CS_CHECK(size <= m_avail
-                    , "StaticStorage::alloc | No more space left. %dKB - %dKB (requested/left)"
+                    , "StaticStorage::alloc | No more space left. %lu.%luKB - %lu.%luKB (requested/left)"
                     , dm::U_UKB(size)
                     , dm::U_UKB(m_avail)
                     );
@@ -404,7 +404,7 @@ struct Memory
             m_ptr   += size;
             m_avail -= size;
 
-            CS_PRINT_STATIC("Static alloc: %d.%dMB, Remaining: %d.%dMB - (0x%08x)", dm::U_UMB(_size), dm::U_UMB(m_avail), m_last);
+            CS_PRINT_STATIC("Static alloc: %lu.%luMB, Remaining: %lu.%luMB - (0x%08x)", dm::U_UMB(_size), dm::U_UMB(m_avail), m_last);
 
             return m_last;
         }
@@ -425,7 +425,7 @@ struct Memory
                 const int32_t diff = int32_t(newSize - currSize);
 
                 CS_CHECK(diff <= int32_t(m_avail)
-                       , "StaticStorage::realloc | No more space left. %dKB - %dKB (requested/left)"
+                       , "StaticStorage::realloc | No more space left. %lu.%luKB - %lu.%luKB (requested/left)"
                        , dm::U_UKB(diff)
                        , dm::U_UKB(m_avail)
                        );
@@ -438,7 +438,7 @@ struct Memory
                 m_ptr   += diff;
                 m_avail -= diff;
 
-                CS_PRINT_STATIC("Static realloc: %d.%dMB, Remaining: %d.%dMB - (0x%08x)", dm::U_UMB(newSize), dm::U_UMB(m_avail), m_last);
+                CS_PRINT_STATIC("Static realloc: %lu.%luMB, Remaining: %lu.%luMB - (0x%08x)", dm::U_UMB(newSize), dm::U_UMB(m_avail), m_last);
 
                 return m_last;
             }
@@ -542,10 +542,10 @@ struct Memory
             m_mem = alignedPtr;
             m_totalSize = alignedSize;
             CS_CHECK(m_totalSize == DataSize
-                   , "SegregatedLists::init | Not enough data allocated %d.%dMB / %d.%dMB"
+                   , "SegregatedLists::init | Not enough data allocated %lu.%luMB / %lu.%luMB"
                    , dm::U_UMB(m_totalSize), dm::U_UMB(DataSize)
                    );
-            CS_PRINT_MEM_STATS("Init: Using %d.%dMB for segregated lists", dm::U_UMB(DataSize));
+            CS_PRINT_MEM_STATS("Init: Using %lu.%luMB for segregated lists", dm::U_UMB(DataSize));
 
             m_sizes[ 0] = Size0;
             m_sizes[ 1] = Size1;
@@ -619,7 +619,7 @@ struct Memory
 
                 CS_CHECK(mem < (uint8_t*)m_mem + m_totalSize, "SegregatedLists::alloc | Allocating outside of bounds!");
 
-                CS_PRINT_SMALL("Small alloc: %d.%dKB, slot %d.%dKB %d/%d - (0x%08x)"
+                CS_PRINT_SMALL("Small alloc: %lu.%luKB, slot %lu.%luKB %lu.%lu - (0x%08x)"
                               , dm::U_UKB(_size)
                               , dm::U_UKB(m_sizes[idx])
                               , m_allocs[idx].count(), m_allocs[idx].max()
@@ -660,8 +660,8 @@ struct Memory
                     m_allocs[ii].unset(slot);
                     m_mutex.unlock();
 
-                    CS_PRINT_SMALL("~Small free: slot %dKB %d/%d - (0x%08x)"
-                                  , asKBInt(m_sizes[ii])
+                    CS_PRINT_SMALL("~Small free: slot %dKB %lu.%lu - (0x%08x)"
+                                  , dm::asKBInt(m_sizes[ii])
                                   , m_allocs[ii].count(), m_allocs[ii].max()
                                   , _ptr
                                   );
@@ -704,7 +704,7 @@ struct Memory
                       , ii, dm::U_UKB(m_sizes[ii]), used, max, m_overflow[ii], m_totalUsed[ii]);
             }
             printf("\t-------------------------\n");
-            printf("\tTotal: %d.%dMB / %d.%dMB\n\n", dm::U_UMB(totalSize), dm::U_UMB(DataSize));
+            printf("\tTotal: %lu.%luMB / %lu.%luMB\n\n", dm::U_UMB(totalSize), dm::U_UMB(DataSize));
         }
         #endif //CS_ALLOC_PRINT_STATS
 
@@ -775,7 +775,7 @@ struct Memory
                     writeSize(mem, alignedSize);
                     writeHandle(mem);
 
-                    CS_PRINT_HEAP("Heap alloc: %d.%dMB - (0x%08x)", dm::U_UMB(totalSize-HeaderSize), mem->m_ptr);
+                    CS_PRINT_HEAP("Heap alloc: %lu.%luMB - (0x%08x)", dm::U_UMB(totalSize-HeaderSize), mem->m_ptr);
 
                     return mem->m_ptr;
                 }
@@ -790,7 +790,7 @@ struct Memory
                 writeSize(mem, size_t(totalSize-HeaderSize));
                 writeHandle(mem);
 
-                CS_PRINT_HEAP("Heap alloc: Expand %d.%dMB - (0x%08x)", dm::U_UMB(totalSize-HeaderSize), mem->m_ptr);
+                CS_PRINT_HEAP("Heap alloc: Expand %lu.%luMB - (0x%08x)", dm::U_UMB(totalSize-HeaderSize), mem->m_ptr);
 
                 // Adjust end pointer.
                 *m_end = (uint8_t*)mem->m_ptr;
@@ -798,7 +798,7 @@ struct Memory
                 return mem->m_ptr;
             }
 
-            CS_PRINT_HEAP("Heap alloc: Failed - %d.%dMB", dm::U_UMB(totalSize-HeaderSize));
+            CS_PRINT_HEAP("Heap alloc: Failed - %lu.%luMB", dm::U_UMB(totalSize-HeaderSize));
 
             return NULL;
         }
@@ -817,7 +817,7 @@ struct Memory
                 writeSize(mem, size_t(totalSize-HeaderSize));
                 writeHandle(mem);
 
-                CS_PRINT_HEAP("Heap alloc: Expand %d.%dMB - (0x%08x)", dm::U_UMB(totalSize-HeaderSize), mem->m_ptr);
+                CS_PRINT_HEAP("Heap alloc: Expand %lu.%luMB - (0x%08x)", dm::U_UMB(totalSize-HeaderSize), mem->m_ptr);
 
                 // Adjust end pointer.
                 *m_end = (uint8_t*)mem->m_ptr;
@@ -857,7 +857,7 @@ struct Memory
                 writeSize(mem, size_t(remaining-HeaderSize));
                 writeHandle(mem);
 
-                CS_PRINT_HEAP("Heap realloc: Shrink %d.%dMB -> %d.%dMB (0x%08x)", dm::U_UMB(currSize), dm::U_UMB(sizeAligned), curr->m_ptr);
+                CS_PRINT_HEAP("Heap realloc: Shrink %lu.%luMB -> %lu.%luMB (0x%08x)", dm::U_UMB(currSize), dm::U_UMB(sizeAligned), curr->m_ptr);
 
                 return curr->m_ptr;
             }
@@ -874,7 +874,7 @@ struct Memory
                 {
                     writeSize(curr, expandAligned);
 
-                    CS_PRINT_HEAP("Heap realloc: Expand %d.%dMB -> %d.%dMB (0x%08x)", dm::U_UMB(currSize), dm::U_UMB(expandAligned), curr->m_ptr);
+                    CS_PRINT_HEAP("Heap realloc: Expand %lu.%luMB -> %lu.%luMB (0x%08x)", dm::U_UMB(currSize), dm::U_UMB(expandAligned), curr->m_ptr);
 
                     return curr->m_ptr;
                 }
@@ -885,7 +885,7 @@ struct Memory
 
         void free(void* _ptr)
         {
-            CS_PRINT_HEAP("~Heap free: %d.%dMB - (0x%08x)", dm::U_UMB(getSize(_ptr)), _ptr);
+            CS_PRINT_HEAP("~Heap free: %lu.%luMB - (0x%08x)", dm::U_UMB(getSize(_ptr)), _ptr);
 
             bx::LwMutexScope lock(m_mutex);
 
@@ -1138,7 +1138,7 @@ struct StackList
     cs::StackAllocatorI* createFixed(size_t _size)
     {
         void* mem = s_memory.alloc(_size);
-        CS_CHECK(mem, "Memory for stack could not be allocated. Requested %u.%u", dm::U_UMB(_size));
+        CS_CHECK(mem, "Memory for stack could not be allocated. Requested %lu.%lu", dm::U_UMB(_size));
 
         FixedStackAllocator* stackAlloc = m_fixedStacks.addNew();
         stackAlloc->init(mem, _size);
@@ -1185,7 +1185,7 @@ struct StackList
         DynamicStackAllocator* stack = m_dynamicStacks.addNew();
         stack->init(&s_memory.m_stackPtr, &s_memory.m_heapEnd);
 
-        CS_PRINT_STACK("Stack split: %d.%dMB and %d.%dMB.", dm::U_UMB(s_memory.sizeBetweenStackAndHeap()), dm::U_UMB(prev.available()));
+        CS_PRINT_STACK("Stack split: %lu.%luMB and %lu.%luMB.", dm::U_UMB(s_memory.sizeBetweenStackAndHeap()), dm::U_UMB(prev.available()));
 
         return (cs::StackAllocatorI*)stack;
     }
@@ -1206,7 +1206,7 @@ struct StackList
                 // Make previous stack use it.
                 prev.setExternal(&s_memory.m_stackPtr, &s_memory.m_heapEnd);
 
-                CS_PRINT_STACK("Stack split freed: Available %d.%dMB.", dm::U_UMB(s_memory.sizeBetweenStackAndHeap()));
+                CS_PRINT_STACK("Stack split freed: Available %lu.%luMB.", dm::U_UMB(s_memory.sizeBetweenStackAndHeap()));
 
                 m_dynamicStacks.remove(ii);
                 return true;
@@ -1484,7 +1484,7 @@ namespace cs
             m_mutex.unlock();
             #endif //CS_ALLOC_PRINT_STATS
 
-            CS_PRINT_BGFX("Bgfx free: %d.%dKB - (0x%08x)", dm::U_UKB(s_memory.getSize(_ptr)), _ptr);
+            CS_PRINT_BGFX("Bgfx free: %lu.%luKB - (0x%08x)", dm::U_UKB(s_memory.getSize(_ptr)), _ptr);
 
             return s_memory.free(_ptr);
         }
@@ -1499,7 +1499,7 @@ namespace cs
             m_mutex.unlock();
             #endif //CS_ALLOC_PRINT_STATS
 
-            CS_PRINT_BGFX("Bgfx realloc: %d.%dKB - (0x%08x)", dm::U_UKB(s_memory.getSize(_ptr)), _ptr);
+            CS_PRINT_BGFX("Bgfx realloc: %lu.%luKB - (0x%08x)", dm::U_UKB(s_memory.getSize(_ptr)), _ptr);
 
             return s_memory.realloc(_ptr, _size);
         }
@@ -1509,7 +1509,7 @@ namespace cs
         {
             fprintf(stderr
                   , "Bgfx allocator:\n"
-                    "\t%d/%d/%d (alloc/realloc/free)\n\n"
+                    "\t%lu.%lu/%d (alloc/realloc/free)\n\n"
                   , m_alloc, m_realloc, m_free
                   );
         }
@@ -1577,12 +1577,12 @@ namespace cs
     static DelayedFreeAllocator s_delayedFreeAllocator;
     static BgfxAllocator        s_bgfxAllocator;
 
-    extern bx::ReallocatorI* g_crtAlloc    = &s_crtAllocator;
-    extern bx::ReallocatorI* g_staticAlloc = &s_staticAllocator;
-    extern StackAllocatorI*  g_stackAlloc  = &s_stackAllocator;
-    extern bx::ReallocatorI* g_mainAlloc   = &s_mainAllocator;
-    extern bx::AllocatorI*   g_delayedFree = &s_delayedFreeAllocator;
-    extern bx::ReallocatorI* g_bgfxAlloc   = &s_bgfxAllocator;
+    bx::ReallocatorI* g_crtAlloc    = &s_crtAllocator;
+    bx::ReallocatorI* g_staticAlloc = &s_staticAllocator;
+    StackAllocatorI*  g_stackAlloc  = &s_stackAllocator;
+    bx::ReallocatorI* g_mainAlloc   = &s_mainAllocator;
+    bx::AllocatorI*   g_delayedFree = &s_delayedFreeAllocator;
+    bx::ReallocatorI* g_bgfxAlloc   = &s_bgfxAllocator;
 
     bool allocInit()
     {
@@ -1645,6 +1645,7 @@ void* operator new[](size_t _size)
 {
     // Make sure memory is initialized.
     static const bool assertInitialized = s_memory.init();
+    BX_UNUSED(assertInitialized);
 
     return BX_ALLOC(cs::g_mainAlloc, _size);
 }
@@ -1653,6 +1654,7 @@ void* operator new(size_t _size)
 {
     // Make sure memory is initialized.
     static const bool assertInitialized = s_memory.init();
+    BX_UNUSED(assertInitialized);
 
     return BX_ALLOC(cs::g_mainAlloc, _size);
 }
@@ -1660,6 +1662,7 @@ void* operator new(size_t _size)
 void operator delete(void* _ptr)
 {
     static const bool assertInitialized = s_memory.init();
+    BX_UNUSED(assertInitialized);
 
     return BX_FREE(cs::g_mainAlloc, _ptr);
 }
@@ -1667,6 +1670,7 @@ void operator delete(void* _ptr)
 void operator delete[](void* _ptr)
 {
     static const bool assertInitialized = s_memory.init();
+    BX_UNUSED(assertInitialized);
 
     return BX_FREE(cs::g_mainAlloc, _ptr);
 }
@@ -1685,6 +1689,7 @@ namespace entry
 void* imguiMalloc(size_t _size, void* /*_userptr*/)
 {
     static const bool assertInitialized = s_memory.init();
+    BX_UNUSED(assertInitialized);
 
     return BX_ALLOC(cs::g_mainAlloc, _size);
 }
@@ -1692,6 +1697,7 @@ void* imguiMalloc(size_t _size, void* /*_userptr*/)
 void imguiFree(void* _ptr, void* /*_userptr*/)
 {
     static const bool assertInitialized = s_memory.init();
+    BX_UNUSED(assertInitialized);
 
     return BX_FREE(cs::g_mainAlloc, _ptr);
 }

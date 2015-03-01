@@ -9,9 +9,9 @@
 #include <stdio.h>
 #include <string.h>          // strcpy
 
+#include "common/timer.h"
 #include "geometry.h"
 #include "staticres.h"
-#include "timer.h"
 
 #include <dm/misc.h>         // DM_PATH_LEN, dm::fsize
 #include <dm/pi.h>
@@ -394,8 +394,8 @@ namespace cs
             TyHandle* m_handle;
         };
 
-        dm::KeyValueMapT<TyHandle, MaxT>      m_resourceMap;
-        dm::ObjArrayT<UnresolvedResource, MaxT>  m_unresolved;
+        dm::KeyValueMapT<TyHandle, MaxT>        m_resourceMap;
+        dm::ObjArrayT<UnresolvedResource, MaxT> m_unresolved;
     };
     static ResourceResolver<TextureHandle, CS_MAX_TEXTURES>   s_textureResolver;
     static ResourceResolver<MaterialHandle, CS_MAX_MATERIALS> s_materialResolver;

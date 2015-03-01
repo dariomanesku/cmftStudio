@@ -95,7 +95,7 @@ vs2013-release64:
 	"$(subst /,\\,$(VS2013_DEVENV_DIR))\devenv" _projects/vs2013/cmft.sln /Build "Release|x64"
 
 _projects/gmake-linux:
-	$(GENIE) --file=scripts/main.lua --compiler=linux-gcc gmake
+	$(GENIE) --file=scripts/main.lua --gcc=linux-gcc gmake
 linux-debug32: _projects/gmake-linux
 	make -R -C _projects/gmake-linux config=debug32
 linux-release32: _projects/gmake-linux
@@ -107,7 +107,7 @@ linux-release64: _projects/gmake-linux
 linux: linux-debug32 linux-release32 linux-debug64 linux-release64
 
 _projects/gmake-osx:
-	$(GENIE) --file=scripts/main.lua --compiler=osx-gcc gmake
+	$(GENIE) --file=scripts/main.lua --gcc=osx-gcc gmake
 osx-debug32: _projects/gmake-osx
 	make -R -C _projects/gmake-osx config=debug32
 osx-release32: _projects/gmake-osx

@@ -24,3 +24,5 @@ void main()
     mtx[3] = u_mtx3;
     v_dir = instMul(mtx, vec4(tex, 1.0, 0.0) ).xyz;
 }
+
+/* vim: set sw=4 ts=4 expandtab: */

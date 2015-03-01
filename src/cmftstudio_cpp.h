@@ -11,6 +11,7 @@
 #include "common/config.h"
 #include "common/utils.h"
 #include "common/globals.h"
+#include "common/timer.h"
 #include "common/datastructures.h"
 
 #include "geometry.h"
@@ -23,7 +24,6 @@
 #include "project.h"
 #include "renderpipeline.h"
 #include "staticres.h"
-#include "timer.h"
 #include "eventstate.h"
 
 #include <common.h>

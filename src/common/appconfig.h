@@ -52,8 +52,8 @@
 
 // Load shaders from:
 //   0 - local files
-//   1 - executable's data segment (headers are generated with '/src/shaders/headers/makefile')
-#define CS_LOAD_SHADERS_FROM_DATA_SEGMENT 1
+//   1 - executable's data segment (headers are generated with '/src/shaders/makefile')
+#define CS_LOAD_SHADERS_FROM_DATA_SEGMENT 0
 
 #endif // CMFTSTUDIO_APPCONFIG_H_HEADER_GUARD
 

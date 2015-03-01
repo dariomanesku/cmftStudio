@@ -156,8 +156,8 @@ void configFromFile(Config& _config, const char* _path)
                 float sizeGB;
                 sscanf(floatVal, "%f", &sizeGB);
 
-                const uint64_t size = uint64_t(sizeGB*(1000.0f*1000.0f*1024.0f));
-                _config.m_memorySize = dm::clamp(size, DM_GIGABYTES_ULL(1), DM_GIGABYTES_ULL(7));
+                const size_t size = size_t(sizeGB*(1000.0f*1000.0f*1024.0f));
+                _config.m_memorySize = DM_CLAMP(size, DM_GIGABYTES_ULL(1), DM_GIGABYTES_ULL(7));
             }
         }
 

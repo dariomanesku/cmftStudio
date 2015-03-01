@@ -6,12 +6,60 @@
 BGFX_DIR=../../../bgfx
 RUNTIME_DIR=../../runtime
 BUILD_DIR=../../_build
+SCRIPT_DIR=$(BGFX_DIR)/scripts
 
-include $(BGFX_DIR)/scripts/shader.mk
+THISDIR:=$(SCRIPT_DIR)
+include $(THISDIR)/tools.mk
+
+VS_FLAGS+=-i $(THISDIR)../src/ --type vertex
+FS_FLAGS+=-i $(THISDIR)../src/ --type fragment
+
+VS_SOURCES=$(wildcard vs_*.sc)
+FS_SOURCES=$(wildcard fs_*.sc)
+
+VS_BIN = $(addsuffix .bin.h, $(notdir $(basename $(VS_SOURCES))))
+FS_BIN = $(addsuffix .bin.h, $(notdir $(basename $(FS_SOURCES))))
+
+DEST_DIR = /headers/
+
+BIN = $(VS_BIN) $(FS_BIN)
+
+SHADER_TMP = $(shell mktemp)
+
+vs_%.bin.h : vs_%.sc
+	@echo [$(<)]
+	$(SILENT) $(SHADERC) $(VS_FLAGS) --platform linux                  -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_glsl
+	@cat $(SHADER_TMP) > $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
+	-$(SILENT) $(SHADERC) $(VS_FLAGS) --platform windows -p vs_3_0 -O 3 -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_dx9
+	-@cat $(SHADER_TMP) >> $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
+	-$(SILENT) $(SHADERC) $(VS_FLAGS) --platform windows -p vs_4_0 -O 3 -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_dx11
+	-@cat $(SHADER_TMP) >> $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
+	-rm $(SHADER_TMP)
+
+fs_%.bin.h : fs_%.sc
+	@echo [$(<)]
+	$(SILENT) $(SHADERC) $(FS_FLAGS) --platform linux                  -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_glsl
+	@cat $(SHADER_TMP) > $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
+	-$(SILENT) $(SHADERC) $(FS_FLAGS) --platform windows -p ps_3_0 -O 3 -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_dx9
+	-@cat $(SHADER_TMP) >> $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
+	-$(SILENT) $(SHADERC) $(FS_FLAGS) --platform windows -p ps_4_0 -O 3 -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_dx11
+	-@cat $(SHADER_TMP) >> $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
+	-rm $(SHADER_TMP)
+
+.PHONY: all
+all: $(BIN) headers
+
+.PHONY: headers
+headers:
+	$(SILENT) sh gen_headers.sh
+
+.PHONY: clean
+clean:
+	@echo Cleaning...
+	@-rm -vf $(BIN)
+
+.PHONY: rebuild
+rebuild: clean all
 
 rebuild:
-	@make -s --no-print-directory TARGET=0 clean all
-	@make -s --no-print-directory TARGET=1 clean all
-	@make -s --no-print-directory TARGET=2 clean all
-	@make -s --no-print-directory TARGET=3 clean all
-	@make -s --no-print-directory TARGET=4 clean all
+	@make -s --no-print-directory clean all

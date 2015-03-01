@@ -54,8 +54,8 @@
         return _name::Invalid != _handle.m_idx; \
     }
 
-template <typename HandleArray>
-DM_INLINE bool handleArrayRemove(HandleArray* _ha, typename HandleArray::ElemTy _handle)
+template <typename HandleArray, typename HandleTy>
+DM_INLINE bool handleArrayRemove(HandleArray* _ha, HandleTy _handle)
 {
     for (uint16_t ii = 0, end = _ha->count(); ii < end; ++ii)
     {
@@ -69,8 +69,8 @@ DM_INLINE bool handleArrayRemove(HandleArray* _ha, typename HandleArray::ElemTy 
     return false;
 }
 
-template <typename HandleArray>
-DM_INLINE uint16_t handleArrayIdxOf(HandleArray* _ha, typename HandleArray::ElemTy _handle)
+template <typename HandleArray, typename HandleTy>
+DM_INLINE uint16_t handleArrayIdxOf(HandleArray* _ha, HandleTy _handle)
 {
     for (uint16_t ii = 0, end = _ha->count(); ii < end; ++ii)
     {
@@ -93,13 +93,13 @@ struct HandleArrayT : public dm::ArrayT<Ty, MaxHandlesT>
     // Avoid using this, it's O(n).
     bool remove(Ty _handle)
     {
-        return handleArrayRemove(this, _handle);
+        return handleArrayRemove<HandleArrayT,Ty>(this, _handle);
     }
 
     // Avoid using this, it's O(n).
     uint16_t idxOf(Ty _handle)
     {
-        return handleArrayIdxOf(this, _handle);
+        return handleArrayIdxOf<HandleArrayT,Ty>(this, _handle);
     }
 
     uint16_t count() const
@@ -118,13 +118,13 @@ struct HandleArray : public dm::Array<Ty>
     // Avoid using this, it's O(n).
     bool remove(Ty _handle)
     {
-        return handleArrayRemove(this, _handle);
+        return handleArrayRemove<HandleArray,Ty>(this, _handle);
     }
 
     // Avoid using this, it's O(n).
     uint16_t idxOf(Ty _handle)
     {
-        return handleArrayIdxOf(this, _handle);
+        return handleArrayIdxOf<HandleArray,Ty>(this, _handle);
     }
 
     uint16_t count() const
@@ -143,7 +143,7 @@ template <typename Ty/*cs handle type*/>
 DM_INLINE HandleArray<Ty>* createHandleArray(uint16_t _maxHandles)
 {
     uint8_t* ptr = (uint8_t*)CS_ALLOC(sizeof(HandleArray<Ty>) + HandleArray<Ty>::sizeFor(_maxHandles));
-    return createHandleArray(_maxHandles);
+    return createHandleArray<Ty>(_maxHandles);
 }
 
 template <typename Ty/*cs handle type*/>

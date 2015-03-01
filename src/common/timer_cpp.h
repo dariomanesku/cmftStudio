@@ -3,7 +3,7 @@
  * License: http://www.opensource.org/licenses/BSD-2-Clause
  */
 
-#include "common/common.h"
+#include "common.h"
 #include "timer.h"
 #include <bx/timer.h>
 

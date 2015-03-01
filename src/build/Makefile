@@ -5,4 +5,4 @@
 
 .PHONY: all
 all:
-	@ gen_build_headers.sh
+	@ bash gen_build_headers.sh

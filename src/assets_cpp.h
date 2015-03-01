@@ -293,7 +293,7 @@ cs::EnvHandle Assets::get(Assets::Environments::Enum _env)
 
 void Assets::getAll(cs::TextureList& _textures)
 {
-    for (uint16_t ii = 0; ii < Assets::Textures::Count; ++ii)
+    for (uint16_t ii = 0, end = Assets::Textures::Count; ii < end; ++ii)
     {
         const Assets::Textures::Enum tex = (Assets::Textures::Enum)ii;
         _textures.add(cs::acquire(Assets::get(tex)));
@@ -302,7 +302,7 @@ void Assets::getAll(cs::TextureList& _textures)
 
 void Assets::getAll(cs::MaterialList& _materials)
 {
-    for (uint16_t ii = 0; ii < Assets::Materials::Count; ++ii)
+    for (uint16_t ii = 0, end = Assets::Materials::Count; ii < end; ++ii)
     {
         const Assets::Materials::Enum mat = (Assets::Materials::Enum)ii;
         _materials.add(cs::acquire(Assets::get(mat)));
@@ -311,7 +311,7 @@ void Assets::getAll(cs::MaterialList& _materials)
 
 void Assets::getAll(cs::MeshList& _meshes)
 {
-    for (uint16_t ii = 0; ii < Assets::Meshes::Count; ++ii)
+    for (uint16_t ii = 0, end = Assets::Meshes::Count; ii < end; ++ii)
     {
         const Assets::Meshes::Enum mesh = (Assets::Meshes::Enum)ii;
         _meshes.add(cs::acquire(Assets::get(mesh)));
@@ -320,7 +320,7 @@ void Assets::getAll(cs::MeshList& _meshes)
 
 void Assets::getAll(cs::EnvList& _environments)
 {
-    for (uint16_t ii = 0; ii < Assets::Environments::Count; ++ii)
+    for (uint16_t ii = 0, end = Assets::Environments::Count; ii < end; ++ii)
     {
         const Assets::Environments::Enum env = (Assets::Environments::Enum)ii;
         _environments.add(cs::acquire(Assets::get(env)));

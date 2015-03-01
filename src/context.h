@@ -73,13 +73,13 @@ namespace cs
 
             struct
             {
-               /*0 - 45*/ struct Albedo       { float r,g,b,sample; } m_albedo;
-               /*1 - 46*/ struct Reflectivity { float r,g,b,sample; } m_specular;
-               /*2 - 47*/ struct Emissive     { float r,g,b,sample; } m_emissive;
+               /*0 - 45*/ struct /*Albedo*/       { float r,g,b,sample; } m_albedo;
+               /*1 - 46*/ struct /*Reflectivity*/ { float r,g,b,sample; } m_specular;
+               /*2 - 47*/ struct /*Emissive*/     { float r,g,b,sample; } m_emissive;
                /*3 - 48*/ struct
                           {
-                              struct Surface { float g,  sample; } m_surface;
-                              struct Normal  { float mul,sample; } m_normal;
+                              struct /*Surface*/ { float g,  sample; } m_surface;
+                              struct /*Normal*/  { float mul,sample; } m_normal;
                           };
                /*4 - 49*/ struct { float m_reflectivity,    m_metalOrSpec,  m_fresnel,           m_specAttn; };
                /*5 - 50*/ struct { float m_invGloss,        m_invMetalness, m_texMultiplier,     m_unused00; };
@@ -115,18 +115,6 @@ namespace cs
 
     struct DirectionalLight
     {
-        DirectionalLight()
-        {
-            m_color[0] = 1.0f;
-            m_color[1] = 1.0f;
-            m_color[2] = 1.0f;
-            m_strenght = 1.0f;
-            m_dir[0]   = 0.0f;
-            m_dir[1]   = 0.0f;
-            m_dir[2]   = 1.0f;
-            m_enabled  = 0.0f;
-        }
-
         union
         {
             struct

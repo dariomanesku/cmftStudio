@@ -55,12 +55,12 @@
 //-----
 
 #if CS_ALLOC_PRINT_FILELINE
-    #define CS_ALLOC_FILE_LINE CS_FILE_LINE" "
+    #define CS_ALLOC_FILE_LINE BX_FILE_LINE_LITERAL
 #else
     #define CS_ALLOC_FILE_LINE
 #endif //CS_ALLOC_PRINT_FILELINE
 
-#define CS_ALLOC_PRINT(_format, ...) do { fprintf(stderr, "CS MEM " CS_ALLOC_FILE_LINE ": " _format "\n", ##__VA_ARGS__); } while(0)
+#define CS_ALLOC_PRINT(_format, ...) do { fprintf(stderr, "CS MEM " CS_ALLOC_FILE_LINE "" _format "\n", ##__VA_ARGS__); } while(0)
 
 #if CS_ALLOC_PRINT_STATS
     #define CS_PRINT_MEM_STATS(_format, ...) CS_ALLOC_PRINT(_format, __VA_ARGS__)

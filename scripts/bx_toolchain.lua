@@ -11,7 +11,7 @@
 
 local naclToolchain = ""
 
-function bgfx_toolchain(_buildDir, _projDir, _libDir, _bxDir)
+function bx_toolchain(_buildDir, _projDir, _libDir, _bxDir)
 
 	newoption {
 		trigger = "gcc",

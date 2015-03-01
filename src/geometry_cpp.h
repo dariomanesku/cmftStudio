@@ -282,31 +282,6 @@ struct GroupSortByMaterial
     }
 };
 
-struct ScopeDeleteArray : dm::NoCopyNoAssign
-{
-    ScopeDeleteArray(void* _ptr)
-    {
-        m_ptr = _ptr;
-    }
-
-    ~ScopeDeleteArray()
-    {
-        flush();
-    }
-
-    void flush()
-    {
-        if (m_ptr)
-        {
-            delete [] m_ptr;
-            m_ptr = NULL;
-        }
-    }
-
-private:
-    void* m_ptr;
-};
-
 uint32_t objToBin(const char* _filePath
                 , bx::WriterSeekerI* _writer
                 , uint32_t _packUv
@@ -334,7 +309,6 @@ uint32_t objToBin(const char* _filePath
 
     uint32_t size = (uint32_t)dm::fsize(file);
     char* data = new char[size+1];
-    ScopeDeleteArray dataCleanup(data);
     size = (uint32_t)fread(data, 1, size, file);
     data[size] = '\0';
     fclose(file);
@@ -573,7 +547,7 @@ uint32_t objToBin(const char* _filePath
         group.m_numTriangles = 0;
     }
 
-    dataCleanup.flush();
+    delete [] data;
 
     int64_t now = bx::getHPCounter();
     parseElapsed += now;
@@ -664,9 +638,7 @@ uint32_t objToBin(const char* _filePath
 
     uint32_t stride = decl.getStride();
     uint8_t* vertexData = new uint8_t[triangles.size() * 3 * stride];
-    ScopeDeleteArray cleanup0(vertexData);
     uint16_t* indexData = new uint16_t[triangles.size() * 3];
-    ScopeDeleteArray cleanup1(indexData);
     int32_t numVertices = 0;
     int32_t numIndices = 0;
     int32_t numPrimitives = 0;
@@ -813,6 +785,9 @@ uint32_t objToBin(const char* _filePath
 
         write(_writer, vertexData, numVertices, decl, indexData, numIndices, material.c_str(), primitives);
     }
+
+    delete [] indexData;
+    delete [] vertexData;
 
     now = bx::getHPCounter();
     convertElapsed += now;

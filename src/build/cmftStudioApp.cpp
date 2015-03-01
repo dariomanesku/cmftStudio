@@ -9,7 +9,7 @@
 #include "../inflatedeflate_cpp.h"
 #include "../project_cpp.h"
 #include "../renderpipeline_cpp.h"
-#include "../timer_cpp.h"
 #include "../common/config_cpp.h"
 #include "../common/globals_cpp.h"
+#include "../common/timer_cpp.h"
 #include "../common/allocator/allocator_cpp.h"

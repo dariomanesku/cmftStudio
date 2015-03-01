@@ -7,7 +7,8 @@
 #include "eventstate.h"
 
 #include <stdint.h>
-#include "timer.h"
+
+#include "common/timer.h"
 #include <dm/datastructures/array.h>
 
 struct EventImpl

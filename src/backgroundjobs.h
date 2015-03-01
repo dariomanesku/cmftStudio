@@ -187,7 +187,7 @@ int32_t objToBinFunc(void* _objToBinThreadParameters);
 // Cmft filter.
 //-----
 
-struct cmft::ImageSoftRef;
+namespace cmft { struct ImageSoftRef; }
 
 struct CmftFilterThreadParams
 {

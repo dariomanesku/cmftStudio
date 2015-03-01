@@ -288,7 +288,7 @@ struct CircularStringArray
 
         --m_unlisted;
         ++m_lastListed;
-        m_count = (++m_count > OutputWindowState::MaxLines) ? OutputWindowState::MaxLines : m_count;
+        m_count = (++m_count > OutputWindowState::MaxLines) ? uint16_t(OutputWindowState::MaxLines) : m_count;
     }
 
 private:

@@ -312,13 +312,13 @@ void initFonts()
     #define FONT_DESC_FILE(_name, _fontSize, _path)                         \
     {                                                                       \
         void* data = load(_path);                                           \
-        s_res.m_fonts[Fonts:: ##_name] = imguiCreateFont(data, _fontSize);  \
+        s_res.m_fonts[Fonts::_name] = imguiCreateFont(data, _fontSize);  \
         free(data);                                                         \
     }
 
     #define FONT_DESC_MEM(_name, _fontSize, _data)                          \
     {                                                                       \
-        s_res.m_fonts[Fonts:: ##_name] = imguiCreateFont(_data, _fontSize); \
+        s_res.m_fonts[Fonts::_name] = imguiCreateFont(_data, _fontSize); \
     }
 
     #include "gui_res.h"
@@ -1979,7 +1979,7 @@ void imguiBrowser(int32_t _height
                 , bool _showDirsOnly
                 )
 {
-    typedef BrowserStateFor<MaxSelectedT>::File BrowserStateFile;
+    typedef typename BrowserStateFor<MaxSelectedT>::File BrowserStateFile;
 
     bool modifyDir = false;
     size_t dirNum = 0;
@@ -2250,9 +2250,9 @@ void imguiModalProjectWindow(int32_t _x
     imguiEndArea();
 }
 
-bool imguiEnvPreview(int32_t _screenX
-                   , int32_t _screenY
-                   , int32_t _areaWidth
+bool imguiEnvPreview(uint32_t _screenX
+                   , uint32_t _screenY
+                   , uint32_t _areaWidth
                    , cs::EnvHandle _env
                    , const Mouse& _click
                    , bool _enabled
@@ -3358,8 +3358,8 @@ void imguiRightScrollArea(int32_t _x
                     imguiIndent();
                     enum { EnvPreviewWidth = 200 };
 
-                    const int32_t widgetX = imguiGetWidgetX();
-                    const int32_t widgetY = imguiGetWidgetY();
+                    const uint32_t widgetX = (uint32_t)imguiGetWidgetX();
+                    const uint32_t widgetY = (uint32_t)imguiGetWidgetY();
                     imguiSeparator(EnvPreviewWidth/2 + 4);
                     const bool clicked = imguiEnvPreview(widgetX
                                                        , widgetY

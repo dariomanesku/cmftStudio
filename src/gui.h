@@ -934,9 +934,9 @@ void imguiLatlongWidget(int32_t _screenX
                       , uint8_t _viewId = Gui::ViewId
                       );
 
-bool imguiEnvPreview(int32_t _screenX
-                   , int32_t _screenY
-                   , int32_t _areaWidth
+bool imguiEnvPreview(uint32_t _screenX
+                   , uint32_t _screenY
+                   , uint32_t _areaWidth
                    , cs::EnvHandle _env
                    , const Mouse& _click
                    , bool _enabled = true
