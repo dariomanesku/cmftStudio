@@ -6,24 +6,19 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include <bx/macros.h>
 #include <bx/commandline.h>
 #include <bx/readerwriter.h>
 #include <bx/string.h>
 
 // Miniz configuration.
-#if BX_COMPILER_GCC
-#   pragma GCC diagnostic push
-#   pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#endif // BX_COMPILER_GCC
-
+BX_PRAGMA_DIAGNOSTIC_PUSH_GCC()
+BX_PRAGMA_DIAGNOSTIC_IGNORED_GCC("-Wstrict-aliasing")
 #define MINIZ_NO_TIME
 #define MINIZ_NO_ARCHIVE_APIS
 #define MINIZ_NO_ARCHIVE_WRITING_APIS
 #include <miniz/miniz.c>
-
-#if BX_COMPILER_GCC
-#   pragma GCC diagnostic pop
-#endif // BX_COMPILER_GCC
+BX_PRAGMA_DIAGNOSTIC_POP_GCC()
 
 // Misc.
 #define MEGABYTES(_MB) (_MB<<20)
