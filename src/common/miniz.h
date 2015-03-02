@@ -6,10 +6,19 @@
 #ifndef CMFTSTUDIO_MINIZ_H_HEADER_GUARD
 #define CMFTSTUDIO_MINIZ_H_HEADER_GUARD
 
+#if BX_COMPILER_GCC
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif // BX_COMPILER_GCC
+
 #define MINIZ_NO_TIME
 #define MINIZ_NO_ARCHIVE_APIS
 #define MINIZ_NO_ARCHIVE_WRITING_APIS
 #include <miniz/miniz.c>
+
+#if BX_COMPILER_GCC
+#   pragma GCC diagnostic pop
+#endif // BX_COMPILER_GCC
 
 #endif // CMFTSTUDIO_MINIZ_H_HEADER_GUARD
 
