@@ -70,7 +70,7 @@ struct Mouse
         m_prev.m_mz = m_curr.m_mz;
 
         // Scroll.
-        int32_t scrollNow = m_curr.m_mz/120;
+        int32_t scrollNow = m_curr.m_mz;
         m_scroll = scrollNow - m_scrollPrev;
         m_scrollPrev = scrollNow;
     }
