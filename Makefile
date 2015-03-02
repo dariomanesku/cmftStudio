@@ -7,6 +7,8 @@ VS2008_DEVENV_DIR=C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE
 VS2010_DEVENV_DIR=C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\IDE
 VS2012_DEVENV_DIR=C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\IDE
 
+SILENT ?= @
+
 UNAME := $(shell uname -s)
 ifeq ($(UNAME),$(filter $(UNAME),Linux Darwin))
 	ifeq ($(UNAME),$(filter $(UNAME),Darwin))
@@ -153,3 +155,40 @@ osx: osx-debug32 osx-release32 osx-debug64 osx-release64
 #win-mingw-release64: _projects/gmake-win-clang
 #	make -R -C _projects/gmake-win-mingw config=release64
 #win-mingw: win-debug32 win-release32 win-debug64 win-release64
+
+ICONS_DIR            = ~/.icons/
+RES_DIR              = res/
+CMFTSTUDIO_DESKTOP   = ~/Desktop/cmftStudio.desktop
+CMFTSTUDIO_ICON_PNG  = cmftstudio_icon.png
+CMFTSTUDIO_ICON_ICON = cmftstudio_icon.icon
+
+CMFTSTUDIO_BIN_SRC = _build/linux64_gcc/bin/cmftStudioRelease
+CMFTSTUDIO_BIN_DST = /usr/local/bin/cmftStudio
+
+CMFTSTUDIO_ICON_PNG_SRC  = $(addprefix $(RES_DIR),   $(CMFTSTUDIO_ICON_PNG))
+CMFTSTUDIO_ICON_PNG_DST  = $(addprefix $(ICONS_DIR), $(CMFTSTUDIO_ICON_PNG))
+CMFTSTUDIO_ICON_ICON_DST = $(addprefix $(ICONS_DIR), $(CMFTSTUDIO_ICON_ICON))
+
+.PHONY: linux-install
+linux-install: all linux-release64
+	$(SILENT) sudo cp $(CMFTSTUDIO_BIN_SRC) $(CMFTSTUDIO_BIN_DST)      2> /dev/null
+	$(SILENT) sudo chmod 755 $(CMFTSTUDIO_BIN_DST)                     2> /dev/null
+	$(SILENT) mkdir -p $(ICONS_DIR)                                    2> /dev/null
+	$(SILENT) cp $(CMFTSTUDIO_ICON_PNG_SRC) $(CMFTSTUDIO_ICON_PNG_DST) 2> /dev/null
+	$(SILENT) echo $(ICON_CONTENTS) > $(CMFTSTUDIO_ICON_ICON_DST)      2> /dev/null
+	$(SILENT) echo $(DESKTOP_CONTENTS) > $(CMFTSTUDIO_DESKTOP)         2> /dev/null
+	$(SILENT) chmod +x $(CMFTSTUDIO_DESKTOP)                           2> /dev/null
+	$(SILENT) echo "Install: cmftStudio successfully installed!"
+	$(SILENT) echo "Install: Desktop shortcut created."
+
+.PHONY: linux-uninstall
+linux-uninstall:
+	$(SILENT) sudo rm -f $(CMFTSTUDIO_BIN_DST)  2> /dev/null
+	$(SILENT) rm -f $(CMFTSTUDIO_DESKTOP)       2> /dev/null
+	$(SILENT) rm -f $(CMFTSTUDIO_ICON_PNG_DST)  2> /dev/null
+	$(SILENT) rm -f $(CMFTSTUDIO_ICON_ICON_DST) 2> /dev/null
+	$(SILENT) echo "Uninstall: cmftStudio successfully uninstalled."
+
+DESKTOP_CONTENTS = "[Desktop Entry]\nName=cmftStudio\nComment=Cubemap Filtering Tool Studio\nExec=cmftStudio\nIcon=cmftstudio_icon\nTerminal=false\nType=Application\nCategories=Productivity"
+ICON_CONTENTS = "[Icon Data]\n\nDisplayName=cmftstudio_icon"
+

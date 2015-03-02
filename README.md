@@ -22,7 +22,15 @@ Download
 Remark !
 --------
 
-On Windows + OpenGL + Radeon GPU there seems to be some kind of rendering problem. For now, on Windows, use DirectX9 or DirectX11 rendering backends until the problem gets fixed. More details [here](https://twitter.com/dariomanesku/status/571303845478985728).
+- Windows: There seem to be some rendering problems when using OpenGL backend with a Radeon GPU. For now, on Windows, use DirectX9 or DirectX11 rendering backends until the problem gets fixed. More details [here](https://twitter.com/dariomanesku/status/571303845478985728).
+- Linux: Window resize and maximize do not work properly! If you use them the application might crash or not display correctly. Avoid doing that until the issue gets fixed.
+
+
+Installing
+--------
+
+- Windows: No installation available. Put the cmftStudio.exe along with cmftStudio.conf in a desired folder and use it from there
+- Linux: Use 'make install' and 'make uninstall'. This will create /usr/local/bin/cmftStudio and a desktop shortcut.
 
 
 Building
@@ -45,7 +53,10 @@ Building
 
 ### Linux
 
-- Linux build does not work yet. Will be available soon.
+- From 'cmftStudio' directory call 'make linux-debug64' to build the application. Application should be run from the 'runtime' directory where the config file is.
+	cd runtime
+	./../_build/linux64_gcc/bin/cmftStudioDebug
+- Application can be installed or removed from the system by calling 'make linux-install' and 'make linux-uninstall'.
 
 ### OS X
 
