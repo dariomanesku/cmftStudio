@@ -117,6 +117,7 @@ Similar projects
 ------------
 
 - [CubeMapGen](http://developer.amd.com/tools-and-sdks/archive/legacy-cpu-gpu-tools/cubemapgen/) - A well known tool for cubemap filtering from AMD.<br \>
+- [IblBaker](https://github.com/derkreature/IBLBaker) - A similar open-source project.
 - [Marmoset Skyshop](http://www.marmoset.co/skyshop) - Commercial plugin for Unity3D Game engine.
 - [Knald Lys](https://www.knaldtech.com/lys-open-beta/) - Commercial tool from KnaldTech.
 
