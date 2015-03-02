@@ -216,7 +216,9 @@
 
 #if defined(_M_X64) || defined(_WIN64) || defined(__MINGW64__) || defined(_LP64) || defined(__LP64__) || defined(__ia64__) || defined(__x86_64__)
 // Set MINIZ_HAS_64BIT_REGISTERS to 1 if operations on 64-bit integers are reasonably fast (and don't involve compiler generated calls to helper functions).
-#define MINIZ_HAS_64BIT_REGISTERS 1
+	#define MINIZ_HAS_64BIT_REGISTERS 1
+#else
+	#define MINIZ_HAS_64BIT_REGISTERS 0
 #endif
 
 #ifdef __cplusplus
@@ -752,6 +754,8 @@ typedef struct
 
 #if MINIZ_HAS_64BIT_REGISTERS
   #define TINFL_USE_64BIT_BITBUF 1
+#else
+  #define TINFL_USE_64BIT_BITBUF 0
 #endif
 
 #if TINFL_USE_64BIT_BITBUF
