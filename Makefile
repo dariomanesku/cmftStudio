@@ -25,13 +25,13 @@ export CMFTVIEWER_WIN_MINGW_DIR_=$(subst \,\\,$(subst /,\,$(WIN_MINGW_DIR)))
 
 .PHONY: all
 all:
-	$(GENIE) --file=scripts/main.lua xcode4
-	$(GENIE) --file=scripts/main.lua vs2008
-	$(GENIE) --file=scripts/main.lua vs2010
-	$(GENIE) --file=scripts/main.lua vs2012
-	$(GENIE) --file=scripts/main.lua vs2013
-	$(GENIE) --file=scripts/main.lua --gcc=osx       gmake
-	$(GENIE) --file=scripts/main.lua --gcc=linux-gcc gmake
+	$(GENIE) --with-tools --file=scripts/main.lua xcode4
+	$(GENIE) --with-tools --file=scripts/main.lua vs2008
+	$(GENIE) --with-tools --file=scripts/main.lua vs2010
+	$(GENIE) --with-tools --file=scripts/main.lua vs2012
+	$(GENIE) --with-tools --file=scripts/main.lua vs2013
+	$(GENIE) --with-tools --file=scripts/main.lua --gcc=osx       gmake
+	$(GENIE) --with-tools --file=scripts/main.lua --gcc=linux-gcc gmake
 
 .PHONY: clean-projects
 clean-projects:

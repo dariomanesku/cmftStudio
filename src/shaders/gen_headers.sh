@@ -16,9 +16,9 @@ echo "#define CMFTSTUDIO_SHADERS_H_HEADER_GUARD" >> $FILENAME
 echo "" >> $FILENAME
 
 # Append each header.
-for HEADER in $(ls headers/*.h)
+for HEADER in $(ls headers/vs_*.h headers/fs_*.h)
 do
-	echo "#include \"$HEADER\"" >> $FILENAME
+	echo "#include \"$(basename $HEADER)\"" >> $FILENAME
 done
 
 echo "" >> $FILENAME

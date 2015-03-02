@@ -9,7 +9,7 @@
 // Check.
 //-----
 
-#define DM_CHECK_CONFIG DM_CHECK_CONFIG_DEBUG_BREAK
+#define DM_CHECK_CONFIG DM_CHECK_CONFIG_NOOP
 #include <dm/check.h>
 #define CS_CHECK DM_CHECK
 
@@ -53,7 +53,7 @@
 // Load shaders from:
 //   0 - local files
 //   1 - executable's data segment (headers are generated with '/src/shaders/makefile')
-#define CS_LOAD_SHADERS_FROM_DATA_SEGMENT 0
+#define CS_LOAD_SHADERS_FROM_DATA_SEGMENT 1
 
 #endif // CMFTSTUDIO_APPCONFIG_H_HEADER_GUARD
 
