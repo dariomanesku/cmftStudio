@@ -13,7 +13,7 @@ struct Config
 {
     Config()
     {
-        m_memorySize        = DM_MEGABYTES(1536);
+        m_memorySize        = DM_GIGABYTES(2);
         m_width             = 1920;
         m_height            = 1027;
         m_renderer          = bgfx::RendererType::Count;
