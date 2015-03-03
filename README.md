@@ -9,7 +9,7 @@ Download
 --------
 
  * [cmftStudio - Windows 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_win64.zip)<br />
- * cmftStudio - Linux 64bit - Soon to be available.<br />
+ * [cmftStudio - Linux 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_lin64.zip)<br />
  * cmftStudio - OSX 64bit - Soon to be available.<br />
  * *In case you need 32bit binaries, compile from source.*<br />
  <br />
@@ -67,6 +67,8 @@ Screenshot
 ------------
 
 ![cmftStudioAplha1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha1.jpg)
+![cmftStudioSpheres0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_spheres0.jpg)
+![cmftStudioSpheres1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_spheres1.jpg)
 
 
 Planned features
