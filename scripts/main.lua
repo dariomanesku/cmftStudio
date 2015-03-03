@@ -14,8 +14,8 @@ local ROOT_DIR       = (CMFTSTUDIO_DIR .. "../")
 local DEPENDENCY_DIR = (CMFTSTUDIO_DIR .. "dependency/")
 
 local CMFT_DIR  = (ROOT_DIR .. "cmft/")
-BGFX_DIR        = (ROOT_DIR .. "bgfx/") -- TODO put all the content from bgfx.lua into a function.
-BX_DIR          = (ROOT_DIR .. "bx/")   -- TODO similarly for this.
+BGFX_DIR        = (ROOT_DIR .. "bgfx/")
+BX_DIR          = (ROOT_DIR .. "bx/")
 DM_DIR          = (ROOT_DIR .. "dm/")
 
 local BGFX_SCRIPTS_DIR       = (BGFX_DIR       .. "scripts/")

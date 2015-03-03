@@ -1500,10 +1500,10 @@ namespace cs
             for (uint32_t ii = m_groups.count(); ii--; )
             {
                 Group& group = m_groups[ii];
-                if (bgfx::isValid(group.m_vbh)) { bgfx::destroyVertexBuffer(group.m_vbh); }
-                if (bgfx::isValid(group.m_ibh)) { bgfx::destroyIndexBuffer(group.m_ibh);  }
-                if (NULL != group.m_vertexData) { BX_FREE(g_mainAlloc, group.m_vertexData); group.m_vertexData = NULL; }
-                if (NULL != group.m_indexData)  { BX_FREE(g_mainAlloc, group.m_indexData);  group.m_indexData = NULL;  }
+                if (bgfx::isValid(group.m_vbh)) { bgfx::destroyVertexBuffer(group.m_vbh);   }
+                if (bgfx::isValid(group.m_ibh)) { bgfx::destroyIndexBuffer(group.m_ibh);    }
+                if (NULL != group.m_vertexData) { BX_FREE(g_mainAlloc, group.m_vertexData); }
+                if (NULL != group.m_indexData)  { BX_FREE(g_mainAlloc, group.m_indexData);  }
             }
             m_groups.reset();
         }

@@ -64,7 +64,7 @@ struct Memory
         // Alloc.
         m_orig = ::malloc(size);
 
-        CS_PRINT_MEM_STATS("Init: Allocating %lu.%luMB - (0x%08x)", dm::U_UMB(size), m_orig);
+        CS_PRINT_MEM_STATS("Init: Allocating %lu.%luMB - (0x%p)", dm::U_UMB(size), m_orig);
 
         // Align.
         void*  alignedPtr;
@@ -102,7 +102,7 @@ struct Memory
         m_stack.printStats();
         m_segregatedLists.printStats();
         m_heap.printStats();
-        printf("External: alloc/free %lu.%lu, total %d.%02dMB\n\n", m_externalAlloc, m_externalFree, dm::U_UMB(m_externalSize));
+        printf("External: alloc/free %u.%u, total %lu.%luMB\n\n", m_externalAlloc, m_externalFree, dm::U_UMB(m_externalSize));
         #endif //CS_ALLOC_PRINT_STATS
 
         // Do not call free, let it stay until the very end of execution. OS will clean it up.
@@ -135,7 +135,7 @@ struct Memory
         m_externalSize += _size;
         #endif //CS_ALLOC_PRINT_STATS
 
-        CS_PRINT_EXT("EXTERNAL ALLOC: %lu.%luMB - (0x%08x)", dm::U_UMB(_size), ptr);
+        CS_PRINT_EXT("EXTERNAL ALLOC: %lu.%luMB - (0x%p)", dm::U_UMB(_size), ptr);
 
         return ptr;
     }
@@ -213,7 +213,7 @@ struct Memory
         if (!this->contains(_ptr))
         {
             void* ptr = ::realloc(_ptr, _size);
-            CS_PRINT_EXT("EXTERNAL REALLOC: %lu.%luMB - (0x%08x - 0x%08x)", dm::U_UMB(_size), _ptr, ptr);
+            CS_PRINT_EXT("EXTERNAL REALLOC: %lu.%luMB - (0x%p - 0x%p)", dm::U_UMB(_size), _ptr, ptr);
             return ptr;
         }
 
@@ -291,7 +291,7 @@ struct Memory
         }
         else // external pointer
         {
-            CS_PRINT_EXT("~EXTERNAL FREE: (0x%08x)", _ptr);
+            CS_PRINT_EXT("~EXTERNAL FREE: (0x%p)", _ptr);
 
             #if CS_ALLOC_PRINT_STATS
             m_externalFree++;
@@ -404,7 +404,7 @@ struct Memory
             m_ptr   += size;
             m_avail -= size;
 
-            CS_PRINT_STATIC("Static alloc: %lu.%luMB, Remaining: %lu.%luMB - (0x%08x)", dm::U_UMB(_size), dm::U_UMB(m_avail), m_last);
+            CS_PRINT_STATIC("Static alloc: %lu.%luMB, Remaining: %lu.%luMB - (0x%p)", dm::U_UMB(_size), dm::U_UMB(m_avail), m_last);
 
             return m_last;
         }
@@ -438,7 +438,7 @@ struct Memory
                 m_ptr   += diff;
                 m_avail -= diff;
 
-                CS_PRINT_STATIC("Static realloc: %lu.%luMB, Remaining: %lu.%luMB - (0x%08x)", dm::U_UMB(newSize), dm::U_UMB(m_avail), m_last);
+                CS_PRINT_STATIC("Static realloc: %lu.%luMB, Remaining: %lu.%luMB - (0x%p)", dm::U_UMB(newSize), dm::U_UMB(m_avail), m_last);
 
                 return m_last;
             }
@@ -456,7 +456,7 @@ struct Memory
         {
             const size_t diff = m_size-m_avail;
             printf("Static storage:\n");
-            printf("\tTotal: %d.%03dMB, Used: %d.%03dMB, Remaining: %d.%03dMB\n\n"
+            printf("\tTotal: %lu.%03luMB, Used: %lu.%03luMB, Remaining: %lu.%03luMB\n\n"
                   , dm::U_UMB(m_size), dm::U_UMB(diff), dm::U_UMB(m_avail));
         }
         #endif //CS_ALLOC_PRINT_STATS
@@ -619,8 +619,9 @@ struct Memory
 
                 CS_CHECK(mem < (uint8_t*)m_mem + m_totalSize, "SegregatedLists::alloc | Allocating outside of bounds!");
 
-                CS_PRINT_SMALL("Small alloc: %lu.%luKB, slot %lu.%luKB %lu.%lu - (0x%08x)"
+                CS_PRINT_SMALL("Small alloc: %lu.%luKB -> slot %u (%lu.%luKB) - %u/%u - (0x%p)"
                               , dm::U_UKB(_size)
+                              , slot
                               , dm::U_UKB(m_sizes[idx])
                               , m_allocs[idx].count(), m_allocs[idx].max()
                               , mem
@@ -636,7 +637,7 @@ struct Memory
             }
             else
             {
-                CS_PRINT_SMALL("Small alloc: All small lists of %dB are full. Requested %dB.", m_sizes[idx], _size);
+                CS_PRINT_SMALL("Small alloc: All small lists of %uB are full. Requested %zuB.", m_sizes[idx], _size);
 
                 #if CS_ALLOC_PRINT_STATS
                 m_mutex.lock();
@@ -655,13 +656,14 @@ struct Memory
                 if (_ptr >= m_begin[ii])
                 {
                     const size_t   dist = (uint8_t*)_ptr - (uint8_t*)m_begin[ii];
-                    const uint16_t slot = uint16_t(dist/m_sizes[ii]);
+                    const uint32_t slot = uint32_t(dist/m_sizes[ii]);
                     m_mutex.lock();
                     m_allocs[ii].unset(slot);
                     m_mutex.unlock();
 
-                    CS_PRINT_SMALL("~Small free: slot %dKB %lu.%lu - (0x%08x)"
-                                  , dm::asKBInt(m_sizes[ii])
+                    CS_PRINT_SMALL("~Small free: slot %u %lu.%luKB %d/%d - (0x%p)"
+                                  , slot
+                                  , dm::U_UKB(m_sizes[ii])
                                   , m_allocs[ii].count(), m_allocs[ii].max()
                                   , _ptr
                                   );
@@ -700,7 +702,7 @@ struct Memory
                 const uint32_t used = m_allocs[ii].count();
                 const uint32_t max  = m_allocs[ii].max();
                 totalSize += m_sizes[ii]*used;
-                printf("\t#%2d: Size: %5d.%03dKB, Used: %3d / %5d, Overflow: %d, Total: %d\n"
+                printf("\t#%2d: Size: %5lu.%03luKB, Used: %3d / %5d, Overflow: %d, Total: %d\n"
                       , ii, dm::U_UKB(m_sizes[ii]), used, max, m_overflow[ii], m_totalUsed[ii]);
             }
             printf("\t-------------------------\n");
@@ -775,7 +777,7 @@ struct Memory
                     writeSize(mem, alignedSize);
                     writeHandle(mem);
 
-                    CS_PRINT_HEAP("Heap alloc: %lu.%luMB - (0x%08x)", dm::U_UMB(totalSize-HeaderSize), mem->m_ptr);
+                    CS_PRINT_HEAP("Heap alloc: %lu.%luMB - (0x%p)", dm::U_UMB(totalSize-HeaderSize), mem->m_ptr);
 
                     return mem->m_ptr;
                 }
@@ -790,7 +792,7 @@ struct Memory
                 writeSize(mem, size_t(totalSize-HeaderSize));
                 writeHandle(mem);
 
-                CS_PRINT_HEAP("Heap alloc: Expand %lu.%luMB - (0x%08x)", dm::U_UMB(totalSize-HeaderSize), mem->m_ptr);
+                CS_PRINT_HEAP("Heap alloc: Expand %lu.%luMB - (0x%p)", dm::U_UMB(totalSize-HeaderSize), mem->m_ptr);
 
                 // Adjust end pointer.
                 *m_end = (uint8_t*)mem->m_ptr;
@@ -817,7 +819,7 @@ struct Memory
                 writeSize(mem, size_t(totalSize-HeaderSize));
                 writeHandle(mem);
 
-                CS_PRINT_HEAP("Heap alloc: Expand %lu.%luMB - (0x%08x)", dm::U_UMB(totalSize-HeaderSize), mem->m_ptr);
+                CS_PRINT_HEAP("Heap alloc: Expand %lu.%luMB - (0x%p)", dm::U_UMB(totalSize-HeaderSize), mem->m_ptr);
 
                 // Adjust end pointer.
                 *m_end = (uint8_t*)mem->m_ptr;
@@ -845,7 +847,7 @@ struct Memory
                 const size_t remaining = currSize - sizeAligned;
                 if (remaining <= DM_KILOBYTES(1))
                 {
-                    CS_PRINT_HEAP("Heap realloc: Shrink. Left as is. (0x%08x)", curr->m_ptr);
+                    CS_PRINT_HEAP("Heap realloc: Shrink. Left as is. (0x%p)", curr->m_ptr);
                     return curr->m_ptr;
                 }
 
@@ -857,7 +859,7 @@ struct Memory
                 writeSize(mem, size_t(remaining-HeaderSize));
                 writeHandle(mem);
 
-                CS_PRINT_HEAP("Heap realloc: Shrink %lu.%luMB -> %lu.%luMB (0x%08x)", dm::U_UMB(currSize), dm::U_UMB(sizeAligned), curr->m_ptr);
+                CS_PRINT_HEAP("Heap realloc: Shrink %lu.%luMB -> %lu.%luMB (0x%p)", dm::U_UMB(currSize), dm::U_UMB(sizeAligned), curr->m_ptr);
 
                 return curr->m_ptr;
             }
@@ -874,7 +876,7 @@ struct Memory
                 {
                     writeSize(curr, expandAligned);
 
-                    CS_PRINT_HEAP("Heap realloc: Expand %lu.%luMB -> %lu.%luMB (0x%08x)", dm::U_UMB(currSize), dm::U_UMB(expandAligned), curr->m_ptr);
+                    CS_PRINT_HEAP("Heap realloc: Expand %lu.%luMB -> %lu.%luMB (0x%p)", dm::U_UMB(currSize), dm::U_UMB(expandAligned), curr->m_ptr);
 
                     return curr->m_ptr;
                 }
@@ -885,7 +887,7 @@ struct Memory
 
         void free(void* _ptr)
         {
-            CS_PRINT_HEAP("~Heap free: %lu.%luMB - (0x%08x)", dm::U_UMB(getSize(_ptr)), _ptr);
+            CS_PRINT_HEAP("~Heap free: %lu.%luMB - (0x%p)", dm::U_UMB(getSize(_ptr)), _ptr);
 
             bx::LwMutexScope lock(m_mutex);
 
@@ -972,7 +974,7 @@ struct Memory
 
             const size_t remaining = getRemainingSpace();
 
-            printf("\tAllocations:  %3d\n\tUsed: %11d.%03dMB\n\tFragmented: %5d.%03dMB\n\tRemaining: %6d.%03dMB\n\n"
+            printf("\tAllocations:  %3d\n\tUsed: %11lu.%03luMB\n\tFragmented: %5lu.%03luMB\n\tRemaining: %6lu.%03luMB\n\n"
                   , m_ptrs.count()
                   , dm::U_UMB(used)
                   , dm::U_UMB(free)
@@ -1469,7 +1471,7 @@ namespace cs
             m_mutex.unlock();
             #endif //CS_ALLOC_PRINT_STATS
 
-            CS_PRINT_BGFX("Bgfx alloc: %dB", _size);
+            CS_PRINT_BGFX("Bgfx alloc: %zuB", _size);
 
             return s_memory.alloc(_size);
         }
@@ -1484,7 +1486,7 @@ namespace cs
             m_mutex.unlock();
             #endif //CS_ALLOC_PRINT_STATS
 
-            CS_PRINT_BGFX("Bgfx free: %lu.%luKB - (0x%08x)", dm::U_UKB(s_memory.getSize(_ptr)), _ptr);
+            CS_PRINT_BGFX("Bgfx free: %lu.%luKB - (0x%p)", dm::U_UKB(s_memory.getSize(_ptr)), _ptr);
 
             return s_memory.free(_ptr);
         }
@@ -1499,7 +1501,7 @@ namespace cs
             m_mutex.unlock();
             #endif //CS_ALLOC_PRINT_STATS
 
-            CS_PRINT_BGFX("Bgfx realloc: %lu.%luKB - (0x%08x)", dm::U_UKB(s_memory.getSize(_ptr)), _ptr);
+            CS_PRINT_BGFX("Bgfx realloc: %lu.%luKB - (0x%p)", dm::U_UKB(s_memory.getSize(_ptr)), _ptr);
 
             return s_memory.realloc(_ptr, _size);
         }
@@ -1509,7 +1511,7 @@ namespace cs
         {
             fprintf(stderr
                   , "Bgfx allocator:\n"
-                    "\t%lu.%lu/%d (alloc/realloc/free)\n\n"
+                    "\t%d/%d/%d (alloc/realloc/free)\n\n"
                   , m_alloc, m_realloc, m_free
                   );
         }

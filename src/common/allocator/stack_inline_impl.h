@@ -16,7 +16,7 @@ void* alloc(size_t _size)
     const int64_t advance = _size + headerSize;
     if (advance > available())
     {
-        CS_PRINT_STACK("Stack alloc: Stack full. Requested: %d.%dMB Available: %d.%d", dm::U_UMB(_size), dm::U_UMB(available()));
+        CS_PRINT_STACK("Stack alloc: Stack full. Requested: %lu.%luMB Available: %lu.%lu", dm::U_UMB(_size), dm::U_UMB(available()));
         return NULL;
     }
 
@@ -30,7 +30,7 @@ void* alloc(size_t _size)
     // Keep track of last allocation.
     m_last = ptr;
 
-    CS_PRINT_STACK("Stack alloc: %d.%dMB / %d.%dMB - (0x%08x)", dm::U_UMB(advance), dm::U_UMB(available()), ptr);
+    CS_PRINT_STACK("Stack alloc: %lu.%luMB / %lu.%luMB - (0x%p)", dm::U_UMB(advance), dm::U_UMB(available()), ptr);
 
     return ptr;
 }
@@ -50,7 +50,7 @@ void* realloc(void* _ptr, size_t _size)
         // Check availability.
         if (diff > available())
         {
-            CS_PRINT_STACK("Stack realloc: Stack full. Realloc requested: %d.%dMB Available: %d.%d", dm::U_UMB(diff), dm::U_UMB(available()));
+            CS_PRINT_STACK("Stack realloc: Stack full. Realloc requested: %lu.%luMB Available: %lu.%lu", dm::U_UMB(diff), dm::U_UMB(available()));
             return NULL;
         }
 
@@ -60,13 +60,13 @@ void* realloc(void* _ptr, size_t _size)
         // Write new size.
         writeSize(_ptr, _size);
 
-        CS_PRINT_STACK("Stack realloc: %d.%dMB / %d.%dMB - (0x%08x - 0x%08x)", dm::U_UMB(diff), dm::U_UMB(available()), m_last, getStackPtr());
+        CS_PRINT_STACK("Stack realloc: %lu.%luMB / %lu.%luMB - (0x%p - 0x%p)", dm::U_UMB(diff), dm::U_UMB(available()), m_last, getStackPtr());
 
         return _ptr;
     }
     else if (this->contains(_ptr))
     {
-        CS_PRINT_STACK("Stack realloc: Called on a pointer other than the last one! (0x%08x).", _ptr);
+        CS_PRINT_STACK("Stack realloc: Called on a pointer other than the last one! (0x%p).", _ptr);
 
         // Make a new allocation on the stack.
         void* newPtr = this->alloc(_size);
@@ -84,7 +84,7 @@ void* realloc(void* _ptr, size_t _size)
     }
     else
     {
-        CS_PRINT_STACK("Stack realloc: External pointer (0x%08x).", _ptr);
+        CS_PRINT_STACK("Stack realloc: External pointer (0x%p).", _ptr);
 
         return NULL;
     }
@@ -97,7 +97,7 @@ void push()
     m_frames[m_currFrame++] = getStackPtr();
     m_last = getStackPtr();
 
-    CS_PRINT_STACK("Stack push: > %d \t %d.%dMB", m_currFrame, dm::U_UMB(available()));
+    CS_PRINT_STACK("Stack push: > %d \t %lu.%luMB", m_currFrame, dm::U_UMB(available()));
 }
 
 void pop()
@@ -110,7 +110,7 @@ void pop()
         setStackPtr((uint8_t*)m_frames[m_currFrame]);
         m_last = getStackPtr();
 
-        CS_PRINT_STACK("Stack pop:  %d < \t %d.%dMB", m_currFrame, dm::U_UMB(available()));
+        CS_PRINT_STACK("Stack pop:  %d < \t %lu.%luMB", m_currFrame, dm::U_UMB(available()));
     }
 }
 
@@ -149,7 +149,7 @@ void printStats()
 {
     const size_t size = getStackPtr() - m_beg;
     printf("Stack:\n");
-    printf("\tPosition: %d, Size: %d.%dMB\n\n", m_currFrame, dm::U_UMB(size));
+    printf("\tPosition: %d, Size: %lu.%luMB\n\n", m_currFrame, dm::U_UMB(size));
 }
 #endif //CS_ALLOC_PRINT_STATS
 

@@ -1907,11 +1907,7 @@ public:
         configFromCli(g_config, _argc, _argv);
 
         // Init bgfx.
-        #if BX_PLATFORM_LINUX
-            bgfx::init(g_config.m_renderer);
-        #else
-            bgfx::init(g_config.m_renderer, NULL, cs::g_bgfxAlloc);
-        #endif // BX_PLATFORM_LINUX
+        bgfx::init(g_config.m_renderer, NULL, cs::g_bgfxAlloc);
 
         uint32_t reset = BGFX_RESET_VSYNC;
         bgfx::reset(g_config.m_width, g_config.m_height, reset);
