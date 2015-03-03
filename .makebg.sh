@@ -29,7 +29,7 @@ tempfile="${4:-.make.tmp}"
   vim --servername "$server" --remote-send "<Esc>:cgetfile $logfile<CR>" ;
 
   if [ $success -eq 0 ]; then
-      vim --servername "$server" --remote-send "<Esc>:redraw | :echo \"Build sucessful.\"<CR>" ;
+      vim --servername "$server" --remote-send "<Esc>:redraw | :echo \"Build successful.\"<CR>" ;
   else
       vim --servername "$server" --remote-send "<Esc>:redraw | :echo \"Build ERROR!\"<CR>" ;
   fi
