@@ -13,7 +13,11 @@ struct Config
 {
     Config()
     {
+        #if BX_ARCH_64BIT
         m_memorySize        = DM_GIGABYTES(2);
+        #else // Windows 32bit build cannot allocate 2GB.
+        m_memorySize        = DM_MEGABYTES(1536);
+        #endif // BX_ARCH_64BIT
         m_width             = 1920;
         m_height            = 1027;
         m_renderer          = bgfx::RendererType::Count;
