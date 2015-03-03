@@ -1065,6 +1065,10 @@ static Memory s_memory;
 template <typename StackTy>
 struct StackAllocator : public cs::StackAllocatorI
 {
+    virtual ~StackAllocator()
+    {
+    }
+
     virtual void* alloc(size_t _size, size_t _align = CS_NATURAL_ALIGNMENT, const char* _file = NULL, uint32_t _line = 0) BX_OVERRIDE
     {
         BX_UNUSED(_align, _file, _line);
@@ -1528,10 +1532,6 @@ namespace cs
 
     struct CrtAllocator : public bx::ReallocatorI
     {
-        CrtAllocator()
-        {
-        }
-
         virtual ~CrtAllocator()
         {
         }
