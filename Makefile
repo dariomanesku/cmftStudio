@@ -109,7 +109,7 @@ linux-release64: _projects/gmake-linux
 linux: linux-debug32 linux-release32 linux-debug64 linux-release64
 
 _projects/gmake-osx:
-	$(GENIE) --file=scripts/main.lua --gcc=osx-gcc gmake
+	$(GENIE) --file=scripts/main.lua --gcc=osx gmake
 osx-debug32: _projects/gmake-osx
 	make -R -C _projects/gmake-osx config=debug32
 osx-release32: _projects/gmake-osx
