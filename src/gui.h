@@ -814,7 +814,7 @@ struct OutputWindowState
     {
         for (uint8_t ii = 0; ii < MaxLines; ++ii)
         {
-            m_lines[ii] = '\0';
+            m_lines[ii][0] = '\0';
         }
         m_scroll     = 0;
         m_linesCount = 0;
