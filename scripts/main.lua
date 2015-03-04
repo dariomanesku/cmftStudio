@@ -80,6 +80,23 @@ configuration { "x64", "vs*" }
         "$(DXSDK_DIR)/lib/x64",
     }
 
+--TODO
+configuration { "osx" }
+    buildoptions
+    {
+        "--stdlib=libc++",
+    }
+    linkoptions
+    {
+        "--stdlib=libc++",
+    }
+
+configuration { "x64", "osx" }
+    buildoptions
+    {
+        "--std=c++11",
+    }
+
 configuration {}
 
 -- Use cmft toolchain for cmft and cmftStudio
@@ -89,6 +106,7 @@ dofile (CMFT_SCRIPTS_DIR       .. "cmft.lua")
 dofile (BGFX_SCRIPTS_DIR       .. "bgfx.lua")
 
 bx_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR, DEPENDENCY_DIR, BX_DIR)
+compat(BX_DIR);
 
 --
 -- bgfx project.
