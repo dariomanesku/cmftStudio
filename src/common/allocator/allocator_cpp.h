@@ -1705,4 +1705,23 @@ void imguiFree(void* _ptr, void* /*_userptr*/)
 }
 #endif //IMGUI_CONFIG_CUSTOM_ALLOCATOR
 
+namespace cs
+{
+    void* TinyStlAllocator::static_allocate(size_t _bytes)
+    {
+        static const bool assertInitialized = s_memory.init();
+        BX_UNUSED(assertInitialized);
+
+        return BX_ALLOC(cs::g_mainAlloc, _bytes);
+    }
+
+    void TinyStlAllocator::static_deallocate(void* _ptr, size_t /*_bytes*/)
+    {
+        static const bool assertInitialized = s_memory.init();
+        BX_UNUSED(assertInitialized);
+
+        return BX_FREE(cs::g_mainAlloc, _ptr);
+    }
+} // namespace cs
+
 /* vim: set sw=4 ts=4 expandtab: */
