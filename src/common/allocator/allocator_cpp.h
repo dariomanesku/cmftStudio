@@ -1682,6 +1682,9 @@ namespace entry
 {
     bx::ReallocatorI* getDefaultAllocator()
     {
+        static const bool assertInitialized = s_memory.init();
+        BX_UNUSED(assertInitialized);
+
         return &cs::s_mainAllocator;
     }
 }
