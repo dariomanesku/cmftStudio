@@ -13,12 +13,6 @@
 #include "common/memblock.h"
 #include <dm/misc.h> //dm::NoCopyNoAssign
 
-#include <tinystl/allocator.h>
-#include <tinystl/vector.h>
-#include <tinystl/unordered_map.h>
-#include <tinystl/unordered_set.h>
-namespace stl = tinystl;
-
 // This code is altered from: https://github.com/bkaradzic/bgfx/blob/master/tools/geometryc/geometryc.cpp
 /*
  * Copyright 2011-2014 Branimir Karadzic. All rights reserved.

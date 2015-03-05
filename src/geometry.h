@@ -9,7 +9,7 @@
 #include <stdint.h> //uint32_t
 #include <bounds.h> //Aabb, Obb, Sphere
 
-#include <vector> //TODO: get rid of this!
+#include "common/tinystl.h" //stl::vector
 
 namespace bx
 {
@@ -36,7 +36,7 @@ struct Primitive
     char m_name[128];
 };
 
-typedef std::vector<Primitive> PrimitiveArray;
+typedef stl::vector<Primitive> PrimitiveArray;
 
 void write(bx::WriterI* _writer, const void* _vertices, uint32_t _numVertices, uint32_t _stride);
 void write(bx::WriterI* _writer
