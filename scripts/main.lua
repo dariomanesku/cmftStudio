@@ -19,6 +19,7 @@ BX_DIR          = (ROOT_DIR .. "bx/")
 DM_DIR          = (ROOT_DIR .. "dm/")
 
 local BGFX_SCRIPTS_DIR       = (BGFX_DIR       .. "scripts/")
+local DM_SCRIPTS_DIR         = (DM_DIR         .. "scripts/")
 local CMFT_SCRIPTS_DIR       = (CMFT_DIR       .. "scripts/")
 local CMFTSTUDIO_SCRIPTS_DIR = (CMFTSTUDIO_DIR .. "scripts/")
 
@@ -48,81 +49,21 @@ defines
     "ENTRY_DEFAULT_HEIGHT=1027",
 }
 
-configuration { "Debug" }
-    defines
-    {
-        "CMFTSTUDIO_CONFIG_DEBUG=1",
-    }
-
-configuration { "Release" }
-    defines
-    {
-        "CMFTSTUDIO_CONFIG_DEBUG=0",
-    }
-
-configuration { "vs*" }
-    buildoptions
-    {
-        "/wd 4127", -- Disable 'Conditional expression is constant' for do {} while(0).
-        "/wd 4201", -- Disable 'Nonstandard extension used: nameless struct/union'. Used for uniforms in the project.
-        "/wd 4345", -- Disable 'An object of POD type constructed with an initializer of the form () will be default-initialized'. It's an obsolete warning.
-    }
-
-configuration { "x32", "vs*" }
-    libdirs
-    {
-        "$(DXSDK_DIR)/lib/x86",
-    }
-
-configuration { "x64", "vs*" }
-    libdirs
-    {
-        "$(DXSDK_DIR)/lib/x64",
-    }
-
---TODO
-configuration { "osx" }
-    buildoptions
-    {
-        "--stdlib=libc++",
-    }
-    linkoptions
-    {
-        "--stdlib=libc++",
-    }
-
-configuration { "x64", "osx" }
-    buildoptions
-    {
-        "--std=c++11",
-    }
-
 configuration {}
 
 -- Use cmft toolchain for cmft and cmftStudio
-dofile (CMFTSTUDIO_SCRIPTS_DIR .. "bx_toolchain.lua")
-dofile (CMFT_SCRIPTS_DIR       .. "toolchain.lua")
-dofile (CMFT_SCRIPTS_DIR       .. "cmft.lua")
-dofile (BGFX_SCRIPTS_DIR       .. "bgfx.lua")
+dofile (DM_SCRIPTS_DIR    .. "dm_toolchain.lua")
+dofile (CMFT_SCRIPTS_DIR  .. "toolchain.lua")
+dofile (CMFT_SCRIPTS_DIR  .. "cmft.lua")
+dofile (BGFX_SCRIPTS_DIR  .. "bgfx.lua")
 
-bx_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR, DEPENDENCY_DIR, BX_DIR)
-compat(BX_DIR);
+dm_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR, DEPENDENCY_DIR, BX_DIR)
 
 --
--- bgfx project.
+-- External projects.
 --
 bgfxProject("", "StaticLib", {})
-
---
--- example-common project.
---
 dofile (BGFX_SCRIPTS_DIR .. "example-common.lua")
-
---
--- cmft project.
---
-project ("cmft")
-cmft_toolchain(CMFTSTUDIO_BUILD_DIR, CMFTSTUDIO_PROJECTS_DIR)
 cmftProject(CMFT_DIR)
 
 --
@@ -185,6 +126,12 @@ project "cmftStudio"
     }
 
     configuration { "vs*" }
+        buildoptions
+        {
+            "/wd 4127", -- Disable 'Conditional expression is constant' for do {} while(0).
+            "/wd 4201", -- Disable 'Nonstandard extension used: nameless struct/union'. Used for uniforms in the project.
+            "/wd 4345", -- Disable 'An object of POD type constructed with an initializer of the form () will be default-initialized'. It's an obsolete warning.
+        }
         linkoptions
         {
             "/ignore:4199", -- LNK4199: /DELAYLOAD:*.dll ignored; no imports found from *.dll
@@ -219,21 +166,30 @@ project "cmftStudio"
             "pthread",
         }
 
-    configuration { "osx" }
+    configuration { "xcode4 or osx" }
+        includedirs
+        {
+            path.join(BGFX_DIR, "3rdparty/khronos"),
+        }
         files
         {
-            BGFX_DIR .. "examples/common/**.mm",
+            path.join(BGFX_DIR, "src/**.mm"),
+            path.join(BGFX_DIR, "examples/common/**.mm"),
         }
         links
         {
             "Cocoa.framework",
             "OpenGL.framework",
-            --"SDL2",
+        }
+
+    configuration { "xcode4" }
+        linkoptions
+        {
+            "-framework Cocoa",
+            "-lc++",
         }
 
     configuration {}
-
-strip()
 
 if _OPTIONS["with-tools"] then
     dofile (BGFX_SCRIPTS_DIR .. "makedisttex.lua")
@@ -241,5 +197,7 @@ if _OPTIONS["with-tools"] then
     dofile (BGFX_SCRIPTS_DIR .. "texturec.lua")
     dofile (BGFX_SCRIPTS_DIR .. "geometryc.lua")
 end
+
+strip()
 
 -- vim: set sw=4 ts=4 expandtab:
