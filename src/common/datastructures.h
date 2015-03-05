@@ -143,7 +143,7 @@ template <typename Ty/*cs handle type*/>
 DM_INLINE HandleArray<Ty>* createHandleArray(uint16_t _maxHandles)
 {
     uint8_t* ptr = (uint8_t*)CS_ALLOC(sizeof(HandleArray<Ty>) + HandleArray<Ty>::sizeFor(_maxHandles));
-    return createHandleArray<Ty>(_maxHandles);
+    return createHandleArray<Ty>(_maxHandles, ptr);
 }
 
 template <typename Ty/*cs handle type*/>
