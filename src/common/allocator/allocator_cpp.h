@@ -27,8 +27,6 @@ struct Memory
         m_externalFree  = 0;
         m_externalSize  = 0;
         #endif //CS_ALLOC_PRINT_STATS
-
-        m_initialized = false;
     }
 
     ///
@@ -49,10 +47,13 @@ struct Memory
 
     bool init()
     {
-        if (m_initialized)
+        // Make sure init() is called only once!
+        static bool s_initialized = false;
+        if (s_initialized)
         {
             return false;
         }
+        s_initialized = true;
 
         // Read memory size from config.
         configFromFile(g_config, "cmft.conf");
@@ -89,8 +90,6 @@ struct Memory
 
         // Touch every piece of memory, effectively forcing OS to add all memory pages to the process's address space.
         memset(m_memory, 0, m_size);
-
-        m_initialized = true;
 
         return false; // return value is not important.
     }
@@ -750,6 +749,8 @@ struct Memory
             m_end = _heap;
             m_stackPtr = _stackPtr;
 
+            m_ptrs.init(MaxAllocations, m_ptrsData);
+
             // Add an empty chunk at the beginning.
             Pointer* mem = m_ptrs.addNew();
             mem->m_ptr = m_begin;
@@ -1040,7 +1041,9 @@ struct Memory
         uint8_t**   m_end;
         uint8_t**   m_stackPtr;
         bx::LwMutex m_mutex;
-        dm::LinkedListT<Pointer, MaxAllocations> m_ptrs;
+
+        dm::LinkedList<Pointer> m_ptrs;
+        uint8_t m_ptrsData[dm::LinkedList<Pointer>::SizePerElement*MaxAllocations];
     };
 
     StaticStorage   m_staticStorage;
@@ -1058,7 +1061,6 @@ struct Memory
     uint16_t m_externalFree;
     size_t   m_externalSize;
     #endif //CS_ALLOC_PRINT_STATS
-    bool     m_initialized;
 };
 static Memory s_memory;
 
@@ -1643,22 +1645,21 @@ namespace cs
 // Alloc redirection.
 //-----
 
-void* operator new[](size_t _size)
-{
-    // Make sure memory is initialized.
-    static const bool assertInitialized = s_memory.init();
-    BX_UNUSED(assertInitialized);
-
-    return BX_ALLOC(cs::g_mainAlloc, _size);
-}
-
 void* operator new(size_t _size)
 {
     // Make sure memory is initialized.
     static const bool assertInitialized = s_memory.init();
     BX_UNUSED(assertInitialized);
 
-    return BX_ALLOC(cs::g_mainAlloc, _size);
+    return s_memory.alloc(_size);
+}
+
+void* operator new[](size_t _size)
+{
+    static const bool assertInitialized = s_memory.init();
+    BX_UNUSED(assertInitialized);
+
+    return s_memory.alloc(_size);
 }
 
 void operator delete(void* _ptr)
@@ -1666,7 +1667,7 @@ void operator delete(void* _ptr)
     static const bool assertInitialized = s_memory.init();
     BX_UNUSED(assertInitialized);
 
-    return BX_FREE(cs::g_mainAlloc, _ptr);
+    return s_memory.free(_ptr);
 }
 
 void operator delete[](void* _ptr)
@@ -1674,7 +1675,7 @@ void operator delete[](void* _ptr)
     static const bool assertInitialized = s_memory.init();
     BX_UNUSED(assertInitialized);
 
-    return BX_FREE(cs::g_mainAlloc, _ptr);
+    return s_memory.free(_ptr);
 }
 
 #if !ENTRY_CONFIG_IMPLEMENT_DEFAULT_ALLOCATOR
@@ -1696,7 +1697,7 @@ void* imguiMalloc(size_t _size, void* /*_userptr*/)
     static const bool assertInitialized = s_memory.init();
     BX_UNUSED(assertInitialized);
 
-    return BX_ALLOC(cs::g_mainAlloc, _size);
+    return s_memory.alloc(_size);
 }
 
 void imguiFree(void* _ptr, void* /*_userptr*/)
@@ -1704,7 +1705,7 @@ void imguiFree(void* _ptr, void* /*_userptr*/)
     static const bool assertInitialized = s_memory.init();
     BX_UNUSED(assertInitialized);
 
-    return BX_FREE(cs::g_mainAlloc, _ptr);
+    return s_memory.free(_ptr);
 }
 #endif //IMGUI_CONFIG_CUSTOM_ALLOCATOR
 
@@ -1715,7 +1716,7 @@ namespace cs
         static const bool assertInitialized = s_memory.init();
         BX_UNUSED(assertInitialized);
 
-        return BX_ALLOC(cs::g_mainAlloc, _bytes);
+        return s_memory.alloc(_bytes);
     }
 
     void TinyStlAllocator::static_deallocate(void* _ptr, size_t /*_bytes*/)
@@ -1723,7 +1724,7 @@ namespace cs
         static const bool assertInitialized = s_memory.init();
         BX_UNUSED(assertInitialized);
 
-        return BX_FREE(cs::g_mainAlloc, _ptr);
+        return s_memory.free(_ptr);
     }
 } // namespace cs
 
