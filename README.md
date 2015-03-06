@@ -92,16 +92,15 @@ Screenshot
 ![cmftStudioAplha1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha1.jpg)
 ![cmftStudioSpheres0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_spheres0.jpg)
 ![cmftStudioWin5](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_win5.jpg)
-![cmftStudioWin3](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_win3.jpg)
 ![cmftStudioOsx1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_osx1.jpg)
-![cmftStudioOsx0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_osx0.jpg)
 ![cmftStudioWin4](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_win4.jpg)
+![cmftStudioOsx0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_osx0.jpg)
+![cmftStudioWin3](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_win3.jpg)
 ![cmftStudioSpheres1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_spheres1.jpg)
 ![flintlock0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/flintlock0.jpg)
 ![flintlock1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/flintlock1.jpg)
 ![flintlock2](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/flintlock2.jpg)
 ![flintlock3](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/flintlock3.jpg)
-![flintlock4](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/flintlock4.jpg)
 
 
 Planned features
