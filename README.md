@@ -99,7 +99,6 @@ Screenshots
 ![cmftStudioSpheres1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_spheres1.jpg)
 ![flintlock0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/flintlock0.jpg)
 ![flintlock1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/flintlock1.jpg)
-![flintlock2](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/flintlock2.jpg)
 ![flintlock3](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/flintlock3.jpg)
 
 
