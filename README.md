@@ -85,6 +85,8 @@ Screenshot
 ![cmftStudioAplha1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha1.jpg)
 ![cmftStudioSpheres0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_spheres0.jpg)
 ![cmftStudioSpheres1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_spheres1.jpg)
+![cmftStudioOsx0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_osx0.jpg)
+![cmftStudioOsx1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_osx1.jpg)
 
 
 Planned features
