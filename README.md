@@ -111,9 +111,6 @@ Older screenshots taken during development
 ![cmftStudio4](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_vn1.jpg)
 ![cmftStudio5](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio3.jpg)
 ![cmftStudio1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio1.jpg)
-![cmftStudio1O](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio1_cmft_output.jpg)
-![cmftStudio0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio0.jpg)
-![cmftViewerG01](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer_g01.jpg)
 ![cmftViewerG02](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer_g02.jpg)
 ![cmftViewer7](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer7.jpg)
 ![cmftViewer8](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer8.jpg)
@@ -123,7 +120,6 @@ Older screenshots taken during development
 ![cmftViewer3](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer3.jpg)
 ![cmftViewer4](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer4.jpg)
 ![cmftViewer5](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer5.jpg)
-![cmftViewer6](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer6.jpg)
 
 
 Environment maps
