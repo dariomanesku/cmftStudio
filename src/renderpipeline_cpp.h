@@ -263,6 +263,21 @@ struct RenderPipelineImpl : public RenderPipeline
         m_fbLumLast    = bgfx::createFrameBuffer(  1,   1, bgfx::TextureFormat::BGRA8);
 
         createSizeDependentFrameBuffers();
+
+        // TODO: This is a dirty way to make sure fbLumCurr and fbLumLast are initialized to 0.
+        // Find an acutual solution.
+        bgfx::setViewClear(0, BGFX_CLEAR_COLOR, 0x00000000, 1.0f, 0);
+        bgfx::setViewClear(1, BGFX_CLEAR_COLOR, 0x00000000, 1.0f, 0);
+        bgfx::setViewFrameBuffer(0, m_fbLumLast);
+        bgfx::setViewFrameBuffer(1, m_fbLumCur);
+        bgfx::submit(0);
+        bgfx::submit(1);
+        bgfx::frame();
+        const bgfx::FrameBufferHandle invalidHandle = BGFX_INVALID_HANDLE;
+        bgfx::setViewFrameBuffer(0, invalidHandle);
+        bgfx::setViewFrameBuffer(1, invalidHandle);
+        bgfx::setViewClear(0, BGFX_CLEAR_NONE, 0x00000000, 1.0f, 0);
+        bgfx::setViewClear(1, BGFX_CLEAR_NONE, 0x00000000, 1.0f, 0);
     }
 
     void updateSize(uint32_t _width, uint32_t _height, uint32_t _reset)
