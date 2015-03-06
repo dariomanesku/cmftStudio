@@ -26,6 +26,11 @@ Requirements
 - More than 2GB or RAM.
 - A decent CPU and GPU for filtering.
 
+Help
+--------
+- On OSX, in case you don't have mouse middle click, use shift + left click istead.
+
+
 Known issues
 --------
 
