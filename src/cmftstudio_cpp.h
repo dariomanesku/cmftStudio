@@ -2067,14 +2067,6 @@ public:
             // When not minimized.
             if (0 != width && 0 != height)
             {
-                // Set minimum window size to 1780x1000.
-                if (height < 1000)
-                {
-                    height = 1000;
-                    width  = 1780;
-                    entry::setWindowSize(window, width, height);
-                }
-
                 // Update size.
                 g_width  = width;
                 g_widthf = dm::utof(g_width);
