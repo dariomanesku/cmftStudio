@@ -24,15 +24,15 @@ Known issues !
 
 ### Windows
 
-    - There seem to be some rendering problems when using OpenGL backend with a Radeon GPU. For now, on Windows, use DirectX9 or DirectX11 rendering backends until the problem gets fixed. More details [here](https://twitter.com/dariomanesku/status/571303845478985728).<br \>
+- There seem to be some rendering problems when using OpenGL backend with a Radeon GPU. For now, on Windows, use DirectX9 or DirectX11 rendering backends until the problem gets fixed. More details [here](https://twitter.com/dariomanesku/status/571303845478985728).<br \>
 
 ### Linux
 
-    - Window resize and maximize do not work properly! If you use them the application might crash or not display correctly. Avoid doing that until the issue gets fixed.<br \>
+- Window resize and maximize do not work properly! If you use them the application might crash or not display correctly. Avoid doing that until the issue gets fixed.<br \>
 
 ### OSX
 
-    - Application may display garbage in the first frame upon start. This does not affect usability, just looks ugly.<br \>
+- Application may display garbage in the first frame upon start. This does not affect usability, just looks ugly.<br \>
 
 
 Installing
