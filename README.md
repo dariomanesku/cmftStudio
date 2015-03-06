@@ -10,7 +10,7 @@ Download
 
  * [cmftStudio - Windows 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_win64.zip)<br />
  * [cmftStudio - Linux 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_lin64.zip)<br />
- * cmftStudio - OSX 64bit - Soon to be available.<br />
+ * [cmftStudio - OSX 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_osx64.zip)<br />
  * *In case you need 32bit binaries, compile from source.*<br />
  <br />
  * [cmftStudio - Sample project 0](https://www.dropbox.com/s/qoy4h6bbp0bcdh4/SampleProject0.csp?dl=1)<br />
@@ -19,11 +19,15 @@ Download
 
 ![cmftStudioCover](https://github.com/dariomanesku/cmftStudio/raw/master/res/cmftStudio_cover.jpg)
 
-Remark !
+Known issues !
 --------
 
-- Windows: There seem to be some rendering problems when using OpenGL backend with a Radeon GPU. For now, on Windows, use DirectX9 or DirectX11 rendering backends until the problem gets fixed. More details [here](https://twitter.com/dariomanesku/status/571303845478985728).
-- Linux: Window resize and maximize do not work properly! If you use them the application might crash or not display correctly. Avoid doing that until the issue gets fixed.
+### Windows
+    - There seem to be some rendering problems when using OpenGL backend with a Radeon GPU. For now, on Windows, use DirectX9 or DirectX11 rendering backends until the problem gets fixed. More details [here](https://twitter.com/dariomanesku/status/571303845478985728).
+### Linux
+    - Window resize and maximize do not work properly! If you use them the application might crash or not display correctly. Avoid doing that until the issue gets fixed.
+### OSX
+    - Application may display garbage in the first frame upon start. This does not affect usability, just looks ugly.
 
 
 Installing
@@ -60,7 +64,14 @@ Building
 
 ### OS X
 
-- OS X build does not work yet. Will be available soon.
+- XCode
+  - XCode solution can be found in *\_projects/xcode4/*.<br \>
+  - XCode project contains one scheme with 4 build configurations (debug/release 32/64bit). Select desired build configuration manually and/or setup schemes manually as desired. In case you need 64bit build, it is possible to just set *Build Settings -> Architectures -> Standard Architectures (64-bit Intel) (x86_64).*<br \>
+  - Also it is probably necessary to manually set runtime directory (it is not picking it from genie for some reason). This is done by going to "*Product -> Scheme -> Edit Scheme... -> Run cmftDebug -> Options -> Working Directory (Use custom working directory)*" and specifying *runtime/* directory from cmft root folder.<br \>
+- Makefile
+  - Makefile can be found in *\_projects/gmake-osx/*.<br \>
+  - Project can be build from the root directory by running `make osx-release64` (or similar).<br \>
+  <br \>
 
 
 Screenshot
