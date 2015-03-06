@@ -46,7 +46,7 @@ Installing
 --------
 
 - Windows: No installation available. Put the cmftStudio.exe along with cmftStudio.conf in a desired folder and use it from there
-- Linux: Use 'make install' and 'make uninstall'. This will create /usr/local/bin/cmftStudio and a desktop shortcut.
+- Linux: Use `make install` and `make uninstall`. This will create /usr/local/bin/cmftStudio and a desktop shortcut.
 
 
 Building
@@ -69,7 +69,7 @@ Building
 
 ### Linux
 
-- From 'cmftStudio' directory call `make linux-debug64` to build the application. Application should be run from the `runtime` directory where the config file is.
+- From root directory call `make linux-debug64` to build the application. Application should be run from the `runtime` directory where the config file is.
 	cd runtime
 	./../_build/linux64_gcc/bin/cmftStudioDebug
 - Application can be installed or removed from the system by calling `make linux-install` and `make linux-uninstall`.
