@@ -60,28 +60,28 @@ Building
 	cd cmftStudio
 	make
 
-- After calling `make`, *\_projects* folder will be created with all supported project files. Deleting *\_projects* folder is safe at any time.<br \>
-- All compiler generated files will be in *\_build* folder. Again, deleting *\_build* folder is safe at any time.<br \>
+- After calling `make`, `\_projects` folder will be created with all supported project files. Deleting `\_projects` folder is safe at any time.<br \>
+- All compiler generated files will be in `\_build` folder. Again, deleting `\_build` folder is safe at any time.<br \>
 
 ### Windows
 
-- Visual Studio solutions can be found in *\_projects/vs20XX/*.<br \>
+- Visual Studio solutions can be found in `\_projects/vs20XX/`.<br \>
 
 ### Linux
 
-- From 'cmftStudio' directory call 'make linux-debug64' to build the application. Application should be run from the 'runtime' directory where the config file is.
+- From 'cmftStudio' directory call `make linux-debug64` to build the application. Application should be run from the `runtime` directory where the config file is.
 	cd runtime
 	./../_build/linux64_gcc/bin/cmftStudioDebug
-- Application can be installed or removed from the system by calling 'make linux-install' and 'make linux-uninstall'.
+- Application can be installed or removed from the system by calling `make linux-install` and `make linux-uninstall`.
 
 ### OS X
 
 - XCode
-  - XCode solution can be found in *\_projects/xcode4/*.<br \>
-  - XCode project contains one scheme with 4 build configurations (debug/release 32/64bit). Select desired build configuration manually and/or setup schemes manually as desired. In case you need 64bit build, it is possible to just set *Build Settings -> Architectures -> Standard Architectures (64-bit Intel) (x86_64).*<br \>
-  - Also it is probably necessary to manually set runtime directory (it is not picking it from genie for some reason). This is done by going to "*Product -> Scheme -> Edit Scheme... -> Run cmftDebug -> Options -> Working Directory (Use custom working directory)*" and specifying *runtime/* directory from cmft root folder.<br \>
+  - XCode solution can be found in `\_projects/xcode4/`.<br \>
+  - XCode project contains one scheme with 4 build configurations (debug/release 32/64bit). Select desired build configuration manually and/or setup schemes manually as desired. In case you need 64bit build, it is possible to just set `Build Settings -> Architectures -> Standard Architectures (64-bit Intel) (x86_64).`<br \>
+  - Also it is probably necessary to manually set runtime directory (it is not picking it from genie for some reason). This is done by going to "`Product -> Scheme -> Edit Scheme... -> Run cmftDebug -> Options -> Working Directory (Use custom working directory)`" and specifying `runtime/` directory from cmft root folder.<br \>
 - Makefile
-  - Makefile can be found in *\_projects/gmake-osx/*.<br \>
+  - Makefile can be found in `\_projects/gmake-osx/`.<br \>
   - Project can be build from the root directory by running `make osx-release64` (or similar).<br \>
   <br \>
 
