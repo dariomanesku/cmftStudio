@@ -91,9 +91,12 @@ Screenshot
 
 ![cmftStudioAplha1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha1.jpg)
 ![cmftStudioSpheres0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_spheres0.jpg)
-![cmftStudioSpheres1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_spheres1.jpg)
+![cmftStudioWin5](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_win5.jpg)
+![cmftStudioWin3](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_win3.jpg)
 ![cmftStudioOsx1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_osx1.jpg)
 ![cmftStudioOsx0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_osx0.jpg)
+![cmftStudioWin4](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_win4.jpg)
+![cmftStudioSpheres1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_spheres1.jpg)
 ![flintlock0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/flintlock0.jpg)
 ![flintlock1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/flintlock1.jpg)
 ![flintlock2](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/flintlock2.jpg)
@@ -112,19 +115,14 @@ Planned features
 Older screenshots taken during development
 ------------
 
+![cmftStudio5](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio3.jpg)
 ![cmftStudio3](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_vn0.jpg)
 ![cmftStudio4](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_vn1.jpg)
-![cmftStudio5](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio3.jpg)
-![cmftStudio1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio1.jpg)
 ![cmftViewerG02](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer_g02.jpg)
 ![cmftViewer7](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer7.jpg)
 ![cmftViewer8](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer8.jpg)
-![cmftViewerF01](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer_f01.jpg)
-![cmftViewer0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer0.jpg)
 ![cmftViewer2](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer2.jpg)
 ![cmftViewer3](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer3.jpg)
-![cmftViewer4](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer4.jpg)
-![cmftViewer5](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer5.jpg)
 
 
 Environment maps
