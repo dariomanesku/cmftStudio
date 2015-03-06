@@ -86,7 +86,7 @@ Building
   <br \>
 
 
-Screenshot
+Screenshots
 ------------
 
 ![cmftStudioAplha1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha1.jpg)
@@ -109,19 +109,6 @@ Planned features
  * Add full screen support.
  * Add support for rendering transparent materials.
  * Add GGX specular filter and shading model.
-
-
-Older screenshots taken during development
-------------
-
-![cmftStudio5](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio3.jpg)
-![cmftStudio3](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_vn0.jpg)
-![cmftStudio4](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_vn1.jpg)
-![cmftViewerG02](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer_g02.jpg)
-![cmftViewer7](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer7.jpg)
-![cmftViewer8](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer8.jpg)
-![cmftViewer2](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer2.jpg)
-![cmftViewer3](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftViewer3.jpg)
 
 
 Environment maps
