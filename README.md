@@ -19,7 +19,14 @@ Download
 
 ![cmftStudioCover](https://github.com/dariomanesku/cmftStudio/raw/master/res/cmftStudio_cover.jpg)
 
-Known issues !
+Requirements
+--------
+
+- Screen resolution of at least 1980x1080. On lower resolution, the application interface might not fit on the screen. In the future, there might be support for lower resolution screens.
+- More than 2GB or RAM.
+- A decent CPU and GPU for filtering.
+
+Known issues
 --------
 
 ### Windows
