@@ -42,10 +42,6 @@ Known issues
 
 - Window resize and maximize do not work properly! If you use them the application might crash or not display correctly. Avoid doing that until the issue gets fixed.<br \>
 
-### OSX
-
-- Application may display garbage in the first frame upon start. This does not affect usability, just looks ugly.<br \>
-
 
 Installing
 --------
