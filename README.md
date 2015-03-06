@@ -99,6 +99,7 @@ Screenshot
 Planned features
 ------------
 
+ * Add full screen support.
  * Add support for rendering transparent materials.
  * Add GGX specular filter and shading model.
 
