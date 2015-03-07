@@ -2337,14 +2337,14 @@ bool imguiEnvPreview(uint32_t _screenX
 //-----
 
 void imguiLatlongWidget(int32_t _screenX
-                     , int32_t _screenY
-                     , int32_t _height
-                     , cs::EnvHandle _env
-                     , uint8_t& _selectedLight
-                     , const Mouse& _click
-                     , bool _enabled
-                     , uint8_t _viewId
-                     )
+                      , int32_t _screenY
+                      , int32_t _height
+                      , cs::EnvHandle _env
+                      , uint8_t& _selectedLight
+                      , const Mouse& _click
+                      , bool _enabled
+                      , uint8_t _viewId
+                      )
 {
     enum
     {
