@@ -285,6 +285,7 @@ bool imguiBrowser(int32_t _height
                 , uint8_t _extCount       = 0
                 , const char* _selectFile = NULL
                 , bool _showDirsOnly      = false
+                , bool _showHidden        = false
                 );
 
 template <uint8_t MaxSelectedT>
@@ -315,6 +316,7 @@ void imguiBrowser(int32_t _height
                 , const char (*_ext)[16] = NULL
                 , uint8_t _extCount      = 0
                 , bool _showDirsOnly     = false
+                , bool _showHidden       = false
                 );
 
 // FileBrowser widget.

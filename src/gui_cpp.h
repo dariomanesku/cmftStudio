@@ -1879,6 +1879,7 @@ bool imguiBrowser(int32_t _height
                 , uint8_t _extCount
                 , const char* _selectFile
                 , bool _showDirsOnly
+                , bool _showHidden
                 )
 {
     bool result = false;
@@ -1894,6 +1895,8 @@ bool imguiBrowser(int32_t _height
 
     imguiBeginScroll(_height, &_state.m_scroll);
 
+    const uint8_t button = imguiTabs(UINT8_MAX, true, ImguiAlign::LeftIndented, 21, 0, 3, "Root", "Home", "Desktop");
+
     for (size_t ii = 0, end = dir.n_files; ii < end; ii++)
     {
         tinydir_file file;
@@ -1902,7 +1905,9 @@ bool imguiBrowser(int32_t _height
             continue;
         }
 
-        if (file.is_dir)
+        const bool isHidden = ('.' == file.name[0]);
+
+        if (file.is_dir && (_showHidden || !isHidden))
         {
             if (imguiButton(file.name))
             {
@@ -1916,7 +1921,7 @@ bool imguiBrowser(int32_t _height
             if (NULL == _ext
             ||  0    == _extCount)
             {
-                show = ('.' != file.name[0]);
+                show = !isHidden;
             }
             else
             {
@@ -1966,6 +1971,23 @@ bool imguiBrowser(int32_t _height
         _state.reset();
         dm::realpath(_state.m_directory, dir.path);
     }
+    else if (UINT8_MAX != button)
+    {
+        _state.reset();
+
+        if (0 == button) // root
+        {
+            dm::rootDir(_state.m_directory);
+        }
+        else if (1 == button) // home
+        {
+            dm::homeDir(_state.m_directory);
+        }
+        else //if (2 == button). // desktop
+        {
+            dm::desktopDir(_state.m_directory);
+        }
+    }
 
     tinydir_close(&dir);
 
@@ -1978,6 +2000,7 @@ void imguiBrowser(int32_t _height
                 , const char (*_ext)[16]
                 , uint8_t _extCount
                 , bool _showDirsOnly
+                , bool _showHidden
                 )
 {
     typedef typename BrowserStateFor<MaxSelectedT>::File BrowserStateFile;
@@ -1999,6 +2022,8 @@ void imguiBrowser(int32_t _height
 
     imguiBeginScroll(_height, &_state.m_scroll, true);
 
+    const uint8_t button = imguiTabs(UINT8_MAX, true, ImguiAlign::LeftIndented, 21, 0, 3, "Root", "Home", "Desktop");
+
     for (size_t ii = 0, end = dir.n_files; ii < end; ii++)
     {
         tinydir_file file;
@@ -2007,7 +2032,9 @@ void imguiBrowser(int32_t _height
             continue;
         }
 
-        if (file.is_dir)
+        const bool isHidden = ('.' == file.name[0]);
+
+        if (file.is_dir && (_showHidden || !isHidden))
         {
             if (imguiButton(file.name))
             {
@@ -2021,7 +2048,7 @@ void imguiBrowser(int32_t _height
             if (NULL == _ext
             ||  0    == _extCount)
             {
-                show = true;
+                show = !isHidden;
             }
             else
             {
@@ -2097,6 +2124,24 @@ void imguiBrowser(int32_t _height
         _state.m_scroll = 0;
         _state.m_files.removeAll();
         dm::realpath(_state.m_directory, dir.path);
+    }
+    else if (UINT8_MAX != button)
+    {
+        _state.m_scroll = 0;
+        _state.m_files.removeAll();
+
+        if (0 == button) // root
+        {
+            dm::rootDir(_state.m_directory);
+        }
+        else if (1 == button) // home
+        {
+            dm::homeDir(_state.m_directory);
+        }
+        else //if (2 == button). // desktop
+        {
+            dm::desktopDir(_state.m_directory);
+        }
     }
 
     tinydir_close(&dir);
