@@ -2364,6 +2364,7 @@ void imguiLatlongWidget(int32_t _screenX
     cs::setProgram(cs::Program::Latlong);
     cs::setTexture(cs::TextureUniform::Skybox, env.m_cubemap[cs::Environment::Skybox]);
     screenQuad(_screenX, _screenY, llWidth, llHeight);
+    imguiSetCurrentScissor();
     bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
     cs::bgfx_submit(_viewId);
 
