@@ -309,15 +309,15 @@ static GuiResorces s_res;
 
 void initFonts()
 {
-    #define FONT_DESC_FILE(_name, _fontSize, _path)                         \
-    {                                                                       \
-        void* data = load(_path);                                           \
-        s_res.m_fonts[Fonts::_name] = imguiCreateFont(data, _fontSize);  \
-        free(data);                                                         \
+    #define FONT_DESC_FILE(_name, _fontSize, _path)                     \
+    {                                                                   \
+        void* data = load(_path);                                       \
+        s_res.m_fonts[Fonts::_name] = imguiCreateFont(data, _fontSize); \
+        free(data);                                                     \
     }
 
-    #define FONT_DESC_MEM(_name, _fontSize, _data)                          \
-    {                                                                       \
+    #define FONT_DESC_MEM(_name, _fontSize, _data)                       \
+    {                                                                    \
         s_res.m_fonts[Fonts::_name] = imguiCreateFont(_data, _fontSize); \
     }
 
