@@ -26,6 +26,19 @@ Requirements
 - More than 2GB or RAM.
 - A decent CPU and GPU for filtering.
 
+
+Supported formats
+--------
+
+- Environment map:
+    - Input and output formats: \*.dds, \*.ktx, \*.hdr, \*.tga.
+    - Input and output types: cubemap, cube cross, latlong, face list, horizontal and vertical strip.
+- Texture:
+    - Input formats: \*.dds, \*.ktx, \*.pvr.
+- Mesh:
+    - Input formats: \*.obj, \*.bin (bgfx binary format).
+
+
 Help
 --------
 - On OSX, in case you don't have mouse middle click, use shift + left click istead.
