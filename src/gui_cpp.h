@@ -1916,14 +1916,15 @@ bool imguiBrowser(int32_t _height
             if (NULL == _ext
             ||  0    == _extCount)
             {
-                show = true;
+                show = ('.' != file.name[0]);
             }
             else
             {
                 show = false;
                 for(uint8_t jj = 0; jj < _extCount; ++jj)
                 {
-                    if (0 == bx::stricmp(_ext[jj], file.extension))
+                    if (('.' != file.name[0])
+                    &&  (0 == bx::stricmp(_ext[jj], file.extension)))
                     {
                         show = true;
                         break;
