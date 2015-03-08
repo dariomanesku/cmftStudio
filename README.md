@@ -122,6 +122,11 @@ Planned features
  * Add GGX specular filter and shading model.
 
 
+Discussion
+------------
+- There is a discussion thread regarding cmftStudio on [Blender Artists Forum](http://blenderartists.org/forum/showthread.php?364770-cmftStudio-GUI-counterpart-of-cmft-cross-platform-open-source-cubemap-filtering).
+
+
 Environment maps
 ------------
 
