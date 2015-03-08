@@ -109,6 +109,10 @@ void configFromFile(Config& _config, const char* _path)
                 }
             }
         }
+        else
+        {
+            _config.m_renderer = bgfx::RendererType::Count;
+        }
 #endif // BX_PLATFORM_WINDOWS
 
         // Window size.
@@ -140,6 +144,11 @@ void configFromFile(Config& _config, const char* _path)
                 _config.m_height = DM_CLAMP(height,  950, 2160);
             }
         }
+        else
+        {
+            _config.m_width  = 1920;
+            _config.m_height = 1027;
+        }
 
         // Startup project.
         const char* projectParam  = bx::stristr(str, "StartupProject", toEnd);
@@ -166,6 +175,10 @@ void configFromFile(Config& _config, const char* _path)
                     _config.m_startupProject[valueLen] = '\0';
                 }
             }
+        }
+        else
+        {
+            _config.m_startupProject[0] = '\0';
         }
 
         // Memory.
@@ -196,6 +209,10 @@ void configFromFile(Config& _config, const char* _path)
                 const size_t size = size_t(sizeGB*(1000.0f*1000.0f*1024.0f));
                 _config.m_memorySize = DM_CLAMP(size, DM_GIGABYTES_ULL(1), DM_GIGABYTES_ULL(7));
             }
+        }
+        else
+        {
+            m_memorySize = DM_MEGABYTES(1536);
         }
 
         // Advance pointer.
