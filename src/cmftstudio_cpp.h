@@ -1926,11 +1926,6 @@ private:
             dm::homeDir(home);
 
             dm::strscpya(projectPath, home);
-            #if BX_PLATFORM_WINDOWS
-                bx::strlcat(projectPath, "\\", DM_PATH_LEN);
-            #else // Linux or OSX.
-                bx::strlcat(projectPath, "/", DM_PATH_LEN);
-            #endif // BX_PLATFORM_WINDOWS
             bx::strlcat(projectPath, _name, DM_PATH_LEN);
 
             if (dm::fileExists(projectPath))
@@ -1949,11 +1944,6 @@ private:
         if (!projectLoaded)
         {
             dm::strscpya(projectPath, home);
-            #if BX_PLATFORM_WINDOWS
-                bx::strlcat(projectPath, "\\.cmftStudio\\", DM_PATH_LEN);
-            #else // Linux or OSX.
-                bx::strlcat(projectPath, "/.cmftStudio/", DM_PATH_LEN);
-            #endif // BX_PLATFORM_WINDOWS
             bx::strlcat(projectPath, _name, DM_PATH_LEN);
 
             if (dm::fileExists(projectPath))
@@ -1972,11 +1962,6 @@ private:
         if (!projectLoaded)
         {
             dm::desktopDir(projectPath);
-            #if BX_PLATFORM_WINDOWS
-                bx::strlcat(projectPath, "\\", DM_PATH_LEN);
-            #else // Linux or OSX.
-                bx::strlcat(projectPath, "/", DM_PATH_LEN);
-            #endif // BX_PLATFORM_WINDOWS
             bx::strlcat(projectPath, _name, DM_PATH_LEN);
 
             if (dm::fileExists(projectPath))
@@ -1995,11 +1980,6 @@ private:
         if (!projectLoaded)
         {
             dm::strscpya(projectPath, home);
-            #if BX_PLATFORM_WINDOWS
-                bx::strlcat(projectPath, "\\Downloads\\", DM_PATH_LEN);
-            #else // Linux or OSX.
-                bx::strlcat(projectPath, "/Downloads/", DM_PATH_LEN);
-            #endif // BX_PLATFORM_WINDOWS
             bx::strlcat(projectPath, _name, DM_PATH_LEN);
 
             if (dm::fileExists(projectPath))
