@@ -1162,6 +1162,28 @@ private:
 // CmftStudio
 //-----
 
+void cmdToggleFullscreen(const void* /*_userData*/)
+{
+    entry::WindowHandle window = { 0 };
+    entry::toggleFullscreen(window);
+}
+
+static const InputBinding s_keyBindings[] =
+{
+    #if BX_PLATFORM_OSX
+    { entry::Key::KeyF, entry::Modifier::LeftMeta,                            1, cmdToggleFullscreen,  NULL },
+    { entry::Key::KeyF, entry::Modifier::RightMeta,                           1, cmdToggleFullscreen,  NULL },
+    { entry::Key::KeyF, entry::Modifier::RightMeta|entry::Modifier::LeftMeta, 1, cmdToggleFullscreen,  NULL },
+    #endif //BX_PLATFORM_OSX
+    { entry::Key::KeyF, entry::Modifier::LeftAlt,                             1, cmdToggleFullscreen,  NULL },
+    { entry::Key::KeyF, entry::Modifier::RightAlt,                            1, cmdToggleFullscreen,  NULL },
+    { entry::Key::KeyF, entry::Modifier::RightCtrl|entry::Modifier::LeftCtrl, 1, cmdToggleFullscreen,  NULL },
+    { entry::Key::KeyF, entry::Modifier::LeftCtrl,                            1, cmdToggleFullscreen,  NULL },
+    { entry::Key::KeyF, entry::Modifier::RightCtrl,                           1, cmdToggleFullscreen,  NULL },
+    { entry::Key::KeyF, entry::Modifier::RightCtrl|entry::Modifier::LeftCtrl, 1, cmdToggleFullscreen,  NULL },
+    INPUT_BINDING_END
+};
+
 struct CmftStudioApp
 {
 private:
@@ -1919,6 +1941,9 @@ public:
         entry::WindowHandle window = { 0 };
         entry::setWindowSize(window, g_config.m_width, g_config.m_height);
         entry::setWindowTitle(window, "cmftStudio");
+
+        // Initialize key bindings.
+        inputAddBindings("cmftStudio", s_keyBindings);
 
         // Setup renderer dependent parameters.
         const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
