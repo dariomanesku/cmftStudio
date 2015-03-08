@@ -105,6 +105,7 @@ Screenshots
 ------------
 
 ![cmftStudioAplha1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha1.jpg)
+![cmftStudioWin0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_win0.jpg)
 ![cmftStudioSpheres0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_spheres0.jpg)
 ![cmftStudioWin5](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_win5.jpg)
 ![cmftStudioOsx1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_osx1.jpg)
