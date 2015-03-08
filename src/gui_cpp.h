@@ -3427,7 +3427,7 @@ void imguiRightScrollArea(int32_t _x
                 imguiRegion("Selection", NULL, _guiState.m_showEnvSelection);
                 if (_guiState.m_showEnvSelection)
                 {
-                    const uint16_t maxNum = DM_MIN(_envList.count()+1, 5);
+                    const uint16_t maxNum = DM_MIN(_envList.count()+1, 6);
                     const int32_t scrollHeight = ListElementHeight*maxNum
                                                + (_guiState.m_showEnvPreview ? 0 : 104);
                     imguiBeginScroll(scrollHeight, &_state.m_envSelectionScroll, _enabled);
@@ -3685,25 +3685,28 @@ void imguiRightScrollArea(int32_t _x
     {
         imguiSeparator(5);
 
-        // Output window.
-        if (imguiButton("Output window", true, ImguiAlign::CenterIndented))
+        const uint8_t project_output = imguiTabs(UINT8_MAX, true, ImguiAlign::CenterIndented, 21, 4, 2, "Project load/save", "Output window");
+        if (0 == project_output)
+        {
+            _state.m_action = RightScrollAreaState::ShowProjectWindow;
+            _state.m_events = GuiEvent::GuiUpdate;
+        }
+        else if (1 == project_output)
         {
             _state.m_action = RightScrollAreaState::ShowOutputWindow;
             _state.m_events = GuiEvent::GuiUpdate;
         }
 
-        // Project window.
-        if (imguiButton("Project load/save", true, ImguiAlign::CenterIndented))
-        {
-            _state.m_action = RightScrollAreaState::ShowProjectWindow;
-            _state.m_events = GuiEvent::GuiUpdate;
-        }
-
-        // About window.
-        if (imguiButton("About", true, ImguiAlign::CenterIndented))
+        const uint8_t button = imguiTabs(UINT8_MAX, true, ImguiAlign::CenterIndented, 21, 4, 2, "Help/About", "Full screen");
+        if (0 == button)
         {
             _state.m_action = RightScrollAreaState::ShowAboutWindow;
             _state.m_events = GuiEvent::GuiUpdate;
+        }
+        else if (1 == button)
+        {
+            _state.m_action = RightScrollAreaState::ToggleFullscreen;
+            _state.m_events = GuiEvent::HandleAction;
         }
     }
     imguiSeparator(4);

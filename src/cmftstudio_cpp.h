@@ -1372,6 +1372,10 @@ private:
                 // Adjust selected idx.
                 m_settings.m_selectedEnvMap = m_envList.count()-1;
             }
+            else if (RightScrollAreaState::ToggleFullscreen == m_widgets.m_rightScrollArea.m_action)
+            {
+                cmdToggleFullscreen(NULL);
+            }
         }
 
         // TexPickerWidget action.

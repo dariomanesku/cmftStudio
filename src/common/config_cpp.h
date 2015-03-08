@@ -36,7 +36,7 @@ void configWriteDefault(const char* _path)
         "#-------------------------------------------------------------------------------\n"
         "#\n"
         "# Options:\n"
-        "#    Renderer       = [dx9,directx9,dx11,directx11,ogl,opengl] # Windows only\n"
+        "#    Renderer       = [dx9,directx9,dx11,directx11,ogl,opengl] # Windows only.\n"
         "#    WindowSize     = [width x height]                         # Window size at startup.\n"
         "#    Memory         = [1.0-7.0]GB                              # Recommended 2.0GB or more on a 64bit system.\n"
         "#    StartupProject = [\"path_to_csp_file\"]                     # *.csp - cmftStudio project file.\n"
@@ -65,8 +65,15 @@ void configFromFile(Config& _config, const char* _path)
     data[size] = '\0';
     fclose(file);
 
-    // Start with defaults, override previously loaded configs.
-    _config.init();
+    enum
+    {
+        CONFIG_RENDERER_SET       = 0x01,
+        CONFIG_WINDOWSIZE_SET     = 0x02,
+        CONFIG_MEMORY_SET         = 0x04,
+        CONFIG_STARTUPPROJECT_SET = 0x08,
+    };
+
+    uint8_t parametersSet = 0;
 
     const char* ptr = data;
     while ('\0' != *ptr)
@@ -99,16 +106,19 @@ void configFromFile(Config& _config, const char* _path)
                 ||  NULL != bx::stristr(value, "directx9", 8))
                 {
                     _config.m_renderer = bgfx::RendererType::Direct3D9;
+                    parametersSet |= CONFIG_RENDERER_SET;
                 }
                 else if (NULL != bx::stristr(value, "dx11", 4)
                      ||  NULL != bx::stristr(value, "directx11", 9))
                 {
                     _config.m_renderer = bgfx::RendererType::Direct3D11;
+                    parametersSet |= CONFIG_RENDERER_SET;
                 }
                 else if (NULL != bx::stristr(value, "ogl", 3)
                      ||  NULL != bx::stristr(value, "opengl", 6))
                 {
                     _config.m_renderer = bgfx::RendererType::OpenGL;
+                    parametersSet |= CONFIG_RENDERER_SET;
                 }
             }
         }
@@ -141,6 +151,7 @@ void configFromFile(Config& _config, const char* _path)
 
                 _config.m_width  = DM_CLAMP(width,  1690, 4096);
                 _config.m_height = DM_CLAMP(height,  950, 2160);
+                parametersSet |= CONFIG_WINDOWSIZE_SET;
             }
         }
 
@@ -167,6 +178,7 @@ void configFromFile(Config& _config, const char* _path)
                 {
                     memcpy(_config.m_startupProject, begin, valueLen);
                     _config.m_startupProject[valueLen] = '\0';
+                    parametersSet |= CONFIG_STARTUPPROJECT_SET;
                 }
             }
         }
@@ -198,11 +210,31 @@ void configFromFile(Config& _config, const char* _path)
 
                 const size_t size = size_t(sizeGB*(1000.0f*1000.0f*1024.0f));
                 _config.m_memorySize = DM_CLAMP(size, DM_GIGABYTES_ULL(1), DM_GIGABYTES_ULL(7));
+                parametersSet |= CONFIG_MEMORY_SET;
             }
         }
 
         // Advance pointer.
         ptr = nl;
+    }
+
+    // Reset unset parameters to default.
+    if (0 == (parametersSet&CONFIG_RENDERER_SET))
+    {
+        _config.m_renderer = bgfx::RendererType::Count;
+    }
+    if (0 == (parametersSet&CONFIG_WINDOWSIZE_SET))
+    {
+        _config.m_width  = 1920;
+        _config.m_height = 1027;
+    }
+    if (0 == (parametersSet&CONFIG_MEMORY_SET))
+    {
+        _config.m_memorySize = DM_MEGABYTES(1536);
+    }
+    if (0 == (parametersSet&CONFIG_STARTUPPROJECT_SET))
+    {
+        _config.m_startupProject[0] = '\0';
     }
 
     free(data);

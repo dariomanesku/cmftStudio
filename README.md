@@ -19,6 +19,14 @@ Download
 
 ![cmftStudioCover](https://github.com/dariomanesku/cmftStudio/raw/master/res/cmftStudio_cover.jpg)
 
+Controls
+--------
+
+- Ctrl/Meta + F == Toggle fullscreen (where supported).
+- Ctrl/Meta + Q == Quit application.
+- On OSX, in case you don't have mouse `Middle click`, use `Command + Left click` istead.
+
+
 Requirements
 --------
 
@@ -37,11 +45,6 @@ Supported formats
     - Input formats: \*.dds, \*.ktx, \*.pvr.
 - Mesh:
     - Input formats: \*.obj, \*.bin (bgfx binary format).
-
-
-Help
---------
-- On OSX, in case you don't have mouse middle click, use shift + left click istead.
 
 
 Known issues

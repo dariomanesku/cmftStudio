@@ -28,7 +28,7 @@ struct Gui
         RightAreaHeaderHeight  = 44,
         LeftAreaFooterHeight   = 134,
         SpheresTabFooterHeight = 209,
-        RightAreaFooterHeight  = 129,
+        RightAreaFooterHeight  = 105,
 
         MeshScrollRegion     = 173,
         MaterialScrollRegion = 147,
@@ -1048,6 +1048,7 @@ struct RightScrollAreaState
         // HandleAction
         RemoveEnv,
         CreateEnv,
+        ToggleFullscreen,
 
         // GuiUpdate
         ShowOutputWindow,
