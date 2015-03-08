@@ -14,6 +14,43 @@
 
 Config g_config;
 
+void configWriteDefault(const char* _path)
+{
+    if (dm::fileExists(_path))
+    {
+        return;
+    }
+
+    FILE* file = fopen(_path, "wb");
+    if (NULL == file)
+    {
+        return;
+    }
+
+    static const char sc_defaultConfig[] =
+    {
+        "#-------------------------------------------------------------------------------\n"
+        "# cmftStudio\n"
+        "# Copyright 2014-2015 Dario Manesku. All rights reserved.\n"
+        "# https://github.com/dariomanesku/cmftStudio\n"
+        "#-------------------------------------------------------------------------------\n"
+        "#\n"
+        "# Options:\n"
+        "#    Renderer       = [dx9,directx9,dx11,directx11,ogl,opengl] # Windows only\n"
+        "#    WindowSize     = [width x height]                         # Window size at startup.\n"
+        "#    Memory         = [1.0-7.0]GB                              # Recommended 2.0GB or more on a 64bit system.\n"
+        "#    StartupProject = [\"path_to_csp_file\"]                   # *.csp - cmftStudio project file.\n"
+        "\n"
+        "Renderer       = ogl\n"
+        "WindowSize     = 1920x1027\n"
+        "Memory         = 1.5GB\n"
+        "StartupProject = \"SampleProject0.csp\"\n"
+    };
+
+    fwrite(sc_defaultConfig, BX_COUNTOF(sc_defaultConfig)-1, 1, file);
+    fclose(file);
+}
+
 void configFromFile(Config& _config, const char* _path)
 {
     FILE* file = fopen(_path, "r");

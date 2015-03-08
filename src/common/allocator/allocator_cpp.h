@@ -62,19 +62,21 @@ struct Memory
         char configPath[DM_PATH_LEN];
 
         dm::strscpya(configPath, home);
-        bx::strlcat(configPath, ".cmftStudio.conf", DM_PATH_LEN);
+        bx::strlcat(configPath, "/.cmftStudio.conf", DM_PATH_LEN);
+        configFromFile(g_config, configPath);
+
+        configWriteDefault(configPath); // Write default config if there isn't one.
+
+        dm::strscpya(configPath, home);
+        bx::strlcat(configPath, "/.cmftstudio.conf", DM_PATH_LEN);
         configFromFile(g_config, configPath);
 
         dm::strscpya(configPath, home);
-        bx::strlcat(configPath, ".cmftstudio.conf", DM_PATH_LEN);
+        bx::strlcat(configPath, "/.cmftStudio/cmftStudio.conf", DM_PATH_LEN);
         configFromFile(g_config, configPath);
 
         dm::strscpya(configPath, home);
-        bx::strlcat(configPath, ".cmftStudio/cmftStudio.conf", DM_PATH_LEN);
-        configFromFile(g_config, configPath);
-
-        dm::strscpya(configPath, home);
-        bx::strlcat(configPath, ".cmftStudio/cmftstudio.conf", DM_PATH_LEN);
+        bx::strlcat(configPath, "/.cmftStudio/cmftstudio.conf", DM_PATH_LEN);
         configFromFile(g_config, configPath);
 
         configFromFile(g_config, ".cmftstudio.conf");
