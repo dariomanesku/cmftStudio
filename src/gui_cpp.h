@@ -1905,9 +1905,12 @@ bool imguiBrowser(int32_t _height
             continue;
         }
 
-        const bool isHidden = ('.' == file.name[0]);
+        const bool dot      = ('.' == file.name[0]);
+        const bool dotEnd   = dot && ('\0' == file.name[1]); // never show
+        const bool dotDot   = dot && ( '.' == file.name[1]); // always show
+        const bool isHidden = dot && ('\0' != file.name[1]);
 
-        if (file.is_dir && (_showHidden || !isHidden))
+        if (file.is_dir && !dotEnd && (doubleDot || !isHidden || _showHidden))
         {
             if (imguiButton(file.name))
             {
@@ -2032,9 +2035,12 @@ void imguiBrowser(int32_t _height
             continue;
         }
 
-        const bool isHidden = ('.' == file.name[0]);
+        const bool dot      = ('.' == file.name[0]);
+        const bool dotEnd   = dot && ('\0' == file.name[1]); // never show
+        const bool dotDot   = dot && ( '.' == file.name[1]); // always show
+        const bool isHidden = dot && ('\0' != file.name[1]);
 
-        if (file.is_dir && (_showHidden || !isHidden))
+        if (file.is_dir && !dotEnd && (doubleDot || !isHidden || _showHidden))
         {
             if (imguiButton(file.name))
             {
