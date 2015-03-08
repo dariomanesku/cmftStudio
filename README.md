@@ -105,7 +105,6 @@ Screenshots
 ------------
 
 ![cmftStudioAplha1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_alpha1.jpg)
-![cmftStudioWin0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_win0.jpg)
 ![cmftStudioSpheres0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_spheres0.jpg)
 ![cmftStudioWin5](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_win5.jpg)
 ![cmftStudioOsx1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_osx1.jpg)
@@ -113,6 +112,7 @@ Screenshots
 ![cmftStudioOsx0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_osx0.jpg)
 ![cmftStudioWin3](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_win3.jpg)
 ![cmftStudioSpheres1](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_spheres1.jpg)
+![cmftStudioWin0](https://github.com/dariomanesku/cmftStudio/raw/master/screenshots/cmftStudio_win0.jpg)
 
 
 Planned features
