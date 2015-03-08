@@ -1984,13 +1984,69 @@ public:
         initLists();
 
         // Load startup project during splash screen.
-        const bool projectLoaded = projectLoad(g_config.m_startupProject
-                                             , m_textureList
-                                             , m_materialList
-                                             , m_envList
-                                             , m_meshInstList
-                                             , m_settings
-                                             );
+        char home[DM_PATH_LEN];
+        char projectPath[DM_PATH_LEN];
+        bool projectLoaded = false;
+
+        // Try loading project from runtime directory.
+        if (dm::fileExists(g_config.m_startupProject))
+        {
+            projectLoaded = projectLoad(g_config.m_startupProject
+                                      , m_textureList
+                                      , m_materialList
+                                      , m_envList
+                                      , m_meshInstList
+                                      , m_settings
+                                      );
+        }
+
+        // Try loading project from home directory.
+        if (!projectLoaded)
+        {
+            dm::homeDir(home);
+
+            dm::strscpya(projectPath, home);
+            #if BX_PLATFORM_WINDOWS
+                bx::strlcat(projectPath, "\\", DM_PATH_LEN);
+            #else // Linux or OSX.
+                bx::strlcat(projectPath, "/", DM_PATH_LEN);
+            #endif // BX_PLATFORM_WINDOWS
+            bx::strlcat(projectPath, g_config.m_startupProject, DM_PATH_LEN);
+
+            if (dm::fileExists(projectPath))
+            {
+                projectLoaded = projectLoad(projectPath
+                                          , m_textureList
+                                          , m_materialList
+                                          , m_envList
+                                          , m_meshInstList
+                                          , m_settings
+                                          );
+            }
+        }
+
+        // Try loading project from config directory.
+        if (!projectLoaded)
+        {
+            dm::strscpya(projectPath, home);
+            #if BX_PLATFORM_WINDOWS
+                bx::strlcat(projectPath, "\\.cmftStudio\\", DM_PATH_LEN);
+            #else // Linux or OSX.
+                bx::strlcat(projectPath, "/.cmftStudio/", DM_PATH_LEN);
+            #endif // BX_PLATFORM_WINDOWS
+            bx::strlcat(projectPath, g_config.m_startupProject, DM_PATH_LEN);
+
+            if (dm::fileExists(g_config.m_startupProject))
+            {
+                projectLoaded = projectLoad(projectPath
+                                          , m_textureList
+                                          , m_materialList
+                                          , m_envList
+                                          , m_meshInstList
+                                          , m_settings
+                                          );
+            }
+        }
 
         // If startup project is not available, load predefined resources.
         if (!projectLoaded)

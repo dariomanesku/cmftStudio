@@ -39,7 +39,7 @@ void configWriteDefault(const char* _path)
         "#    Renderer       = [dx9,directx9,dx11,directx11,ogl,opengl] # Windows only\n"
         "#    WindowSize     = [width x height]                         # Window size at startup.\n"
         "#    Memory         = [1.0-7.0]GB                              # Recommended 2.0GB or more on a 64bit system.\n"
-        "#    StartupProject = [\"path_to_csp_file\"]                   # *.csp - cmftStudio project file.\n"
+        "#    StartupProject = [\"path_to_csp_file\"]                     # *.csp - cmftStudio project file.\n"
         "\n"
         "Renderer       = ogl\n"
         "WindowSize     = 1920x1027\n"

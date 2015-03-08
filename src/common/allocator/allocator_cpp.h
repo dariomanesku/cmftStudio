@@ -59,6 +59,7 @@ struct Memory
         char home[DM_PATH_LEN];
         dm::homeDir(home);
 
+        g_config.init();
         char configPath[DM_PATH_LEN];
 
         dm::strscpya(configPath, home);

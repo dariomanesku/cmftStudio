@@ -11,7 +11,7 @@
 
 struct Config
 {
-    Config()
+    void init()
     {
         #if BX_ARCH_64BIT
         m_memorySize        = DM_GIGABYTES(2);
@@ -31,6 +31,7 @@ struct Config
     char m_startupProject[DM_PATH_LEN];
 };
 
+void configWriteDefault(const char* _path);
 void configFromFile(Config& _config, const char* _path);
 void configFromCli(Config& _config, int _argc, const char* const* _argv);
 void printCliHelp();
