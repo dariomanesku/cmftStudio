@@ -30,7 +30,7 @@ Controls
 Requirements
 --------
 
-- Screen resolution of at least 1980x1080. When using a lower resolution the application interface might not fit on the screen. In case you are on OSX, you might probably get by by maximizing the window as mentioned [here](https://github.com/dariomanesku/cmftStudio/issues/1).
+- Screen resolution of at least 1980x1080. When using a lower resolution the application interface might not fit on the screen. In case you are on OSX, try maximizing the window two times or use fullscreen mode.
 - More than 2GB or RAM.
 - A decent CPU and GPU for filtering.
 
