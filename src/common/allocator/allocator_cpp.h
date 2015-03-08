@@ -56,7 +56,29 @@ struct Memory
         s_initialized = true;
 
         // Read memory size from config.
-        configFromFile(g_config, "cmft.conf");
+        char home[DM_PATH_LEN];
+        dm::homeDir(home);
+
+        char configPath[DM_PATH_LEN];
+
+        dm::strscpya(configPath, home);
+        bx::strlcat(configPath, ".cmftStudio.conf", DM_PATH_LEN);
+        configFromFile(g_config, configPath);
+
+        dm::strscpya(configPath, home);
+        bx::strlcat(configPath, ".cmftstudio.conf", DM_PATH_LEN);
+        configFromFile(g_config, configPath);
+
+        dm::strscpya(configPath, home);
+        bx::strlcat(configPath, ".cmftStudio/cmftStudio.conf", DM_PATH_LEN);
+        configFromFile(g_config, configPath);
+
+        dm::strscpya(configPath, home);
+        bx::strlcat(configPath, ".cmftStudio/cmftstudio.conf", DM_PATH_LEN);
+        configFromFile(g_config, configPath);
+
+        configFromFile(g_config, ".cmftstudio.conf");
+        configFromFile(g_config, ".cmftStudio.conf");
         configFromFile(g_config, "cmftstudio.conf");
         configFromFile(g_config, "cmftStudio.conf");
 
