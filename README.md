@@ -9,7 +9,7 @@ Download
 --------
 
  * [cmftStudio - Windows 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_win64.zip)<br />
- * [cmftStudio - Linux 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_lin64.zip) - Updated on 9. Mar, 2015.<br />
+ * [cmftStudio - Linux 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_lin64.zip) - Updated on: 9. Mar, 2015.<br />
  * [cmftStudio - OSX 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_osx64.zip) - Updated on: 8. Mar, 2015.<br />
  * *In case you need 32bit binaries, compile from source.*<br />
  <br />
