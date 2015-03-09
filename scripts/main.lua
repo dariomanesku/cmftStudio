@@ -33,6 +33,20 @@ newoption
     description = "Enable building tools.",
 }
 
+newoption
+{
+    trigger = "with-sdl",
+    description = "Enable SDL entry.",
+}
+
+if _OPTIONS["with-sdl"] then
+    if os.is("windows") then
+        if not os.getenv("SDL2_DIR") then
+            print("Set SDL2_DIR enviroment variable.")
+        end
+    end
+end
+
 --
 -- Solution
 --
@@ -125,6 +139,19 @@ project "cmftStudio"
         "example-common",
         "cmft",
     }
+
+    if _OPTIONS["with-sdl"] then
+        defines { "ENTRY_CONFIG_USE_SDL=1" }
+        links   { "SDL2" }
+
+        configuration { "x32", "windows" }
+            libdirs { "$(SDL2_DIR)/lib/x86" }
+
+        configuration { "x64", "windows" }
+            libdirs { "$(SDL2_DIR)/lib/x64" }
+
+        configuration {}
+    end
 
     configuration { "vs*" }
         buildoptions
