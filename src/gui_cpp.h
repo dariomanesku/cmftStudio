@@ -1895,7 +1895,11 @@ bool imguiBrowser(int32_t _height
 
     imguiBeginScroll(_height, &_state.m_scroll);
 
-    const uint8_t button = imguiTabs(UINT8_MAX, true, ImguiAlign::LeftIndented, 21, 0, 3, "Root", "Home", "Desktop");
+    imguiSeparatorLine(1);
+    imguiSeparator(2);
+    const uint8_t button = imguiTabs(UINT8_MAX, true, ImguiAlign::LeftIndented, 21, 0, 4, "Root", "Home", "Desktop", "Runtime");
+    imguiSeparatorLine(1);
+    imguiSeparator(4);
 
     for (size_t ii = 0, end = dir.n_files; ii < end; ii++)
     {
@@ -1986,9 +1990,13 @@ bool imguiBrowser(int32_t _height
         {
             dm::homeDir(_state.m_directory);
         }
-        else //if (2 == button). // desktop
+        else if (2 == button) // desktop
         {
             dm::desktopDir(_state.m_directory);
+        }
+        else //if (3 == button). // runtime
+        {
+            bx::pwd(_state.m_directory, DM_PATH_LEN);
         }
     }
 
@@ -2025,7 +2033,11 @@ void imguiBrowser(int32_t _height
 
     imguiBeginScroll(_height, &_state.m_scroll, true);
 
-    const uint8_t button = imguiTabs(UINT8_MAX, true, ImguiAlign::LeftIndented, 21, 0, 3, "Root", "Home", "Desktop");
+    imguiSeparatorLine(1);
+    imguiSeparator(2);
+    const uint8_t button = imguiTabs(UINT8_MAX, true, ImguiAlign::LeftIndented, 21, 0, 4, "Root", "Home", "Desktop", "Runtime");
+    imguiSeparatorLine(1);
+    imguiSeparator(4);
 
     for (size_t ii = 0, end = dir.n_files; ii < end; ii++)
     {
@@ -2144,9 +2156,13 @@ void imguiBrowser(int32_t _height
         {
             dm::homeDir(_state.m_directory);
         }
-        else //if (2 == button). // desktop
+        else if (2 == button) // desktop
         {
             dm::desktopDir(_state.m_directory);
+        }
+        else //if (3 == button). // runtime
+        {
+            bx::pwd(_state.m_directory, DM_PATH_LEN);
         }
     }
 
