@@ -1620,22 +1620,38 @@ private:
         // CmftFilter thread result.
         if (ThreadStatus::Completed & m_threadParams.m_cmftFilter.m_threadStatus)
         {
-            if (cs::Environment::Iem == m_threadParams.m_cmftFilter.m_filterType)
+            if (threadStatus(ThreadStatus::ExitSuccess, m_threadParams.m_cmftFilter.m_threadStatus))
             {
-                cs::envLoad(m_threadParams.m_cmftFilter.m_envHandle, cs::Environment::Iem, m_threadParams.m_cmftFilter.m_output);
-                cs::createGpuBuffers(m_threadParams.m_cmftFilter.m_envHandle);
-                imguiRemoveStatusMessage(StatusWindowId::FilterIem);
-                imguiStatusMessage("Irraidance filter completed!", 3.0f, false, "Close");
-            }
-            else //if (cs::Environment::Pmrem == m_threadParams.m_cmftFilter.m_filterType).
-            {
-                cs::Environment& env = cs::getObj(m_threadParams.m_cmftFilter.m_envHandle);
-                env.m_edgeFixup = (cmft::EdgeFixup::Enum)m_threadParams.m_cmftFilter.m_edgeFixup;
+                if (cs::Environment::Iem == m_threadParams.m_cmftFilter.m_filterType)
+                {
+                    cs::envLoad(m_threadParams.m_cmftFilter.m_envHandle, cs::Environment::Iem, m_threadParams.m_cmftFilter.m_output);
+                    cs::createGpuBuffers(m_threadParams.m_cmftFilter.m_envHandle);
+                    imguiRemoveStatusMessage(StatusWindowId::FilterIem);
+                    imguiStatusMessage("Irraidance filter completed!", 3.0f, false, "Close");
+                }
+                else //if (cs::Environment::Pmrem == m_threadParams.m_cmftFilter.m_filterType).
+                {
+                    cs::Environment& env = cs::getObj(m_threadParams.m_cmftFilter.m_envHandle);
+                    env.m_edgeFixup = (cmft::EdgeFixup::Enum)m_threadParams.m_cmftFilter.m_edgeFixup;
 
-                cs::envLoad(m_threadParams.m_cmftFilter.m_envHandle, cs::Environment::Pmrem, m_threadParams.m_cmftFilter.m_output);
-                cs::createGpuBuffers(m_threadParams.m_cmftFilter.m_envHandle);
-                imguiRemoveStatusMessage(StatusWindowId::FilterPmrem);
-                imguiStatusMessage("Radiance filter completed!", 3.0f, false, "Close");
+                    cs::envLoad(m_threadParams.m_cmftFilter.m_envHandle, cs::Environment::Pmrem, m_threadParams.m_cmftFilter.m_output);
+                    cs::createGpuBuffers(m_threadParams.m_cmftFilter.m_envHandle);
+                    imguiRemoveStatusMessage(StatusWindowId::FilterPmrem);
+                    imguiStatusMessage("Radiance filter completed!", 3.0f, false, "Close");
+                }
+            }
+            else
+            {
+                if (cs::Environment::Iem == m_threadParams.m_cmftFilter.m_filterType)
+                {
+                    imguiRemoveStatusMessage(StatusWindowId::FilterIem);
+                    imguiStatusMessage("Irraidance filter failed!", 3.0f, true, "Close");
+                }
+                else //if (cs::Environment::Pmrem == m_threadParams.m_cmftFilter.m_filterType).
+                {
+                    imguiRemoveStatusMessage(StatusWindowId::FilterPmrem);
+                    imguiStatusMessage("Radiance filter failed!", 3.0f, true, "Close");
+                }
             }
 
             // Cleanup.

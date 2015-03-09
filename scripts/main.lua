@@ -116,6 +116,7 @@ project "cmftStudio"
         CMFTSTUDIO_SRC_DIR .. "**.h",
         BGFX_DIR .. "3rdparty/forsyth-too/**.cpp",
         BGFX_DIR .. "3rdparty/forsyth-too/**.h",
+        DM_DIR   .. "include/**.h",
     }
 
     links

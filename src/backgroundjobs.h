@@ -210,7 +210,7 @@ struct CmftFilterThreadParams
         m_envHandle     = cs::EnvHandle::invalid();
     }
 
-    ThreadStatus::Enum m_threadStatus;
+    uint8_t m_threadStatus;
     uint32_t m_srcSize;
     uint32_t m_dstSize;
     float m_inputGamma;

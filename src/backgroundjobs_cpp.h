@@ -227,22 +227,19 @@ int32_t cmftFilterFunc(void* _cmftFilterThreadParams)
         cmft::setAllocator(cs::g_crtAlloc);
 
         // Radiance filter.
-        cmft::imageRadianceFilter(params->m_output
-                                , params->m_dstSize
-                                , params->m_lightingModel
-                                , params->m_excludeBase
-                                , params->m_mipCount
-                                , params->m_glossScale
-                                , params->m_glossBias
-                                , params->m_edgeFixup
-                                , params->m_numCpuThreads
-                                , &clContext
-                                );
+        const bool success = cmft::imageRadianceFilter(params->m_output
+                                                     , params->m_dstSize
+                                                     , params->m_lightingModel
+                                                     , params->m_excludeBase
+                                                     , params->m_mipCount
+                                                     , params->m_glossScale
+                                                     , params->m_glossBias
+                                                     , params->m_edgeFixup
+                                                     , params->m_numCpuThreads
+                                                     , &clContext
+                                                     );
 
         cmft::setAllocator(cs::g_mainAlloc);
-
-        // Output gamma.
-        cmft::imageApplyGamma(params->m_output, params->m_outputGamma);
 
         // Cleanup.
         clContext.destroy();
@@ -250,6 +247,17 @@ int32_t cmftFilterFunc(void* _cmftFilterThreadParams)
         {
             bx::clUnload(); // Dynamically unload OpenCL lib.
         }
+
+        // Check result.
+        if (!success)
+        {
+            params->m_threadStatus = ThreadStatus::Completed | ThreadStatus::ExitFailure;
+            return EXIT_FAILURE;
+        }
+
+        // Output gamma.
+        cmft::imageApplyGamma(params->m_output, params->m_outputGamma);
+
     }
     else //if (cs::Environment::Iem == params->m_filterType).
     {
@@ -259,7 +267,7 @@ int32_t cmftFilterFunc(void* _cmftFilterThreadParams)
     }
 
     // Result.
-    params->m_threadStatus = ThreadStatus::Completed;
+    params->m_threadStatus = ThreadStatus::Completed | ThreadStatus::ExitSuccess;
 
     return EXIT_SUCCESS;
 }
