@@ -1901,68 +1901,104 @@ bool imguiBrowser(int32_t _height
     imguiSeparatorLine(1);
     imguiSeparator(4);
 
-    for (size_t ii = 0, end = dir.n_files; ii < end; ii++)
+    const bool windowsRootDir = _state.m_directory[1] == ':'
+                             && _state.m_directory[2] == '\\'
+                             && _state.m_directory[3] == '\0'
+                              ;
+
+    if (windowsRootDir)
     {
-        tinydir_file file;
-        if (-1 == tinydir_readfile_n(&dir, &file, ii))
+        if (imguiButton(".."))
         {
-            continue;
+            _state.m_windowsDrives = true;
         }
+    }
 
-        const bool dot      = ('.' == file.name[0]);
-        const bool dotEnd   = dot && ('\0' == file.name[1]); // never show
-        const bool dotDot   = dot && ( '.' == file.name[1]); // always show
-        const bool isHidden = dot && ('\0' != file.name[1]);
-
-        if (file.is_dir && !dotEnd && (dotDot || !isHidden || _showHidden))
+    if (_state.m_windowsDrives)
+    {
+        const uint32_t drives = dm::windowsDrives();
+        for (uint32_t ii = 0; ii < 32; ++ii)
         {
-            if (imguiButton(file.name))
+            if (0 != (drives&(1<<ii)))
             {
-                modifyDir = true;
-                dirNum = ii;
-            }
-        }
-        else if (!_showDirsOnly)
-        {
-            bool show;
-            if (NULL == _ext
-            ||  0    == _extCount)
-            {
-                show = !isHidden;
-            }
-            else
-            {
-                show = false;
-                for(uint8_t jj = 0; jj < _extCount; ++jj)
+                const char driveLetter = 'A'+ii;
+                const char buttonStr[4] = { driveLetter, ':', '\\', '\0' };
+                if (imguiButton(buttonStr))
                 {
-                    if (('.' != file.name[0])
-                    &&  (0 == bx::stricmp(_ext[jj], file.extension)))
-                    {
-                        show = true;
-                        break;
-                    }
+                    _state.m_directory[0] = buttonStr[0];
+                    _state.m_directory[1] = buttonStr[1];
+                    _state.m_directory[2] = buttonStr[2];
+                    _state.m_directory[3] = buttonStr[3];
+                    _state.m_windowsDrives = false;
                 }
             }
-
-            if (show)
+        }
+    }
+    else
+    {
+        for (size_t ii = 0, end = dir.n_files; ii < end; ii++)
+        {
+            tinydir_file file;
+            if (-1 == tinydir_readfile_n(&dir, &file, ii))
             {
-                const bool checked = selectFile ? (0 == bx::stricmp(file.name, selectFile)) : false;
-                const bool click = imguiCheck(file.name, checked);
-                if (click || checked)
-                {
-                    result = click;
-                    selectFile = NULL;
+                continue;
+            }
 
-                    dm::strscpya(_state.m_filePath, file.path);
-                    dm::strscpya(_state.m_fileName, file.name);
-                    //Remove extension.
-                    const bool hasExt = ('\0' != file.extension[0]);
-                    if (hasExt)
+            const bool dot      = ('.' == file.name[0]);
+            const bool dotEnd   = dot && ('\0' == file.name[1]); // never show
+            const bool dotDot   = dot && ( '.' == file.name[1]); // always show
+            const bool isHidden = dot && ('\0' != file.name[1]);
+
+            if (file.is_dir && !dotEnd && (dotDot || !isHidden || _showHidden))
+            {
+                if (imguiButton(file.name))
+                {
+                    modifyDir = true;
+                    dirNum = ii;
+                }
+            }
+            else if (!_showDirsOnly)
+            {
+                bool show;
+                if (NULL == _ext
+                ||  0    == _extCount)
+                {
+                    show = !isHidden;
+                }
+                else
+                {
+                    show = false;
+                    for(uint8_t jj = 0; jj < _extCount; ++jj)
                     {
-                        _state.m_fileName[file.extension-file.name-1] = '\0';
+                        if (('.' != file.name[0])
+                            &&  (0 == bx::stricmp(_ext[jj], file.extension)))
+                        {
+                            show = true;
+                            break;
+                        }
                     }
-                    dm::strscpya(_state.m_fileNameExt, file.name);
-                    dm::strscpya(_state.m_fileExt, file.extension);
+                }
+
+                if (show)
+                {
+                    const bool checked = selectFile ? (0 == bx::stricmp(file.name, selectFile)) : false;
+                    const bool click = imguiCheck(file.name, checked);
+                    if (click || checked)
+                    {
+                        result = click;
+                        selectFile = NULL;
+
+                        dm::strscpya(_state.m_filePath, file.path);
+                        dm::strscpya(_state.m_fileName, file.name);
+                        //Remove extension.
+                        const bool hasExt = ('\0' != file.extension[0]);
+                        if (hasExt)
+                        {
+                            _state.m_fileName[file.extension-file.name-1] = '\0';
+                        }
+                        dm::strscpya(_state.m_fileNameExt, file.name);
+                        dm::strscpya(_state.m_fileExt, file.extension);
+                    }
                 }
             }
         }
@@ -1984,7 +2020,11 @@ bool imguiBrowser(int32_t _height
 
         if (0 == button) // root
         {
-            dm::rootDir(_state.m_directory);
+            #if BX_PLATFORM_WINDOWS
+                _state.m_directory[3] = '\0';
+            #else
+                dm::rootDir(_state.m_directory, _state.m_directory);
+            #endif // BX_PLATFORM_WINDOWS
         }
         else if (1 == button) // home
         {
@@ -2039,88 +2079,124 @@ void imguiBrowser(int32_t _height
     imguiSeparatorLine(1);
     imguiSeparator(4);
 
-    for (size_t ii = 0, end = dir.n_files; ii < end; ii++)
+    const bool windowsRootDir = _state.m_directory[1] == ':'
+                             && _state.m_directory[2] == '\\'
+                             && _state.m_directory[3] == '\0'
+                              ;
+
+    if (windowsRootDir)
     {
-        tinydir_file file;
-        if (-1 == tinydir_readfile_n(&dir, &file, ii))
+        if (imguiButton(".."))
         {
-            continue;
+            _state.m_windowsDrives = true;
         }
+    }
 
-        const bool dot      = ('.' == file.name[0]);
-        const bool dotEnd   = dot && ('\0' == file.name[1]); // never show
-        const bool dotDot   = dot && ( '.' == file.name[1]); // always show
-        const bool isHidden = dot && ('\0' != file.name[1]);
-
-        if (file.is_dir && !dotEnd && (dotDot || !isHidden || _showHidden))
+    if (_state.m_windowsDrives)
+    {
+        const uint32_t drives = dm::windowsDrives();
+        for (uint32_t ii = 0; ii < 32; ++ii)
         {
-            if (imguiButton(file.name))
+            if (0 != (drives&(1<<ii)))
             {
-                modifyDir = true;
-                dirNum = ii;
-            }
-        }
-        else if (!_showDirsOnly)
-        {
-            bool show;
-            if (NULL == _ext
-            ||  0    == _extCount)
-            {
-                show = !isHidden;
-            }
-            else
-            {
-                show = false;
-                for(uint8_t jj = 0; jj < _extCount; ++jj)
+                const char driveLetter = 'A'+ii;
+                const char buttonStr[4] = { driveLetter, ':', '\\', '\0' };
+                if (imguiButton(buttonStr))
                 {
-                    if (0 == bx::stricmp(_ext[jj], file.extension))
-                    {
-                        show = true;
-                        break;
-                    }
+                    _state.m_directory[0] = buttonStr[0];
+                    _state.m_directory[1] = buttonStr[1];
+                    _state.m_directory[2] = buttonStr[2];
+                    _state.m_directory[3] = buttonStr[3];
+                    _state.m_windowsDrives = false;
                 }
             }
-
-            if (show)
+        }
+    }
+    else
+    {
+        for (size_t ii = 0, end = dir.n_files; ii < end; ii++)
+        {
+            tinydir_file file;
+            if (-1 == tinydir_readfile_n(&dir, &file, ii))
             {
-                bool checked = false;
-                uint16_t selected = UINT16_MAX;
-                for (uint16_t ii = numHandles; ii--; )
+                continue;
+            }
+
+            const bool dot      = ('.' == file.name[0]);
+            const bool dotEnd   = dot && ('\0' == file.name[1]); // never show
+            const bool dotDot   = dot && ( '.' == file.name[1]); // always show
+            const bool isHidden = dot && ('\0' != file.name[1]);
+
+            if (file.is_dir && !dotEnd && (dotDot || !isHidden || _showHidden))
+            {
+                if (imguiButton(file.name))
                 {
-                    const char* selectFile = _state.m_files.getObjFromHandle(handles[ii])->m_nameExt;
-                    if (0 == strcmp(file.name, selectFile))
-                    {
-                        selected = handles[ii];
-                        handles[ii] = handles[--numHandles];
-                        checked = true;
-                        break;
-                    }
+                    modifyDir = true;
+                    dirNum = ii;
                 }
-
-                const bool clicked = imguiCheck(file.name, checked);
-
-                if (clicked)
+            }
+            else if (!_showDirsOnly)
+            {
+                bool show;
+                if (NULL == _ext
+                ||  0    == _extCount)
                 {
-                    // Deselect.
-                    if (checked && UINT16_MAX != selected)
+                    show = !isHidden;
+                }
+                else
+                {
+                    show = false;
+                    for(uint8_t jj = 0; jj < _extCount; ++jj)
                     {
-                        handles[numHandles++] = selected;
-                    }
-                    // Select.
-                    else if (_state.m_files.count() < MaxSelectedT)
-                    {
-                        BrowserStateFile* newFile = _state.m_files.addNew();
-
-                        dm::strscpya(newFile->m_path, file.path);
-                        dm::strscpya(newFile->m_name, file.name);
-                        //Remove extension.
-                        const bool hasExt = ('\0' != file.extension[0]);
-                        if (hasExt)
+                        if (0 == bx::stricmp(_ext[jj], file.extension))
                         {
-                            newFile->m_name[file.extension-file.name-1] = '\0';
+                            show = true;
+                            break;
                         }
-                        dm::strscpya(newFile->m_nameExt, file.name);
-                        dm::strscpya(newFile->m_ext, file.extension);
+                    }
+                }
+
+                if (show)
+                {
+                    bool checked = false;
+                    uint16_t selected = UINT16_MAX;
+                    for (uint16_t ii = numHandles; ii--; )
+                    {
+                        const char* selectFile = _state.m_files.getObjFromHandle(handles[ii])->m_nameExt;
+                        if (0 == strcmp(file.name, selectFile))
+                        {
+                            selected = handles[ii];
+                            handles[ii] = handles[--numHandles];
+                            checked = true;
+                            break;
+                        }
+                    }
+
+                    const bool clicked = imguiCheck(file.name, checked);
+
+                    if (clicked)
+                    {
+                        // Deselect.
+                        if (checked && UINT16_MAX != selected)
+                        {
+                            handles[numHandles++] = selected;
+                        }
+                        // Select.
+                        else if (_state.m_files.count() < MaxSelectedT)
+                        {
+                            BrowserStateFile* newFile = _state.m_files.addNew();
+
+                            dm::strscpya(newFile->m_path, file.path);
+                            dm::strscpya(newFile->m_name, file.name);
+                            //Remove extension.
+                            const bool hasExt = ('\0' != file.extension[0]);
+                            if (hasExt)
+                            {
+                                newFile->m_name[file.extension-file.name-1] = '\0';
+                            }
+                            dm::strscpya(newFile->m_nameExt, file.name);
+                            dm::strscpya(newFile->m_ext, file.extension);
+                        }
                     }
                 }
             }
@@ -2150,7 +2226,11 @@ void imguiBrowser(int32_t _height
 
         if (0 == button) // root
         {
-            dm::rootDir(_state.m_directory);
+            #if BX_PLATFORM_WINDOWS
+                _state.m_directory[3] = '\0';
+            #else
+                dm::rootDir(_state.m_directory, _state.m_directory);
+            #endif // BX_PLATFORM_WINDOWS
         }
         else if (1 == button) // home
         {

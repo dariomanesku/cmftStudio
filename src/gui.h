@@ -265,6 +265,7 @@ struct BrowserState
     void reset()
     {
         m_scroll         = 0;
+        m_windowsDrives  = false;
         m_filePath[0]    = '\0';
         m_fileName[0]    = '\0';
         m_fileExt[0]     = '\0';
@@ -272,6 +273,7 @@ struct BrowserState
     }
 
     int32_t m_scroll;
+    bool m_windowsDrives;
     char m_filePath[256];
     char m_fileName[128];
     char m_fileExt[16];
@@ -293,7 +295,8 @@ struct BrowserStateFor
 {
     BrowserStateFor(const char* _directory = ".")
     {
-        m_scroll = 0;
+        m_scroll        = 0;
+        m_windowsDrives = false;
         dm::realpath(m_directory, _directory);
     }
 
@@ -306,6 +309,7 @@ struct BrowserStateFor
     };
 
     int32_t m_scroll;
+    bool m_windowsDrives;
     char m_directory[DM_PATH_LEN];
     dm::ListT<File, MaxSelectedT> m_files;
 };
