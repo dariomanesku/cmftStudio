@@ -1902,8 +1902,7 @@ bool imguiBrowser(int32_t _height
     imguiSeparator(4);
 
     const bool windowsRootDir = _state.m_directory[1] == ':'
-                             && _state.m_directory[2] == '\\'
-                             && _state.m_directory[3] == '\0'
+                             && _state.m_directory[2] == '\0'
                               ;
 
     if (windowsRootDir)
@@ -2040,6 +2039,8 @@ bool imguiBrowser(int32_t _height
         }
     }
 
+    dm::trimDirPath(_state.m_directory);
+
     tinydir_close(&dir);
 
     return result;
@@ -2080,8 +2081,7 @@ void imguiBrowser(int32_t _height
     imguiSeparator(4);
 
     const bool windowsRootDir = _state.m_directory[1] == ':'
-                             && _state.m_directory[2] == '\\'
-                             && _state.m_directory[3] == '\0'
+                             && _state.m_directory[2] == '\0'
                               ;
 
     if (windowsRootDir)
@@ -2245,6 +2245,8 @@ void imguiBrowser(int32_t _height
             bx::pwd(_state.m_directory, DM_PATH_LEN);
         }
     }
+
+    dm::trimDirPath(_state.m_directory);
 
     tinydir_close(&dir);
 }

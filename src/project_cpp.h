@@ -63,6 +63,7 @@ bool projectSave(const char* _path
     }
 
     outputWindowPrint("Saving '%s'...", bx::baseName(_path));
+    outputWindowPrint("Path: '%s'", _path);
     outputWindowPrint("--------------------------------------------------------------------------------------------------------");
     outputWindowPrint(" Resource  |                                                                         Name  |      Size  ");
     outputWindowPrint("--------------------------------------------------------------------------------------------------------");
