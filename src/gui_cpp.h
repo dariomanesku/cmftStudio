@@ -914,7 +914,7 @@ void imguiCmftSaveWidget(int32_t _x
                , "%s.%s", _state.m_outputName, s_extensions[_state.m_selectedFileType]);
 
     const char* areaTitle = getCubemapTypeStr(_state.m_envType);
-    imguiBeginArea(areaTitle, _x-_width, _y, _width, HeightBrowserTab, _enabled);
+    imguiBeginArea(areaTitle, _x, _y, _width, HeightBrowserTab, _enabled);
     imguiSeparator(4);
 
     imguiLabelBorder("Directory:");
@@ -952,7 +952,7 @@ void imguiCmftSaveWidget(int32_t _x
 
     imguiEndArea();
 
-    imguiBeginArea(areaTitle, _x, _y, _width, Height, _enabled);
+    imguiBeginArea(areaTitle, _x+_width, _y, _width, Height, _enabled);
     imguiSeparator(4);
 
     imguiLabelBorder("Name:");

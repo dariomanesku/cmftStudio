@@ -575,9 +575,9 @@ struct Animators
         m_animators[CmftTransform        ].setKeyPoints(width, _r0y, _r2x, _r2y);
         m_animators[CmftIem              ].setKeyPoints(width, _r0y, _r2x, _r2y);
         m_animators[CmftPmrem            ].setKeyPoints(width, _r0y, _r2x, _r2y);
-        m_animators[CmftSaveSkybox       ].setKeyPoints(width, _r0y, _r2x, _r2y);
-        m_animators[CmftSavePmrem        ].setKeyPoints(width, _r0y, _r2x, _r2y);
-        m_animators[CmftSaveIem          ].setKeyPoints(width, _r0y, _r2x, _r2y);
+        m_animators[CmftSaveSkybox       ].setKeyPoints(width, _r0y, _r2x-Gui::PaneWidth, _r2y);
+        m_animators[CmftSavePmrem        ].setKeyPoints(width, _r0y, _r2x-Gui::PaneWidth, _r2y);
+        m_animators[CmftSaveIem          ].setKeyPoints(width, _r0y, _r2x-Gui::PaneWidth, _r2y);
         m_animators[CmftInfoSkybox       ].setKeyPoints(width, _r0y, _r2x, _r2y);
         m_animators[CmftInfoPmrem        ].setKeyPoints(width, _r0y, _r2x, _r2y);
         m_animators[CmftInfoIem          ].setKeyPoints(width, _r0y, _r2x, _r2y);
