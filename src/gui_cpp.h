@@ -604,7 +604,7 @@ void imguiEnvMapWidget(cs::EnvHandle _env
                      , bool _enabled
                      )
 {
-    const int32_t height = 931;
+    const int32_t height = 934;
     const cs::Environment& env = cs::getObj(_env);
 
     _state.m_events = GuiEvent::None;
@@ -899,11 +899,12 @@ void imguiCmftSaveWidget(int32_t _x
 {
     enum
     {
-        HeightFileType   =   96,
-        HeightOutputType =  148,
-        HeightFormat     =  120,
-        HeightBrowser    =  160,
-        Height           = 1010,
+        HeightFileType   =  96,
+        HeightOutputType = 173,
+        HeightFormat     = 192,
+        HeightBrowser    = 517,
+        HeightBrowserTab = 672,
+        Height           = 774,
     };
 
     _state.m_events = GuiEvent::None;
@@ -913,16 +914,18 @@ void imguiCmftSaveWidget(int32_t _x
                , "%s.%s", _state.m_outputName, s_extensions[_state.m_selectedFileType]);
 
     const char* areaTitle = getCubemapTypeStr(_state.m_envType);
-    imguiBeginArea(areaTitle, _x, _y, _width, Height, _enabled);
+    imguiBeginArea(areaTitle, _x-_width, _y, _width, HeightBrowserTab, _enabled);
     imguiSeparator(4);
 
     imguiLabelBorder("Directory:");
     imguiIndent();
     {
+        imguiSeparator(2);
         if (imguiDirectoryLabel(_state.m_directory))
         {
             _state.m_events = GuiEvent::GuiUpdate;
         }
+        imguiSeparator(2);
     }
     imguiSeparator();
     imguiUnindent();
@@ -930,6 +933,7 @@ void imguiCmftSaveWidget(int32_t _x
     imguiLabelBorder("Change directory:");
     imguiIndent();
     {
+        imguiSeparator(4);
         const bool fileClicked = imguiBrowser(HeightBrowser, _state, s_extensions, 4, _state.m_outputNameExt);
         if (fileClicked)
         {
@@ -943,15 +947,13 @@ void imguiCmftSaveWidget(int32_t _x
             }
         }
     }
-    imguiUnindent();
-
-    imguiLabelBorder("Output file:");
-    imguiIndent();
-    {
-        imguiLabel(_state.m_outputNameExt);
-    }
     imguiSeparator();
     imguiUnindent();
+
+    imguiEndArea();
+
+    imguiBeginArea(areaTitle, _x, _y, _width, Height, _enabled);
+    imguiSeparator(4);
 
     imguiLabelBorder("Name:");
     imguiIndent();
@@ -2003,6 +2005,7 @@ bool imguiBrowser(int32_t _height
         }
     }
 
+    imguiSeparator(4);
     imguiEndScroll();
     imguiSeparator(4);
 
