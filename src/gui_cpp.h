@@ -1847,13 +1847,16 @@ void imguiModalMagnifyWindow(int32_t _x, int32_t _y, MagnifyWindowState& _state)
     const float wScale = (1.0f-wPadding*2.0f);
     const float hScale = (1.0f-hPadding*2.0f);
 
-    const uint32_t width  = uint32_t(g_widthf *wScale);
-    const uint32_t height = uint32_t(g_heightf*hScale);
+    const uint32_t width  = dm::ftou(float(g_guiWidth)*wScale);
+    const uint32_t height = dm::ftou(float(g_guiHeight)*hScale);
     const int32_t heightAdj = (hasLod ? 0 : -21);
     imguiBeginArea(NULL, _x, _y, width, height + heightAdj);
     {
         imguiSeparator();
         imguiIndent(12);
+
+        const int32_t indent = DM_MAX(0, (int32_t(width)-1650)/2);
+        imguiIndent(indent);
 
         if (imguiCube(texture, _state.m_lod, (ImguiCubemap::Enum)_state.m_imguiCubemap, true, ImguiAlign::CenterIndented))
         {
