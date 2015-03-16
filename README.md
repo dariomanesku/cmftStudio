@@ -11,10 +11,14 @@ Download
 <img src="https://github.com/dariomanesku/cmftStudio-bin/raw/master/res/windows.png" height="16px">  [cmftStudio - Windows 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_win64.zip)<br />
 <img src="https://github.com/dariomanesku/cmftStudio-bin/raw/master/res/linux.png"   height="16px">  [cmftStudio - Linux 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_lin64.zip) (updated: 9. Mar 2015.)<br />
 <img src="https://github.com/dariomanesku/cmftStudio-bin/raw/master/res/apple.png"   height="16px">  [cmftStudio - OSX 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_osx64.zip) (updated: 16. Mar 2015)<br />
-*In case you need 32bit binaries, compile from source.*<br />
  * [cmftStudio - Sample project 0](https://www.dropbox.com/s/qoy4h6bbp0bcdh4/SampleProject0.csp?dl=1)<br />
  * [cmftStudio - Sample project 1](https://www.dropbox.com/s/ojzyufs4ooh76g5/SampleProject1.csp?dl=1)<br />
  <br />
+*In case you need 32bit binaries, compile from source.*<br />
+
+Latest changes:
+- Gui now scales down for lower resolution screens. Even if you are on a laptop with screen resolution as low as 1366x768, you should be fine.
+- Added full screen support.
 
 
 ![cmftStudioCover](https://github.com/dariomanesku/cmftStudio/raw/master/res/cmftStudio_cover.jpg)
@@ -25,14 +29,6 @@ Controls
 - Ctrl/Meta + F == Toggle fullscreen (where supported).
 - Ctrl/Meta + Q == Quit application.
 - On OSX, in case you don't have middle mouse click, use `Command + Left click` istead.
-
-
-Requirements
---------
-
-- Screen resolution of at least 1980x1080. When using a lower resolution the application interface might not fit on the screen. In case you are on OSX, try maximizing the window or use fullscreen mode.
-- More than 2GB or RAM.
-- A decent CPU and GPU for filtering.
 
 
 Supported formats
