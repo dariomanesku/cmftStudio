@@ -1906,13 +1906,13 @@ bool imguiBrowser(int32_t _height
     tinydir_dir dir;
     tinydir_open_sorted(&dir, _state.m_directory);
 
-    imguiBeginScroll(_height, &_state.m_scroll);
-
-    imguiSeparatorLine(1);
+    imguiSeparatorLine(1, ImguiAlign::CenterIndented);
     imguiSeparator(2);
-    const uint8_t button = imguiTabs(UINT8_MAX, true, ImguiAlign::LeftIndented, 21, 0, 4, "Root", "Home", "Desktop", "Runtime");
-    imguiSeparatorLine(1);
+    const uint8_t button = imguiTabs(UINT8_MAX, true, ImguiAlign::CenterIndented, 21, 0, 4, "Root", "Home", "Desktop", "Runtime");
+    imguiSeparatorLine(1, ImguiAlign::CenterIndented);
     imguiSeparator(4);
+
+    imguiBeginScroll(_height, &_state.m_scroll);
 
     const bool windowsRootDir = _state.m_directory[1] == ':'
                              && _state.m_directory[2] == '\0'
