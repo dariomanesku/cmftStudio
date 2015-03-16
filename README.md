@@ -15,10 +15,12 @@ Download
  * [cmftStudio - Sample project 0](https://www.dropbox.com/s/qoy4h6bbp0bcdh4/SampleProject0.csp?dl=1)
  * [cmftStudio - Sample project 1](https://www.dropbox.com/s/ojzyufs4ooh76g5/SampleProject1.csp?dl=1)
  <br />
+ <br />
 
 **Latest changes:**
 - Gui now scales down on lower resolution screens! Even if you are on a laptop with screen resolution as low as 1366x768, you should be fine.
 - Added full screen support.
+ <br />
  <br />
 
 
