@@ -1017,7 +1017,7 @@ bool guiDraw(ImguiState& _guiState
         {
             char msg[128];
             bx::snprintf(msg, sizeof(msg), "Directory: %s", _widgetState.m_meshSave.m_directory);
-            imguiStatusMessage(msg, 2.0f);
+            imguiStatusMessage(msg, 4.0f);
         }
 
         if (guiEvent(GuiEvent::DismissWindow, _widgetState.m_meshSave.m_events))
@@ -1041,7 +1041,7 @@ bool guiDraw(ImguiState& _guiState
         {
             char msg[128];
             bx::snprintf(msg, sizeof(msg), "Directory: %s", _widgetState.m_meshBrowser.m_directory);
-            imguiStatusMessage(msg, 2.0f);
+            imguiStatusMessage(msg, 4.0f);
         }
 
         if (guiEvent(GuiEvent::DismissWindow, _widgetState.m_meshBrowser.m_events))
@@ -1089,7 +1089,7 @@ bool guiDraw(ImguiState& _guiState
         {
             char msg[128];
             bx::snprintf(msg, sizeof(msg), "Directory: %s", _widgetState.m_textureBrowser.m_directory);
-            imguiStatusMessage(msg, 2.0f);
+            imguiStatusMessage(msg, 4.0f);
         }
 
         if (guiEvent(GuiEvent::DismissWindow, _widgetState.m_textureBrowser.m_events))
@@ -1186,7 +1186,7 @@ bool guiDraw(ImguiState& _guiState
             {
                 char msg[128];
                 bx::snprintf(msg, sizeof(msg), "Directory: %s", _widgetState.m_skyboxBrowser.m_directory);
-                imguiStatusMessage(msg, 2.0f);
+                imguiStatusMessage(msg, 4.0f);
             }
 
             if (guiEvent(GuiEvent::DismissWindow, _widgetState.m_skyboxBrowser.m_events))
@@ -1208,7 +1208,7 @@ bool guiDraw(ImguiState& _guiState
             {
                 char msg[128];
                 bx::snprintf(msg, sizeof(msg), "Directory: %s", _widgetState.m_pmremBrowser.m_directory);
-                imguiStatusMessage(msg, 2.0f);
+                imguiStatusMessage(msg, 4.0f);
             }
 
             if (guiEvent(GuiEvent::DismissWindow, _widgetState.m_pmremBrowser.m_events))
@@ -1230,7 +1230,7 @@ bool guiDraw(ImguiState& _guiState
             {
                 char msg[128];
                 bx::snprintf(msg, sizeof(msg), "Directory: %s", _widgetState.m_iemBrowser.m_directory);
-                imguiStatusMessage(msg, 2.0f);
+                imguiStatusMessage(msg, 4.0f);
             }
 
             if (guiEvent(GuiEvent::DismissWindow, _widgetState.m_iemBrowser.m_events))
@@ -1319,7 +1319,7 @@ bool guiDraw(ImguiState& _guiState
             {
                 char msg[128];
                 bx::snprintf(msg, sizeof(msg), "Directory: %s", _widgetState.m_cmftSaveSkybox.m_directory);
-                imguiStatusMessage(msg, 2.0f);
+                imguiStatusMessage(msg, 4.0f);
             }
 
             if (guiEvent(GuiEvent::DismissWindow, _widgetState.m_cmftSaveSkybox.m_events))
@@ -1492,13 +1492,13 @@ bool guiDraw(ImguiState& _guiState
             {
                 char msg[128];
                 bx::snprintf(msg, sizeof(msg), "Directory: %s", _widgetState.m_projectWindow.m_load.m_directory);
-                imguiStatusMessage(msg, 2.0f);
+                imguiStatusMessage(msg, 4.0f);
             }
             else if (ProjectWindowState::ShowSaveDir == _widgetState.m_projectWindow.m_action)
             {
                 char msg[128];
                 bx::snprintf(msg, sizeof(msg), "Directory: %s", _widgetState.m_projectWindow.m_load.m_directory);
-                imguiStatusMessage(msg, 2.0f);
+                imguiStatusMessage(msg, 4.0f);
             }
         }
     }
