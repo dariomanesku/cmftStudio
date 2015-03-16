@@ -2025,7 +2025,7 @@ bool imguiBrowser(int32_t _height
             #if BX_PLATFORM_WINDOWS
                 _state.m_directory[3] = '\0';
             #else
-                dm::rootDir(_state.m_directory, _state.m_directory);
+                dm::rootDir(_state.m_directory);
             #endif // BX_PLATFORM_WINDOWS
         }
         else if (1 == button) // home
@@ -2232,7 +2232,7 @@ void imguiBrowser(int32_t _height
             #if BX_PLATFORM_WINDOWS
                 _state.m_directory[3] = '\0';
             #else
-                dm::rootDir(_state.m_directory, _state.m_directory);
+                dm::rootDir(_state.m_directory);
             #endif // BX_PLATFORM_WINDOWS
         }
         else if (1 == button) // home
