@@ -1210,7 +1210,7 @@ private:
         outputWindowPrint("---------------------------------------------------------------------------------------------------------");
 
         char path[DM_PATH_LEN];
-        bx::snprintf(path, sizeof(path), "%s"DM_DIRSLASH"%s", _widget.m_directory, _widget.m_outputName);
+        bx::snprintf(path, sizeof(path), "%s" DM_DIRSLASH "%s", _widget.m_directory, _widget.m_outputName);
 
         const bool saved = cmft::imageSave(output
                                          , path
@@ -1666,7 +1666,7 @@ private:
         if (guiEvent(GuiEvent::HandleAction, m_widgets.m_meshSave.m_events))
         {
             char meshPath[DM_PATH_LEN];
-            bx::snprintf(meshPath, sizeof(meshPath), "%s"DM_DIRSLASH"%s.bin"
+            bx::snprintf(meshPath, sizeof(meshPath), "%s" DM_DIRSLASH "%s.bin"
                        , m_widgets.m_meshSave.m_directory
                        , m_widgets.m_meshSave.m_outputName
                        );
@@ -1854,7 +1854,7 @@ private:
                     memcpy(&m_threadParams.m_projectSave.m_settings, &m_settings, sizeof(Settings));
                     bx::snprintf(m_threadParams.m_projectSave.m_path
                                , sizeof(m_threadParams.m_projectSave.m_path)
-                               , "%s"DM_DIRSLASH"%s.csp"
+                               , "%s" DM_DIRSLASH "%s.csp"
                                , m_widgets.m_projectWindow.m_save.m_directory
                                , m_widgets.m_projectWindow.m_projectName
                                );
