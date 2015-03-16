@@ -353,7 +353,7 @@ namespace cs
 
     void setTexture(TextureUniform::Enum _which, cs::TextureHandle _handle, uint32_t _flags = UINT32_MAX);
     void setTexture(TextureUniform::Enum _which, bgfx::TextureHandle _handle, uint32_t _flags = UINT32_MAX);
-    void setTexture(TextureUniform::Enum _which, bgfx::FrameBufferHandle _handle, uint8_t _attachment = 0, uint32_t _flags = UINT32_MAX);
+    void setTexture(TextureUniform::Enum _which, bgfx::FrameBufferHandle _handle, uint32_t _flags = UINT32_MAX, uint8_t _attachment = 0);
     void setMaterial(MaterialHandle _handle);
     void setEnv(EnvHandle _handle);
     void setEnvTransition(EnvHandle _from);

@@ -2345,7 +2345,7 @@ namespace cs
         bgfx::setTexture(s_textureStage[_which], s_uniforms.u_tex[_which], _handle, _flags);
     }
 
-    void setTexture(TextureUniform::Enum _which, bgfx::FrameBufferHandle _handle, uint8_t _attachment, uint32_t _flags)
+    void setTexture(TextureUniform::Enum _which, bgfx::FrameBufferHandle _handle, uint32_t _flags, uint8_t _attachment)
     {
         bgfx::setTexture(s_textureStage[_which], s_uniforms.u_tex[_which], _handle, _attachment, _flags);
     }

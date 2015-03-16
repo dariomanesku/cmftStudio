@@ -219,17 +219,6 @@ void drawSplashScreen(cs::TextureHandle _texture, uint32_t _width, uint32_t _hei
     g_frameNum = bgfx::frame();
 }
 
-void drawOverlay(uint32_t _width, uint32_t _height)
-{
-    cs::setProgram(cs::Program::Overlay);
-    screenQuad(0, 0, _width, _height);
-    bgfx::setState(BGFX_STATE_RGB_WRITE
-                  |BGFX_STATE_ALPHA_WRITE
-                  |BGFX_STATE_BLEND_ALPHA
-                  );
-    bgfx::submit(RenderPipeline::ViewIdGui);
-}
-
 struct RenderPipelineImpl : public RenderPipeline
 {
     void init(uint32_t _width, uint32_t _height, uint32_t _reset)
@@ -266,8 +255,8 @@ struct RenderPipelineImpl : public RenderPipeline
 
         // TODO: This is a dirty way to make sure fbLumCurr and fbLumLast are initialized to 0.
         // Find an acutual solution.
-        bgfx::setViewClear(0, BGFX_CLEAR_COLOR, 0x00000000, 1.0f, 0);
-        bgfx::setViewClear(1, BGFX_CLEAR_COLOR, 0x00000000, 1.0f, 0);
+        bgfx::setViewClear(0, BGFX_CLEAR_COLOR, 0x00000000, 0.0f, 0);
+        bgfx::setViewClear(1, BGFX_CLEAR_COLOR, 0x00000000, 0.0f, 0);
         bgfx::setViewFrameBuffer(0, m_fbLumLast);
         bgfx::setViewFrameBuffer(1, m_fbLumCur);
         bgfx::submit(0);
@@ -276,8 +265,8 @@ struct RenderPipelineImpl : public RenderPipeline
         const bgfx::FrameBufferHandle invalidHandle = BGFX_INVALID_HANDLE;
         bgfx::setViewFrameBuffer(0, invalidHandle);
         bgfx::setViewFrameBuffer(1, invalidHandle);
-        bgfx::setViewClear(0, BGFX_CLEAR_NONE, 0x00000000, 1.0f, 0);
-        bgfx::setViewClear(1, BGFX_CLEAR_NONE, 0x00000000, 1.0f, 0);
+        bgfx::setViewClear(0, BGFX_CLEAR_NONE, 0x00000000, 0.0f, 0);
+        bgfx::setViewClear(1, BGFX_CLEAR_NONE, 0x00000000, 0.0f, 0);
     }
 
     void updateSize(uint32_t _width, uint32_t _height, uint32_t _reset)
@@ -291,10 +280,10 @@ struct RenderPipelineImpl : public RenderPipeline
             m_height = _height;
             m_reset  = _reset;
 
-            if (bgfx::isValid(m_fbMain))   { bgfx::destroyFrameBuffer(m_fbMain);   }
-            if (bgfx::isValid(m_fbPost))   { bgfx::destroyFrameBuffer(m_fbPost);   }
-            if (bgfx::isValid(m_fbBright)) { bgfx::destroyFrameBuffer(m_fbBright); }
-            if (bgfx::isValid(m_fbBlur))   { bgfx::destroyFrameBuffer(m_fbBlur);   }
+            if (bgfx::isValid(m_fbMain))   { bgfx::destroyFrameBuffer(m_fbMain);   m_fbMain.idx   = bgfx::invalidHandle; }
+            if (bgfx::isValid(m_fbPost))   { bgfx::destroyFrameBuffer(m_fbPost);   m_fbPost.idx   = bgfx::invalidHandle; }
+            if (bgfx::isValid(m_fbBright)) { bgfx::destroyFrameBuffer(m_fbBright); m_fbBright.idx = bgfx::invalidHandle; }
+            if (bgfx::isValid(m_fbBlur))   { bgfx::destroyFrameBuffer(m_fbBlur);   m_fbBlur.idx   = bgfx::invalidHandle; }
 
             createSizeDependentFrameBuffers();
         }
@@ -306,15 +295,15 @@ struct RenderPipelineImpl : public RenderPipeline
         m_doBloom      = _doBloom;
         m_doFxaa       = _doFxaa;
 
-        float screenView[16];
         float screenProj[16];
-        bx::mtxIdentity(screenView);
+        float windowProj[16];
         bx::mtxOrtho(screenProj, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 100.0f);
+        bx::mtxOrtho(windowProj, 0.0f, (float)m_width, (float)m_height, 0.0f, 0.0f, 1000.0f);
 
         bgfx::setViewRect(ViewIdSkybox, 0, 0, (uint16_t)m_width, (uint16_t)m_height);
         bgfx::setViewRect(ViewIdMesh,   0, 0, (uint16_t)m_width, (uint16_t)m_height);
 
-        bgfx::setViewTransform(ViewIdSkybox, screenView, screenProj);
+        bgfx::setViewTransform(ViewIdSkybox, NULL, screenProj);
         //bgfx::setViewTransform for ViewIdMesh is called in 'setActiveCamera()'.
 
         bgfx::setViewFrameBuffer(ViewIdSkybox, m_fbMain);
@@ -331,12 +320,12 @@ struct RenderPipelineImpl : public RenderPipeline
             bgfx::setViewRect(ViewIdLum4, 0, 0,   1,   1);
             bgfx::setViewRect(ViewIdUpdateLastLum, 0, 0, 1, 1);
 
-            bgfx::setViewTransform(ViewIdLum0, screenView, screenProj);
-            bgfx::setViewTransform(ViewIdLum1, screenView, screenProj);
-            bgfx::setViewTransform(ViewIdLum2, screenView, screenProj);
-            bgfx::setViewTransform(ViewIdLum3, screenView, screenProj);
-            bgfx::setViewTransform(ViewIdLum4, screenView, screenProj);
-            bgfx::setViewTransform(ViewIdUpdateLastLum, screenView, screenProj);
+            bgfx::setViewTransform(ViewIdLum0, NULL, screenProj);
+            bgfx::setViewTransform(ViewIdLum1, NULL, screenProj);
+            bgfx::setViewTransform(ViewIdLum2, NULL, screenProj);
+            bgfx::setViewTransform(ViewIdLum3, NULL, screenProj);
+            bgfx::setViewTransform(ViewIdLum4, NULL, screenProj);
+            bgfx::setViewTransform(ViewIdUpdateLastLum, NULL, screenProj);
 
             bgfx::setViewFrameBuffer(ViewIdLum0, m_fbLumCalc[0]);
             bgfx::setViewFrameBuffer(ViewIdLum1, m_fbLumCalc[1]);
@@ -351,22 +340,22 @@ struct RenderPipelineImpl : public RenderPipeline
             bgfx::setViewRect(ViewIdBright, 0, 0, uint16_t(m_brightWidth), uint16_t(m_brightHeight));
             bgfx::setViewRect(ViewIdBloom,  0, 0, uint16_t(m_blurWidth),   uint16_t(m_blurHeight));
 
-            bgfx::setViewTransform(ViewIdBright, screenView, screenProj);
-            bgfx::setViewTransform(ViewIdBloom,  screenView, screenProj);
+            bgfx::setViewTransform(ViewIdBright, NULL, screenProj);
+            bgfx::setViewTransform(ViewIdBloom,  NULL, screenProj);
 
             bgfx::setViewFrameBuffer(ViewIdBright, m_fbBright);
             bgfx::setViewFrameBuffer(ViewIdBloom,  m_fbBlur);
         }
 
         bgfx::setViewRect(ViewIdTonemap, 0, 0, (uint16_t)m_width, (uint16_t)m_height);
-        bgfx::setViewTransform(ViewIdTonemap, screenView, screenProj);
+        bgfx::setViewTransform(ViewIdTonemap, NULL, screenProj);
 
         if (m_doFxaa)
         {
             bgfx::setViewFrameBuffer(ViewIdTonemap, m_fbPost);
 
             bgfx::setViewRect(ViewIdFxaa, 0, 0, (uint16_t)m_width, (uint16_t)m_height);
-            bgfx::setViewTransform(ViewIdFxaa, screenView, screenProj);
+            bgfx::setViewTransform(ViewIdFxaa, NULL, screenProj);
         }
         else
         {
@@ -381,12 +370,12 @@ struct RenderPipelineImpl : public RenderPipeline
         bgfx::setViewRect(ViewIdDebug3,  306, 512+20, 512, 512);
         bgfx::setViewRect(ViewIdDebug4,  823, 512+20, 512, 512);
         bgfx::setViewRect(ViewIdDebug5, 1340, 512+20, 512, 512);
-        bgfx::setViewTransform(ViewIdDebug0, screenView, screenProj);
-        bgfx::setViewTransform(ViewIdDebug1, screenView, screenProj);
-        bgfx::setViewTransform(ViewIdDebug2, screenView, screenProj);
-        bgfx::setViewTransform(ViewIdDebug3, screenView, screenProj);
-        bgfx::setViewTransform(ViewIdDebug4, screenView, screenProj);
-        bgfx::setViewTransform(ViewIdDebug5, screenView, screenProj);
+        bgfx::setViewTransform(ViewIdDebug0, NULL, screenProj);
+        bgfx::setViewTransform(ViewIdDebug1, NULL, screenProj);
+        bgfx::setViewTransform(ViewIdDebug2, NULL, screenProj);
+        bgfx::setViewTransform(ViewIdDebug3, NULL, screenProj);
+        bgfx::setViewTransform(ViewIdDebug4, NULL, screenProj);
+        bgfx::setViewTransform(ViewIdDebug5, NULL, screenProj);
 #endif //CS_DEBUG_LUMAVG
     }
 
@@ -526,7 +515,7 @@ struct RenderPipelineImpl : public RenderPipeline
             // Downscale luminance 0.
             calcOffsets4x4(uniforms.m_offsets, 64, 64);
             cs::setProgram(cs::Program::LumDownscale);
-            cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[0], 0, LumTexFlags);
+            cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[0], LumTexFlags);
             screenSpaceQuad(64.0f, 64.0f, g_originBottomLeft);
             bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
             cs::bgfx_submit(ViewIdLum1);
@@ -534,7 +523,7 @@ struct RenderPipelineImpl : public RenderPipeline
             // Downscale luminance 1.
             calcOffsets4x4(uniforms.m_offsets, 16, 16);
             cs::setProgram(cs::Program::LumDownscale);
-            cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[1], 0, LumTexFlags);
+            cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[1], LumTexFlags);
             screenSpaceQuad(16.0f, 16.0f, g_originBottomLeft);
             bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
             cs::bgfx_submit(ViewIdLum2);
@@ -542,7 +531,7 @@ struct RenderPipelineImpl : public RenderPipeline
             // Downscale luminance 2.
             calcOffsets4x4(uniforms.m_offsets, 4, 4);
             cs::setProgram(cs::Program::LumDownscale);
-            cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[2], 0, LumTexFlags);
+            cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[2], LumTexFlags);
             screenSpaceQuad(4.0f, 4.0f, g_originBottomLeft);
             bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
             cs::bgfx_submit(ViewIdLum3);
@@ -550,8 +539,8 @@ struct RenderPipelineImpl : public RenderPipeline
             // Compute average luminance tex.
             calcOffsets4x4(uniforms.m_offsets, 1, 1);
             cs::setProgram(cs::Program::LumAvg);
-            cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[3], 0, LumTexFlags);
-            cs::setTexture(cs::TextureUniform::Lum,   m_fbLumLast,    0, LumTexFlags);
+            cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[3], LumTexFlags);
+            cs::setTexture(cs::TextureUniform::Lum,   m_fbLumLast,    LumTexFlags);
             screenSpaceQuad(1.0f, 1.0f, g_originBottomLeft);
             bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
             cs::bgfx_submit(ViewIdLum4);
@@ -624,31 +613,31 @@ struct RenderPipelineImpl : public RenderPipeline
         cs::bgfx_submit(ViewIdDebug0);
 
         cs::setProgram(cs::Program::ImageRe8);
-        cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[0], 0, LumTexFlags);
+        cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[0], LumTexFlags);
         screenSpaceQuad(512.0f, 512.0f, g_originBottomLeft);
         bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
         cs::bgfx_submit(ViewIdDebug1);
 
         cs::setProgram(cs::Program::ImageRe8);
-        cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[1], 0, LumTexFlags);
+        cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[1], LumTexFlags);
         screenSpaceQuad(512.0f, 512.0f, g_originBottomLeft);
         bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
         cs::bgfx_submit(ViewIdDebug2);
 
         cs::setProgram(cs::Program::ImageRe8);
-        cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[2], 0, LumTexFlags);
+        cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[2], LumTexFlags);
         screenSpaceQuad(512.0f, 512.0f, g_originBottomLeft);
         bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
         cs::bgfx_submit(ViewIdDebug3);
 
         cs::setProgram(cs::Program::ImageRe8);
-        cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[3], 0, LumTexFlags);
+        cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[3], LumTexFlags);
         screenSpaceQuad(512.0f, 512.0f, g_originBottomLeft);
         bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
         cs::bgfx_submit(ViewIdDebug4);
 
         cs::setProgram(cs::Program::ImageRe8);
-        cs::setTexture(cs::TextureUniform::Color, m_fbLumCur, 0, LumTexFlags);
+        cs::setTexture(cs::TextureUniform::Color, m_fbLumCur, LumTexFlags);
         screenSpaceQuad(512.0f, 512.0f, g_originBottomLeft);
         bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
         cs::bgfx_submit(ViewIdDebug5);
@@ -717,13 +706,11 @@ struct RenderPipelineImpl : public RenderPipeline
 
     void updateTonemapImage(cs::TextureHandle _image, float _gamma, float _minLum, float _lumRange)
     {
-        float screenView[16];
         float screenProj[16];
-        bx::mtxIdentity(screenView);
         bx::mtxOrtho(screenProj, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 100.0f);
 
         bgfx::setViewRect(ViewIdTonemapImage, 0, 0, TonemapImgWidth, TonemapImgHeight);
-        bgfx::setViewTransform(ViewIdTonemapImage, screenView, screenProj);
+        bgfx::setViewTransform(ViewIdTonemapImage, NULL, screenProj);
         bgfx::setViewFrameBuffer(ViewIdTonemapImage, m_fbTonemapImage);
 
         cs::Uniforms& uniforms = cs::getUniforms();

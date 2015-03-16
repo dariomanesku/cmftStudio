@@ -16,6 +16,8 @@ extern bool     g_originBottomLeft; // false for DX9/DX11, true for OpenGL.
 extern uint32_t g_frameNum;
 extern uint32_t g_width;
 extern uint32_t g_height;
+extern uint32_t g_guiWidth;
+extern uint32_t g_guiHeight;
 extern float    g_widthf;
 extern float    g_heightf;
 

@@ -26,7 +26,6 @@ void screenSpaceQuad(float _textureWidth
                    );
 void screenQuad(int32_t _x, int32_t _y, int32_t _width, int32_t _height, bool _originBottomLeft = false);
 void drawSplashScreen(cs::TextureHandle _texture, uint32_t _width, uint32_t _height);
-void drawOverlay(uint32_t _width, uint32_t _height);
 
 // Render pipeline.
 //-----
@@ -59,7 +58,7 @@ struct RenderPipeline
         ViewIdDebug4,
         ViewIdDebug5,
 
-        ViewIdGui = 255,
+        ViewIdGui,
     };
 };
 

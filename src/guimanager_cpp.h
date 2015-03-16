@@ -6,7 +6,6 @@
 #include "common/common.h"
 #include "guimanager.h"
 
-#include "renderpipeline.h" // drawOverlay()
 #include "common/utils.h"   // WidgetAnimator
 
 #include <bx/string.h>      // bx::snprintf
@@ -795,14 +794,14 @@ bool guiDraw(ImguiState& _guiState
            , uint8_t _viewId
            )
 {
-    const float widthf  = g_widthf;
-    const float heightf = g_heightf;
+    g_guiWidth  = DM_MAX(1920, g_width);
+    g_guiHeight = DM_MAX(1022, g_height);
 
     const float columnLeft0X = float(Gui::BorderButtonWidth) - g_texelHalf;
     const float columnLeft1X = float(columnLeft0X + Gui::PaneWidth + Gui::HorizontalSpacing);
     const float columnLeft2X = float(columnLeft1X + Gui::PaneWidth + Gui::HorizontalSpacing);
 
-    const float columnRight0X = float(g_width       - Gui::PaneWidth - Gui::BorderButtonWidth + 1);
+    const float columnRight0X = float(g_guiWidth    - Gui::PaneWidth - Gui::BorderButtonWidth + 1);
     const float columnRight1X = float(columnRight0X - Gui::PaneWidth - Gui::HorizontalSpacing);
     const float columnRight2X = float(columnRight1X - Gui::PaneWidth - Gui::HorizontalSpacing);
 
@@ -810,14 +809,14 @@ bool guiDraw(ImguiState& _guiState
     static bool s_once = false;
     if (!s_once)
     {
-        s_animators.init(widthf, heightf
+        s_animators.init(float(g_guiWidth), float(g_guiHeight)
                        , columnLeft0X,  Gui::FirstPaneY, Gui::PaneWidth
                        , columnRight0X, Gui::FirstPaneY
                        );
         s_once = true;
     }
 
-    s_animators.setKeyPoints(widthf, heightf, Gui::PaneWidth, Gui::PaneWidth
+    s_animators.setKeyPoints(float(g_guiWidth), float(g_guiHeight), Gui::PaneWidth, Gui::PaneWidth
                            , columnLeft0X,  Gui::FirstPaneY
                            , columnLeft1X,  Gui::SecondPaneY
                            , columnLeft2X,  Gui::SecondPaneY
@@ -842,7 +841,17 @@ bool guiDraw(ImguiState& _guiState
     const uint8_t mbuttons = (Mouse::Hold == _mouse.m_left  ? IMGUI_MBUT_LEFT  : 0)
                            | (Mouse::Hold == _mouse.m_right ? IMGUI_MBUT_RIGHT : 0)
                            ;
-    imguiBeginFrame(_mouse.m_curr.m_mx, _mouse.m_curr.m_my, mbuttons, _mouse.m_scroll, uint16_t(g_width), uint16_t(g_height), _ascii, _viewId);
+    imguiBeginFrame(_mouse.m_curr.m_mx
+                  , _mouse.m_curr.m_my
+                  , mbuttons
+                  , _mouse.m_scroll
+                  , g_width
+                  , g_height
+                  , g_guiWidth
+                  , g_guiHeight
+                  , _ascii
+                  , _viewId
+                  );
 
     const bool enabled = !widgetIsVisible(Widget::ModalWindowMask);
 
@@ -857,16 +866,26 @@ bool guiDraw(ImguiState& _guiState
         widgetToggle(Widget::Left);
     }
 
+    // Adjust mouse input according to gui scale.
+    Mouse mouse;
+    memcpy(&mouse, &_mouse, sizeof(Mouse));
+    const float xScale = float(g_guiWidth)/g_widthf;
+    const float yScale = float(g_guiHeight)/g_heightf;
+    mouse.m_curr.m_mx = int32_t(float(mouse.m_curr.m_mx)*xScale);
+    mouse.m_curr.m_my = int32_t(float(mouse.m_curr.m_my)*yScale);
+    mouse.m_prev.m_mx = int32_t(float(mouse.m_prev.m_mx)*xScale);
+    mouse.m_prev.m_my = int32_t(float(mouse.m_prev.m_my)*yScale);
+
     // Right scroll area.
     if (s_animators[Animators::RightScrollArea].isVisible())
     {
         imguiRightScrollArea(int32_t(s_animators[Animators::RightScrollArea].m_x)
                            , int32_t(s_animators[Animators::RightScrollArea].m_y)
                            , Gui::PaneWidth
-                           , g_height
+                           , g_guiHeight
                            , _guiState
                            , _settings
-                           , _mouse
+                           , mouse
                            , _envList
                            , _widgetState.m_rightScrollArea
                            , enabled
@@ -910,10 +929,10 @@ bool guiDraw(ImguiState& _guiState
         imguiLeftScrollArea(int32_t(s_animators[Animators::LeftScrollArea].m_x)
                           , int32_t(s_animators[Animators::LeftScrollArea].m_y)
                           , Gui::PaneWidth
-                          , g_height
+                          , g_guiHeight
                           , _guiState
                           , _settings
-                          , _mouse
+                          , mouse
                           , _envList[_settings.m_selectedEnvMap]
                           , _meshInstList
                           , _meshInstList[_settings.m_selectedMeshIdx]
@@ -1383,7 +1402,7 @@ bool guiDraw(ImguiState& _guiState
                                    , int32_t(s_animators[Animators::CmftTransform].m_y)
                                    , Gui::PaneWidth
                                    , _widgetState.m_cmftTransform
-                                   , _mouse
+                                   , mouse
                                    );
 
             if (guiEvent(GuiEvent::DismissWindow, _widgetState.m_cmftTransform.m_events))

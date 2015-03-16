@@ -13,6 +13,8 @@ bool     g_originBottomLeft = false;
 uint32_t g_frameNum         = 0;
 uint32_t g_width            = 1920;
 uint32_t g_height           = 1080;
+uint32_t g_guiWidth         = 1920;
+uint32_t g_guiHeight        = 1022;
 float    g_widthf           = 1920.0f;
 float    g_heightf          = 1080.0f;
 

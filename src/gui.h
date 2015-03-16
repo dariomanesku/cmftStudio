@@ -13,6 +13,7 @@
 #include "mouse.h"              // Mouse
 #include "context.h"            // cs::*Handle
 #include "settings.h"           // Settings
+#include "renderpipeline.h"     // RenderPipeline::ViewIdGui
 #include "common/imgui.h"
 
 // Constants.
@@ -37,8 +38,6 @@ struct Gui
         HorizontalSpacing = 8,
         FirstPaneY        = -2,
         SecondPaneY       = 7,
-
-        ViewId = 255,
     };
 };
 
@@ -97,6 +96,7 @@ private:
 //-----
 
 void guiInit();
+void guiDrawOverlay();
 void guiDestroy();
 
 struct GuiEvent
@@ -937,7 +937,7 @@ void imguiLatlongWidget(int32_t _screenX
                       , uint8_t& _selectedLight
                       , const Mouse& _click
                       , bool _enabled = true
-                      , uint8_t _viewId = Gui::ViewId
+                      , uint8_t _viewId = RenderPipeline::ViewIdGui
                       );
 
 bool imguiEnvPreview(uint32_t _screenX
@@ -946,7 +946,7 @@ bool imguiEnvPreview(uint32_t _screenX
                    , cs::EnvHandle _env
                    , const Mouse& _click
                    , bool _enabled = true
-                   , uint8_t _viewId = Gui::ViewId
+                   , uint8_t _viewId = RenderPipeline::ViewIdGui
                    );
 
 struct LeftScrollAreaState
@@ -1081,7 +1081,7 @@ void imguiRightScrollArea(int32_t _x
                         , const cs::EnvList& _envList
                         , RightScrollAreaState& _state
                         , bool _enabled = true
-                        , uint8_t _viewId = Gui::ViewId
+                        , uint8_t _viewId = RenderPipeline::ViewIdGui
                         );
 
 

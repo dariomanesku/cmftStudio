@@ -37,7 +37,7 @@ enum
     ListElementHeight   = 24,
 };
 
-// Imgui helpers.
+// Imgui helper functions.
 //-----
 
 static void imguiBool(const char* _str, float& _flag, bool _enabled = true)
@@ -352,6 +352,17 @@ void guiInit()
 
     // Init textures.
     s_res.m_texSunIcon = cs::textureLoadMem(sunIconData, sunIconDataSize, BGFX_TEXTURE_U_CLAMP|BGFX_TEXTURE_V_CLAMP);
+}
+
+void guiDrawOverlay()
+{
+    cs::setProgram(cs::Program::Overlay);
+    screenQuad(0, 0, g_guiWidth, g_guiHeight);
+    bgfx::setState(BGFX_STATE_RGB_WRITE
+                  |BGFX_STATE_ALPHA_WRITE
+                  |BGFX_STATE_BLEND_ALPHA
+                  );
+    bgfx::submit(RenderPipeline::ViewIdGui);
 }
 
 void guiDestroy()
@@ -1749,7 +1760,7 @@ void imguiModalOutputWindow(int32_t _x, int32_t _y, OutputWindowState& _state)
 {
     _state.m_events = GuiEvent::None;
 
-    drawOverlay(g_width, g_height);
+    guiDrawOverlay();
     imguiBeginArea("Output", _x, _y, OutputWindowState::Width, OutputWindowState::Height, true);
 
     imguiSeparator(8);
@@ -1791,7 +1802,7 @@ void imguiModalAboutWindow(int32_t _x
 {
     _state.m_events = GuiEvent::None;
 
-    drawOverlay(g_width, g_height);
+    guiDrawOverlay();
     imguiBeginArea("About", _x, _y, _width, _height, true);
 
     imguiSeparator(8);
@@ -1829,7 +1840,7 @@ void imguiModalMagnifyWindow(int32_t _x, int32_t _y, MagnifyWindowState& _state)
     const bgfx::TextureHandle texture = cs::textureGetBgfxHandle(env.m_cubemap[_state.m_envType]);
     const bool hasLod = (image.m_numMips!=1);
 
-    drawOverlay(g_width, g_height);
+    guiDrawOverlay();
 
     const float wPadding = 0.06f;
     const float hPadding = 0.07f;
@@ -2267,7 +2278,7 @@ void imguiModalProjectWindow(int32_t _x
 
     _state.m_events = GuiEvent::None;
 
-    drawOverlay(g_width, g_height);
+    guiDrawOverlay();
 
     imguiBeginArea("cmftStudio project", _x, _y, width, height, true);
     imguiSeparator(7);

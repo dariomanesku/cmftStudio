@@ -136,7 +136,7 @@ bool guiDraw(ImguiState& _guiState
            , const cs::EnvList& _envList
            , float _widgetAnimDuration = 0.1f
            , float _modalWindowAnimDuration = 0.06f
-           , uint8_t _viewId = Gui::ViewId
+           , uint8_t _viewId = RenderPipeline::ViewIdGui
            );
 
 #endif // CMFTSTUDIO_GUIMANAGER_H_HEADER_GUARD
