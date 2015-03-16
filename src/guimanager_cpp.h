@@ -794,8 +794,9 @@ bool guiDraw(ImguiState& _guiState
            , uint8_t _viewId
            )
 {
-    g_guiWidth  = DM_MAX(1920, g_width);
     g_guiHeight = DM_MAX(1022, g_height);
+    const float aspect = g_widthf/g_heightf;
+    g_guiWidth = dm::ftou(float(g_guiHeight)*aspect);
 
     const float columnLeft0X = float(Gui::BorderButtonWidth) - g_texelHalf;
     const float columnLeft1X = float(columnLeft0X + Gui::PaneWidth + Gui::HorizontalSpacing);
