@@ -17,8 +17,9 @@ Download
  <br />
 
 **Latest changes:**
-- Gui now scales down for lower resolution screens! Even if you are on a laptop with screen resolution as low as 1366x768, you should be fine.
+- Gui now scales down on lower resolution screens! Even if you are on a laptop with screen resolution as low as 1366x768, you should be fine.
 - Added full screen support.
+ <br />
 
 
 ![cmftStudioCover](https://github.com/dariomanesku/cmftStudio/raw/master/res/cmftStudio_cover.jpg)
