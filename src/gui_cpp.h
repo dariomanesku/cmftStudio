@@ -1912,7 +1912,8 @@ bool imguiBrowser(int32_t _height
     imguiSeparatorLine(1, ImguiAlign::CenterIndented);
     imguiSeparator(4);
 
-    imguiBeginScroll(_height, &_state.m_scroll);
+    enum { BookmarkButtonsHeight = 29 };
+    imguiBeginScroll(_height-BookmarkButtonsHeight, &_state.m_scroll);
 
     const bool windowsRootDir = _state.m_directory[1] == ':'
                              && _state.m_directory[2] == '\0'
