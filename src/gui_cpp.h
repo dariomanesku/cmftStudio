@@ -2004,7 +2004,7 @@ bool imguiBrowser(int32_t _height
                         result = click;
                         selectFile = NULL;
 
-                        dm::strscpya(_state.m_filePath, file.path);
+                        dm::realpath(_state.m_filePath, file.path);
                         dm::strscpya(_state.m_fileName, file.name);
                         //Remove extension.
                         const bool hasExt = ('\0' != file.extension[0]);
