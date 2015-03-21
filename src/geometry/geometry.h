@@ -35,7 +35,7 @@ struct Primitive
 
     char m_name[NameLen];
 };
-typedef dm::ObjArrayT<Primitive, MaxPrimitivesPerGroup> PrimitiveArray;
+typedef dm::ObjArrayT<Primitive, MaxPrimitivesPerGroup> PrimitiveArray; //TODO: implement and use a dynamic array structure instead.
 
 struct Group
 {
@@ -64,7 +64,7 @@ struct Group
 
     char m_materialName[MaterialNameLen];
 };
-typedef dm::ObjArrayT<Group, MaxGroups> GroupArray;
+typedef dm::ObjArrayT<Group, MaxGroups> GroupArray; //TODO: implement and use a dynamic array structure instead.
 
 struct Geometry
 {
