@@ -37,7 +37,7 @@ bool objLoader(Geometry& _geometry
              , bx::ReallocatorI* _allocator
              )
 {
-    BX_UNUSED(_geometry, _reader, _inData, _outData, _allocator);
+    BX_UNUSED(_outData, _allocator);
 
     ObjInData* inputParams;
     ObjInData defaultValues;
