@@ -14,7 +14,7 @@
 
 static void initGeometryLoaders()
 {
-    // Initialize model loaders.
+    // Initialize geometry loaders.
     geometryLoaderRegister("Wavefront obj",   "obj", objLoader);
     geometryLoaderRegister("Bgfx bin loader", "bin", bgfxBinLoader);
 }
