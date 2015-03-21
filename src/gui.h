@@ -385,8 +385,10 @@ struct MeshBrowserState : public BrowserState
     MeshBrowserState(const char* _directory = ".")
         : BrowserState(_directory)
     {
-        m_extBin          = true;
-        m_extObj          = true;
+        for (uint8_t ii = 0; ii < CS_MAX_GEOMETRY_LOADERS; ++ii)
+        {
+            m_extFlag[ii] = true;
+        }
         m_objSelected     = false;
         m_flipV           = true;
         m_ccw             = false;
@@ -394,8 +396,7 @@ struct MeshBrowserState : public BrowserState
         m_events          = GuiEvent::None;
     }
 
-    bool m_extBin;
-    bool m_extObj;
+    bool m_extFlag[CS_MAX_GEOMETRY_LOADERS];
     bool m_objSelected;
     bool m_flipV;
     bool m_ccw;

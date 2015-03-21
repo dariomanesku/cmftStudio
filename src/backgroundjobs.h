@@ -10,7 +10,7 @@
 #include <stdint.h>
 
 #include "guimanager.h" // imguiEnqueueStatusMessage()
-#include "context.h"    // cs::*List
+#include "context.h"    // cs::*List, cs::MeshHandle
 #include "settings.h"   // Settings
 #include <dm/misc.h>    // DM_PATH_LEN
 
@@ -148,41 +148,26 @@ int32_t projectLoadFunc(void* _projectLoadThreadParams);
 // Mesh format conversion.
 //-----
 
-struct ObjToBinThreadParams
+struct ModelLoadThreadParams
 {
-    ObjToBinThreadParams()
+    ModelLoadThreadParams()
     {
+        m_mesh         = cs::MeshHandle::invalid();
         m_stackAlloc   = NULL;
         m_threadStatus = ThreadStatus::Idle;
-        m_scale        = 1.0f;
-        m_packUv       = 1;
-        m_packNormal   = 1;
-        m_obbSteps     = 17;
-        m_ccw          = false;
-        m_flipV        = false;
-        m_calcTangent  = true;
-        m_data         = NULL;
-        m_size         = 0;
         m_filePath[0]  = '\0';
         m_fileName[0]  = '\0';
     }
 
+    cs::MeshHandle m_mesh;
     cs::StackAllocatorI* m_stackAlloc;
     uint8_t m_threadStatus;
-    float m_scale;
-    uint32_t m_packUv;
-    uint32_t m_packNormal;
-    uint32_t m_obbSteps;
-    bool m_ccw;
-    bool m_flipV;
-    bool m_calcTangent;
-    void* m_data;
-    uint32_t m_size;
-    char m_filePath[256];
+    char m_filePath[DM_PATH_LEN];
     char m_fileName[128];
+    uint8_t m_userData[sizeof(int32_t)*64];
 };
 
-int32_t objToBinFunc(void* _objToBinThreadParameters);
+int32_t modelLoadFunc(void* _modelLoadThreadParameters);
 
 // Cmft filter.
 //-----

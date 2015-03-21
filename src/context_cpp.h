@@ -10,10 +10,12 @@
 #include <string.h>          // strcpy
 
 #include "common/timer.h"
-#include "geometry.h"
+#include "geometry/loaders.h"
+#include "geometry/objtobin.h"
 #include "staticres.h"
 
 #include <dm/misc.h>         // DM_PATH_LEN, dm::fsize
+#include <dm/readerwriter.h>
 #include <dm/pi.h>
 
 #include <bgfx_utils.h>      // loadProgram
@@ -21,7 +23,6 @@
 
 #include <bx/fpumath.h>
 #include <bx/macros.h>       // BX_UNUSED
-#include <bx/readerwriter.h>
 
 #ifndef CS_LOAD_SHADERS_FROM_DATA_SEGMENT
     #define CS_LOAD_SHADERS_FROM_DATA_SEGMENT 0
@@ -216,12 +217,12 @@ namespace cs
             return handle;
         }
 
-        TyHandle read(bx::ReaderSeekerI* _reader)
+        TyHandle read(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack = g_stackAlloc)
         {
             TyImpl* impl = this->createObj();
 
             const TyHandle handle = this->getHandle(impl);
-            impl->read(_reader, handle);
+            impl->read(_reader, handle, _stack);
 
             return this->acquire(handle);
         }
@@ -486,7 +487,7 @@ namespace cs
     template <typename TyHandle>
     struct ReadWriteI
     {
-        void read(bx::ReaderSeekerI* /*_reader*/, TyHandle /*_handle*/)
+        void read(dm::ReaderSeekerI* /*_reader*/, cs::StackAllocatorI* /*_stack*/,  TyHandle /*_handle*/)
         {
             CS_CHECK(false, "Should be overridden!");
         }
@@ -623,8 +624,10 @@ namespace cs
             m_bgfxHandle = bgfx::createTexture(mem, _flags, _skip, _info);
         }
 
-        void read(bx::ReaderSeekerI* _reader, TextureHandle _handle = TextureHandle::invalid())
+        void read(dm::ReaderSeekerI* _reader, TextureHandle _handle = TextureHandle::invalid(), cs::StackAllocatorI* _stack = g_stackAlloc)
         {
+            BX_UNUSED(_stack);
+
             this->destroy();
 
             uint16_t id;
@@ -866,8 +869,10 @@ namespace cs
             m_tex[Emissive]     = _emmisive;
         }
 
-        void read(bx::ReaderSeekerI* _reader, MaterialHandle _handle = MaterialHandle::invalid())
+        void read(dm::ReaderSeekerI* _reader, MaterialHandle _handle = MaterialHandle::invalid(), cs::StackAllocatorI* _stack = g_stackAlloc)
         {
+            BX_UNUSED(_stack);
+
             uint16_t id;
             bx::read(_reader, id);
             resourceMap(id, _handle);
@@ -1065,41 +1070,14 @@ namespace cs
     // Mesh.
     //-----
 
-    struct Group
+    struct GroupBuffers
     {
-        Group()
-        {
-            reset();
-        }
-
-        void reset()
-        {
-            m_vbh.idx    = bgfx::invalidHandle;
-            m_ibh.idx    = bgfx::invalidHandle;
-            m_vertexData = NULL;
-            m_indexData  = NULL;
-            m_prims.clear();
-            m_matName[0] = '\0';
-        }
-
-        enum { MaterialNameLen = 255 };
-
         bgfx::VertexBufferHandle m_vbh;
-        bgfx::IndexBufferHandle m_ibh;
-        void* m_vertexData;
-        uint32_t m_vertexSize;
-        uint16_t m_numVertices;
-        void* m_indexData;
-        uint32_t m_indexSize;
-        uint32_t m_numIndices;
-        Sphere m_sphere;
-        Aabb m_aabb;
-        Obb m_obb;
-        PrimitiveArray m_prims;
-        char m_matName[MaterialNameLen+1];
+        bgfx::IndexBufferHandle  m_ibh;
     };
+    typedef dm::ObjArray<GroupBuffers> GroupBuffersArray;
 
-    struct MeshImpl : public Mesh, public ReadWriteI<MeshHandle>
+    struct MeshImpl : public Mesh, public Geometry, public ReadWriteI<MeshHandle>
     {
         MeshImpl()
         {
@@ -1111,132 +1089,39 @@ namespace cs
             destroy();
         }
 
-        void read(bx::ReaderSeekerI* _reader, MeshHandle _handle = MeshHandle::invalid())
+        void read(dm::ReaderSeekerI* _reader, MeshHandle _handle = MeshHandle::invalid(), cs::StackAllocatorI* _stack = g_stackAlloc)
         {
-            #define BGFX_CHUNK_MAGIC_VB  BX_MAKEFOURCC('V', 'B', ' ', 0x1)
-            #define BGFX_CHUNK_MAGIC_IB  BX_MAKEFOURCC('I', 'B', ' ', 0x0)
-            #define BGFX_CHUNK_MAGIC_PRI BX_MAKEFOURCC('P', 'R', 'I', 0x0)
+            load(_reader, "bin", NULL, _stack, _handle);
+        }
 
-            Group group;
+        bool load(dm::ReaderSeekerI* _reader
+                , const char* _ext
+                , void* _userData = NULL
+                , cs::StackAllocatorI* _stack = g_stackAlloc
+                , MeshHandle _handle = MeshHandle::invalid()
+                )
+        {
+            cs::push(_stack);
 
-            bool done = false;
-            uint32_t chunk;
-            while (!done && 4 == bx::read(_reader, chunk))
+            cs::OutDataHeader* header = NULL;
+            geometryLoad(*this, _reader, _ext, _stack, _userData, &header, _stack);
+
+            if (NULL != header)
             {
-                switch (chunk)
+                switch (header->m_format)
                 {
-                case BGFX_CHUNK_MAGIC_VB:
+                case cs::FileFormat::BgfxBin:
                     {
-                        bx::read(_reader, group.m_sphere);
-                        bx::read(_reader, group.m_aabb);
-                        bx::read(_reader, group.m_obb);
+                        BgfxBinOutData* meshData = (BgfxBinOutData*)header;
 
-                        bgfx::read(_reader, m_decl);
-                        const uint16_t stride = m_decl.getStride();
-
-                        bx::read(_reader, group.m_numVertices);
-
-                        group.m_vertexSize = group.m_numVertices*stride;
-                        group.m_vertexData = BX_ALLOC(g_mainAlloc, group.m_vertexSize);
-                        bx::read(_reader, group.m_vertexData, group.m_vertexSize);
+                        m_normScale = meshData->m_normScale;
+                        resourceMap(meshData->m_handle, _handle);
                     }
                 break;
-
-                case BGFX_CHUNK_MAGIC_IB:
-                    {
-                        bx::read(_reader, group.m_numIndices);
-
-                        group.m_indexSize = group.m_numIndices*2;
-                        group.m_indexData = BX_ALLOC(g_mainAlloc, group.m_indexSize);
-                        bx::read(_reader, group.m_indexData, group.m_indexSize);
-                    }
-                break;
-
-                case BGFX_CHUNK_MAGIC_PRI:
-                    {
-                        uint16_t len;
-                        bx::read(_reader, len);
-
-                        if (len < 256)
-                        {
-                            bx::read(_reader, group.m_matName, len);
-                            group.m_matName[len] = '\0';
-                        }
-                        else
-                        {
-                            StackAllocScope scope(g_stackAlloc);
-
-                            void* matName = BX_ALLOC(g_stackAlloc, len);
-
-                            bx::read(_reader, matName, len);
-
-                            memcpy(group.m_matName, matName, Group::MaterialNameLen);
-                            group.m_matName[Group::MaterialNameLen] = '\0';
-
-                            BX_FREE(g_stackAlloc, matName);
-                        }
-
-                        uint16_t num;
-                        bx::read(_reader, num);
-
-                        for (uint32_t ii = 0; ii < num; ++ii)
-                        {
-                            bx::read(_reader, len);
-
-                            if (len < 256)
-                            {
-                                char name[256];
-                                bx::read(_reader, name, len);
-                            }
-                            else
-                            {
-                                StackAllocScope scope(g_stackAlloc);
-
-                                void* matName = BX_ALLOC(g_stackAlloc, len);
-
-                                bx::read(_reader, matName, len);
-
-                                BX_FREE(g_stackAlloc, matName);
-                            }
-
-                            Primitive prim;
-                            bx::read(_reader, prim.m_startIndex);
-                            bx::read(_reader, prim.m_numIndices);
-                            bx::read(_reader, prim.m_startVertex);
-                            bx::read(_reader, prim.m_numVertices);
-                            bx::read(_reader, prim.m_sphere);
-                            bx::read(_reader, prim.m_aabb);
-                            bx::read(_reader, prim.m_obb);
-
-                            group.m_prims.push_back(prim);
-                        }
-
-                        m_groups.addObj(group);
-                        group.reset();
-                    }
-                break;
-
-                case CMFTSTUDIO_CHUNK_MAGIC_MSH_MISC:
-                    {
-                        uint16_t id;
-                        bx::read(_reader, id);
-                        resourceMap(id, _handle);
-
-                        bx::read(_reader, m_normScale);
-                    }
-                break;
-
-                case CMFTSTUDIO_CHUNK_MAGIC_MSH_DONE:
-                    {
-                        done = true;
-                    }
-                break;
-
-                default:
-                    DBG("%08x at %d", chunk, _reader->seek());
-                break;
-                }
+                };
             }
+
+            cs::pop(_stack);
 
             // Get normalized scale.
             if (FLT_MAX == m_normScale)
@@ -1264,36 +1149,24 @@ namespace cs
 
                 m_normScale = 1.0f/(max-min);
             }
-        }
 
-        void load(const char* _filePath)
-        {
-            bx::CrtFileReader reader;
-            if (0 == reader.open(_filePath))
-            {
-                this->read(&reader);
-                reader.close();
-            }
-        }
-
-        void load(const void* _data, uint32_t _size)
-        {
-            bx::MemoryReader reader(_data, _size);
-            this->read(&reader);
+            return true;
         }
 
         void createGpuBuffers()
         {
+            m_buffers.init(m_groups.count());
+
             for (uint32_t ii = 0, end = m_groups.count(); ii < end; ++ii)
             {
                 Group& group = m_groups[ii];
                 const bgfx::Memory* mem;
 
                 mem = bgfx::makeRef(group.m_vertexData, group.m_vertexSize);
-                group.m_vbh = bgfx::createVertexBuffer(mem, m_decl);
+                m_buffers[ii].m_vbh = bgfx::createVertexBuffer(mem, m_decl);
 
                 mem = bgfx::makeRef(group.m_indexData, group.m_indexSize);
-                group.m_ibh = bgfx::createIndexBuffer(mem);
+                m_buffers[ii].m_ibh = bgfx::createIndexBuffer(mem);
             }
         }
 
@@ -1307,12 +1180,12 @@ namespace cs
                   )
         {
             Group& group = m_groups[_groupIdx];
-            for (PrimitiveArray::const_iterator it = group.m_prims.begin(), itEnd = group.m_prims.end(); it != itEnd; ++it)
+            for (uint16_t ii = group.m_prims.count(); ii--; )
             {
-                const Primitive& prim = *it;
+                const Primitive& prim = group.m_prims[ii];
 
                 // Material.
-                if (isValid(_material))
+                if (cs::isValid(_material))
                 {
                     cs::setMaterial(_material);
 
@@ -1327,7 +1200,7 @@ namespace cs
                 bgfx::setProgram(getProgram(_prog));
 
                 // Environment.
-                if (isValid(_env))
+                if (cs::isValid(_env))
                 {
                     cs::setEnv(_env);
                 }
@@ -1336,8 +1209,8 @@ namespace cs
                 bgfx::setTransform(_mtx);
 
                 // Buffers.
-                bgfx::setIndexBuffer(group.m_ibh, prim.m_startIndex, prim.m_numIndices);
-                bgfx::setVertexBuffer(group.m_vbh);
+                bgfx::setIndexBuffer(m_buffers[_groupIdx].m_ibh, prim.m_startIndex, prim.m_numIndices);
+                bgfx::setVertexBuffer(m_buffers[_groupIdx].m_vbh);
 
                 // State.
                 bgfx::setState(_state);
@@ -1374,12 +1247,12 @@ namespace cs
                   )
         {
             Group& group = m_groups[_groupIdx];
-            for (PrimitiveArray::const_iterator it = group.m_prims.begin(), itEnd = group.m_prims.end(); it != itEnd; ++it)
+            for (uint16_t ii = group.m_prims.count(); ii--; )
             {
-                const Primitive& prim = *it;
+                const Primitive& prim = group.m_prims[ii];
 
                 // Material.
-                if (isValid(_material))
+                if (cs::isValid(_material))
                 {
                     cs::setMaterial(_material);
 
@@ -1406,8 +1279,8 @@ namespace cs
                 bgfx::setTransform(_mtx);
 
                 // Buffers.
-                bgfx::setIndexBuffer(group.m_ibh, prim.m_startIndex, prim.m_numIndices);
-                bgfx::setVertexBuffer(group.m_vbh);
+                bgfx::setIndexBuffer(m_buffers[_groupIdx].m_ibh, prim.m_startIndex, prim.m_numIndices);
+                bgfx::setVertexBuffer(m_buffers[_groupIdx].m_vbh);
 
                 // State.
                 bgfx::setState(_state);
@@ -1445,8 +1318,9 @@ namespace cs
                       , m_decl
                       , (const uint16_t*)group.m_indexData
                       , group.m_numIndices
-                      , group.m_matName
-                      , group.m_prims
+                      , group.m_materialName
+                      , group.m_prims.elements()
+                      , group.m_prims.count()
                       );
             }
         }
@@ -1499,39 +1373,61 @@ namespace cs
         {
             for (uint32_t ii = m_groups.count(); ii--; )
             {
-                Group& group = m_groups[ii];
-                if (bgfx::isValid(group.m_vbh)) { bgfx::destroyVertexBuffer(group.m_vbh);   }
-                if (bgfx::isValid(group.m_ibh)) { bgfx::destroyIndexBuffer(group.m_ibh);    }
-                if (NULL != group.m_vertexData) { BX_FREE(g_mainAlloc, group.m_vertexData); }
-                if (NULL != group.m_indexData)  { BX_FREE(g_mainAlloc, group.m_indexData);  }
+                if (NULL != m_groups[ii].m_vertexData)  { BX_FREE(g_mainAlloc, m_groups[ii].m_vertexData); }
+                if (NULL != m_groups[ii].m_indexData)   { BX_FREE(g_mainAlloc, m_groups[ii].m_indexData);  }
             }
             m_groups.reset();
+
+            for (uint32_t ii = m_buffers.count(); ii--; )
+            {
+                if (bgfx::isValid(m_buffers[ii].m_vbh)) { bgfx::destroyVertexBuffer(m_buffers[ii].m_vbh);  }
+                if (bgfx::isValid(m_buffers[ii].m_ibh)) { bgfx::destroyIndexBuffer(m_buffers[ii].m_ibh);   }
+            }
+            m_buffers.reset();
+
         }
 
-        bgfx::VertexDecl m_decl;
-        dm::ObjArrayT<Group, CS_MAX_MESH_GROUPS> m_groups;
+        GroupBuffersArray m_buffers;
     };
 
     struct MeshResourceManager : public ResourceManagerT<Mesh, MeshImpl, MeshHandle, CS_MAX_MESHES>
     {
-        MeshHandle load(const void* _data, uint32_t _size)
+        MeshHandle load(const void* _data, uint32_t _size, const char* _ext)
         {
-            MeshImpl* mesh = this->createObj();
-            mesh->load(_data, _size);
-            mesh->createGpuBuffers();
+            dm::MemoryReader reader(_data, _size);
 
+            MeshImpl* mesh = this->createObj();
             const MeshHandle handle = this->getHandle(mesh);
+
+            const bool loaded = mesh->load(&reader, _ext);
+
+            if (!loaded)
+            {
+                return MeshHandle::invalid();
+            }
 
             return this->acquire(handle);
         }
 
-        MeshHandle load(const char* _path)
+        MeshHandle load(const char* _path, void* _userData, cs::StackAllocatorI* _stack)
         {
-            MeshImpl* mesh = this->createObj();
-            mesh->load(_path);
-            mesh->createGpuBuffers();
+            dm::CrtFileReader reader;
+            if (0 != reader.open(_path))
+            {
+                return MeshHandle::invalid();
+            }
 
+            MeshImpl* mesh = this->createObj();
             const MeshHandle handle = this->getHandle(mesh);
+
+            const char* ext = dm::fileExtension(_path);
+            const bool loaded = mesh->load(&reader, ext, _userData, _stack);
+            reader.close();
+
+            if (!loaded)
+            {
+                return MeshHandle::invalid();
+            }
 
             return this->acquire(handle);
         }
@@ -1540,8 +1436,9 @@ namespace cs
 
     static inline MeshHandle loadSphere()
     {
-        MeshHandle sphere = s_meshes->load(g_sphereMesh, g_sphereMeshSize);
+        MeshHandle sphere = s_meshes->load(g_sphereMesh, g_sphereMeshSize, "bin");
         setName(sphere, "Sphere");
+        createGpuBuffers(sphere);
         return sphere;
     }
 
@@ -1557,19 +1454,19 @@ namespace cs
         return mesh->m_groups.count();
     }
 
-    MeshHandle meshLoad(const void* _data, uint32_t _size)
+    MeshHandle meshLoad(const void* _data, uint32_t _size, const char* _ext)
     {
-        return s_meshes->load(_data, _size);
+        return s_meshes->load(_data, _size, _ext);
     }
 
-    MeshHandle meshLoad(const char* _filePath)
+    MeshHandle meshLoad(const char* _filePath, void* _userData, cs::StackAllocatorI* _stack)
     {
-        return s_meshes->load(_filePath);
+        return s_meshes->load(_filePath, _userData, _stack);
     }
 
-    MeshHandle meshLoad(bx::ReaderSeekerI* _reader)
+    MeshHandle meshLoad(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack)
     {
-        return s_meshes->read(_reader);
+        return s_meshes->read(_reader, _stack);
     }
 
     bool meshSave(MeshHandle _mesh, const char* _filePath)
@@ -2007,8 +1904,10 @@ namespace cs
             createGpuBuffers(m_cubemap[Environment::Iem]);
         }
 
-        void read(bx::ReaderSeekerI* _reader, EnvHandle _handle = EnvHandle::invalid())
+        void read(dm::ReaderSeekerI* _reader, EnvHandle _handle = EnvHandle::invalid(), cs::StackAllocatorI* _stack = g_stackAlloc)
         {
+            BX_UNUSED(_stack);
+
             this->destroy();
 
             uint16_t id;
@@ -2151,7 +2050,7 @@ namespace cs
         return s_environments->load(_skyboxPath, _pmremPath, _iemPath);
     }
 
-    EnvHandle envCreate(bx::ReaderSeekerI* _reader)
+    EnvHandle envCreate(dm::ReaderSeekerI* _reader)
     {
         return s_environments->read(_reader);
     }
@@ -2290,6 +2189,7 @@ namespace cs
 
     void initContext()
     {
+        // Initialize resource managers.
         enum
         {
             TexOffset = 0,
@@ -2306,6 +2206,9 @@ namespace cs
         s_materials    = ::new (mem+MatOffset) MaterialResourceManager();
         s_meshes       = ::new (mem+MshOffset) MeshResourceManager();
         s_environments = ::new (mem+EnvOffset) EnvironmentResourceManager();
+
+        // Initialize loaders.
+        initGeometryLoaders();
     }
 
     void destroyContext()
@@ -2548,7 +2451,7 @@ namespace cs
         s_environments->release(_handle);
     }
 
-    TextureHandle readTexture(bx::ReaderSeekerI* _reader)
+    TextureHandle readTexture(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack)
     {
         // Read name.
         char name[32];
@@ -2558,13 +2461,13 @@ namespace cs
         name[len] = '\0';
 
         // Read object.
-        const TextureHandle texture = s_textures->read(_reader);
+        const TextureHandle texture = s_textures->read(_reader, _stack);
         setName(texture, name);
 
         return texture;
     }
 
-    MaterialHandle readMaterial(bx::ReaderSeekerI* _reader)
+    MaterialHandle readMaterial(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack)
     {
         // Read name.
         char name[32];
@@ -2574,13 +2477,13 @@ namespace cs
         name[len] = '\0';
 
         // Read object.
-        const MaterialHandle material = s_materials->read(_reader);
+        const MaterialHandle material = s_materials->read(_reader, _stack);
         setName(material, name);
 
         return material;
     }
 
-    MeshHandle readMesh(bx::ReaderSeekerI* _reader)
+    MeshHandle readMesh(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack)
     {
         // Read name.
         char name[32];
@@ -2590,13 +2493,13 @@ namespace cs
         name[len] = '\0';
 
         // Read object.
-        const MeshHandle mesh = s_meshes->read(_reader);
+        const MeshHandle mesh = s_meshes->read(_reader, _stack);
         setName(mesh, name);
 
         return mesh;
     }
 
-    EnvHandle readEnv(bx::ReaderSeekerI* _reader)
+    EnvHandle readEnv(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack)
     {
         // Read name.
         char name[32];
@@ -2606,13 +2509,13 @@ namespace cs
         name[len] = '\0';
 
         // Read object.
-        const EnvHandle env = s_environments->read(_reader);
+        const EnvHandle env = s_environments->read(_reader, _stack);
         setName(env, name);
 
         return env;
     }
 
-    void readMeshInstance(bx::ReaderSeekerI* _reader, MeshInstance* _instance)
+    void readMeshInstance(dm::ReaderSeekerI* _reader, MeshInstance* _instance)
     {
         uint16_t id;
 

@@ -8,8 +8,8 @@
 
 #include "guimanager.h" //outputWindow*()
 #include "project.h"    //projectLoad()/projectSave()
-#include "geometry.h"   //objToBin()
 #include "eventstate.h" //eventTrigger()
+#include "context.h"    //meshLoad()
 
 #include "common/cmft.h"
 
@@ -121,9 +121,9 @@ int32_t projectLoadFunc(void* _projectLoadThreadParams)
     }
 }
 
-int32_t objToBinFunc(void* _objToBinThreadParameters)
+int32_t modelLoadFunc(void* _modelLoadThreadParameters)
 {
-    ObjToBinThreadParams* params = (ObjToBinThreadParams*)_objToBinThreadParameters;
+    ModelLoadThreadParams* params = (ModelLoadThreadParams*)_modelLoadThreadParameters;
 
     // Start.
     params->m_threadStatus = ThreadStatus::Started;
@@ -131,39 +131,27 @@ int32_t objToBinFunc(void* _objToBinThreadParameters)
     // Show output window.
     outputWindowShow();
     outputWindowClear();
-    outputWindowPrint("Converting %s", params->m_filePath);
+    outputWindowPrint("Loading %s", params->m_filePath);
 
     // Set status message.
-    const char* msg = "[ Mesh conversion running in background... ]";
+    const char* msg = "[ Mesh is loading in background... ]";
     imguiStatusMessage(msg, 0.0f, false, NULL, 0, StatusWindowId::MeshConversion);
 
     // Allow for animation to finish smoothly.
     bx::sleep(300);
 
-    // Covert obj to bin.
-    objToBin(params->m_filePath
-           , params->m_data
-           , params->m_size
-           , params->m_stackAlloc
-           , params->m_packUv
-           , params->m_packNormal
-           , params->m_ccw
-           , params->m_flipV
-           , params->m_calcTangent
-           , params->m_scale
-           , params->m_obbSteps
-           );
+    // Load mesh.
+    params->m_mesh = cs::meshLoad(params->m_filePath, (void*)params->m_userData, params->m_stackAlloc);
 
-    // Result.
-    if (0 == params->m_size)
-    {
-        params->m_threadStatus = ThreadStatus::Completed | ThreadStatus::ExitFailure;
-        return EXIT_FAILURE;
-    }
-    else
+    if (cs::isValid(params->m_mesh))
     {
         params->m_threadStatus = ThreadStatus::Completed | ThreadStatus::ExitSuccess;
         return EXIT_SUCCESS;
+    }
+    else
+    {
+        params->m_threadStatus = ThreadStatus::Completed | ThreadStatus::ExitFailure;
+        return EXIT_FAILURE;
     }
 }
 

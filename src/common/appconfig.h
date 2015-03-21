@@ -48,6 +48,8 @@
 #define CS_MAX_MESH_GROUPS  16
 #define CS_MAX_ENVMAPS      32
 
+#define CS_MAX_GEOMETRY_LOADERS 8
+
 // Shaders.
 //-----
 

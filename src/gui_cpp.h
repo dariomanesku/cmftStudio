@@ -14,14 +14,15 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <bgfx_utils.h>     // load()
-#include <bx/string.h>      // bx::snprintf
-#include <bx/os.h>          // bx::pwd
+#include <bgfx_utils.h>             // load()
+#include <bx/string.h>              // bx::snprintf
+#include <bx/os.h>                  // bx::pwd
 
-#include <dm/misc.h>        // dm::utof, dm::equals
+#include <dm/misc.h>                // dm::utof, dm::equals
 
 #include "renderpipeline.h"
-#include "staticres.h"      // gui_res.h
+#include "staticres.h"              // gui_res.h
+#include "geometry/loadermanager.h" // cs::geometryLoaderCount(), cs::geometryLoaderGetExtensions()
 
 /// Notice: Always call tinydir functions between push/pop(_stackAlloc);
 #define _TINYDIR_MALLOC(_size) BX_ALLOC(cs::g_stackAlloc, _size)
@@ -530,10 +531,14 @@ void imguiMeshBrowserWidget(int32_t _x
                           , MeshBrowserState& _state
                           )
 {
-    const int32_t browserHeight = 300;
-    const int32_t height = browserHeight + 497;
-
     _state.m_events = GuiEvent::None;
+
+    const char* loaderExt[CS_MAX_GEOMETRY_LOADERS];
+    cs::geometryLoaderGetExtensions(loaderExt);
+    const uint8_t loaderCount = cs::geometryLoaderCount();
+
+    const int32_t browserHeight = 300;
+    const int32_t height = browserHeight + 449 + loaderCount*24;
 
     imguiBeginArea("Load mesh", _x, _y, _width, height, true);
     imguiSeparator(7);
@@ -552,8 +557,15 @@ void imguiMeshBrowserWidget(int32_t _x
     imguiLabelBorder("Filter:");
     imguiIndent();
     {
-        imguiBool("*.bin", _state.m_extBin);
-        imguiBool("*.obj", _state.m_extObj);
+        char extLabel[FileExtensionLength+2];
+        for (uint8_t ii = 0; ii < loaderCount; ++ii)
+        {
+            extLabel[0] = '*';
+            extLabel[1] = '.';
+            dm::strscpy(&extLabel[2], loaderExt[ii], FileExtensionLength);
+
+            imguiBool(extLabel, _state.m_extFlag[ii]);
+        }
     }
     imguiSeparator();
     imguiUnindent();
@@ -562,9 +574,14 @@ void imguiMeshBrowserWidget(int32_t _x
     imguiIndent();
     {
         uint8_t count = 0;
-        char extensions[2][FileExtensionLength];
-        if (_state.m_extBin) { strcpy(extensions[count++], "bin"); }
-        if (_state.m_extObj) { strcpy(extensions[count++], "obj"); }
+        char extensions[CS_MAX_GEOMETRY_LOADERS][FileExtensionLength];
+        for (uint8_t ii = 0; ii < loaderCount; ++ii)
+        {
+            if (_state.m_extFlag[ii])
+            {
+                dm::strscpy(extensions[count++], loaderExt[ii], FileExtensionLength);
+            }
+        }
         imguiBrowser(browserHeight, _state, extensions, count);
     }
     imguiUnindent();
@@ -589,8 +606,7 @@ void imguiMeshBrowserWidget(int32_t _x
     imguiLabelBorder("Action:");
     imguiIndent();
     {
-        const bool obj = (0 == strcmp(_state.m_fileExt, "obj"));
-        if (imguiButton(obj?"Convert":"Load", true, ImguiAlign::CenterIndented))
+        if (imguiButton("Load", loaderCount>0, ImguiAlign::CenterIndented))
         {
             _state.m_events = GuiEvent::HandleAction | GuiEvent::DismissWindow;
         }

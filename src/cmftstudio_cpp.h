@@ -14,7 +14,8 @@
 #include "common/timer.h"
 #include "common/datastructures.h"
 
-#include "geometry.h"
+#include "geometry/loaders.h"
+
 #include "backgroundjobs.h"
 #include "context.h"
 #include "assets.h"
@@ -1691,9 +1692,40 @@ private:
         {
             if ('\0' != m_widgets.m_meshBrowser.m_filePath[0])
             {
-                if (0 == strcmp("bin", m_widgets.m_meshBrowser.m_fileExt))
+                // Obj loading is taking a long time, do it in a background thread.
+                if (0 == strcmp("obj", m_widgets.m_meshBrowser.m_fileExt))
+                {
+                    if (!m_backgroundThread.isRunning() && ThreadStatus::Idle == m_threadParams.m_cmftFilter.m_threadStatus)
+                    {
+                        // Setup parameters.
+                        CS_CHECK(sizeof(m_threadParams.m_modelLoad.m_userData) >= sizeof(ObjInData), "Array overflow!");
+                        ObjInData* obj = (ObjInData*)m_threadParams.m_modelLoad.m_userData;
+                        obj->m_scale       = 1.0f;
+                        obj->m_packUv      = 1;
+                        obj->m_packNormal  = 1;
+                        obj->m_ccw         = m_widgets.m_meshBrowser.m_ccw;
+                        obj->m_flipV       = m_widgets.m_meshBrowser.m_flipV;
+                        obj->m_calcTangent = true;
+
+                        dm::strscpya(m_threadParams.m_modelLoad.m_filePath, m_widgets.m_meshBrowser.m_filePath);
+                        dm::strscpya(m_threadParams.m_modelLoad.m_fileName, m_widgets.m_meshBrowser.m_fileName);
+
+                        // Acquire stack allocator for this thread.
+                        m_threadParams.m_modelLoad.m_stackAlloc = cs::allocSplitStack(DM_MEGABYTES(200), DM_MEGABYTES(400));
+
+                        // Start thread.
+                        m_backgroundThread.init(modelLoadFunc, (void*)&m_threadParams.m_modelLoad);
+                    }
+                    else
+                    {
+                        const char* msg = "Mesh could not be converted right now. Background thread is in use!";
+                        imguiStatusMessage(msg, 6.0f, true, "Close");
+                    }
+                }
+                else // Load mesh in this thread.
                 {
                     const cs::MeshHandle mesh = cs::meshLoad(m_widgets.m_meshBrowser.m_filePath);
+                    cs::createGpuBuffers(mesh);
                     cs::setName(mesh, m_widgets.m_meshBrowser.m_fileName);
 
                     cs::MeshInstance* inst = m_meshInstList.addNew();
@@ -1720,42 +1752,20 @@ private:
                     m_settings.m_selectedMeshIdx = m_meshInstList.count()-1;
                     m_modelScene.changeModel(m_meshInstList[m_settings.m_selectedMeshIdx]);
                 }
-                else if (0 == strcmp("obj", m_widgets.m_meshBrowser.m_fileExt))
-                {
-                    if (!m_backgroundThread.isRunning() && ThreadStatus::Idle == m_threadParams.m_cmftFilter.m_threadStatus)
-                    {
-                        // Setup parameters.
-                        m_threadParams.m_objToBin.m_flipV = m_widgets.m_meshBrowser.m_flipV;
-                        m_threadParams.m_objToBin.m_ccw   = m_widgets.m_meshBrowser.m_ccw;
-                        dm::strscpya(m_threadParams.m_objToBin.m_filePath, m_widgets.m_meshBrowser.m_filePath);
-                        dm::strscpya(m_threadParams.m_objToBin.m_fileName, m_widgets.m_meshBrowser.m_fileName);
-
-                        // Acquire stack allocator for this thread.
-                        m_threadParams.m_objToBin.m_stackAlloc = cs::allocSplitStack(DM_MEGABYTES(200), DM_MEGABYTES(400));
-
-                        // Start thread.
-                        m_backgroundThread.init(objToBinFunc, (void*)&m_threadParams.m_objToBin);
-                    }
-                    else
-                    {
-                        const char* msg = "Mesh could not be converted right now. Background thread is in use!";
-                        imguiStatusMessage(msg, 6.0f, true, "Close");
-                    }
-                }
             }
         }
 
         // ObjToBin thread result.
-        if (ThreadStatus::Completed & m_threadParams.m_objToBin.m_threadStatus)
+        if (ThreadStatus::Completed & m_threadParams.m_modelLoad.m_threadStatus)
         {
             char buf[128];
 
-            if (m_threadParams.m_objToBin.m_threadStatus & ThreadStatus::ExitSuccess
-            &&  0 != m_threadParams.m_objToBin.m_size)
+            if (m_threadParams.m_modelLoad.m_threadStatus & ThreadStatus::ExitSuccess)
             {
-                // Load mesh from converted data.
-                const cs::MeshHandle mesh = cs::meshLoad(m_threadParams.m_objToBin.m_data, m_threadParams.m_objToBin.m_size);
-                cs::setName(mesh, m_threadParams.m_objToBin.m_fileName);
+                // Setup mesh.
+                const cs::MeshHandle mesh = m_threadParams.m_modelLoad.m_mesh;
+                cs::createGpuBuffers(mesh);
+                cs::setName(mesh, m_threadParams.m_modelLoad.m_fileName);
 
                 cs::MeshInstance* inst = m_meshInstList.addNew();
                 inst->set(mesh);
@@ -1768,7 +1778,7 @@ private:
                     const cs::MaterialHandle material = cs::materialCreatePlain();
 
                     // Assign name.
-                    bx::snprintf(buf, sizeof(buf), "%s - %u", m_threadParams.m_objToBin.m_fileName, ii);
+                    bx::snprintf(buf, sizeof(buf), "%s - %u", m_threadParams.m_modelLoad.m_fileName, ii);
                     cs::setName(material, buf);
 
                     // Add to list.
@@ -1781,31 +1791,24 @@ private:
                 m_settings.m_selectedMeshIdx = m_meshInstList.count()-1;
                 m_modelScene.changeModel(m_meshInstList[m_settings.m_selectedMeshIdx]);
 
-                imguiRemoveStatusMessage(StatusWindowId::MeshConversion);
-                bx::snprintf(buf, sizeof(buf), "Mesh '%s' loaded successfully.", m_threadParams.m_objToBin.m_fileName);
+                bx::snprintf(buf, sizeof(buf), "Mesh '%s' loaded successfully.", m_threadParams.m_modelLoad.m_fileName);
                 imguiStatusMessage(buf, 3.0f, false, "Close");
             }
             else
             {
-                bx::snprintf(buf, sizeof(buf), "Mesh '%s' loading failed!", m_threadParams.m_objToBin.m_fileName);
+                bx::snprintf(buf, sizeof(buf), "Mesh '%s' loading failed!", m_threadParams.m_modelLoad.m_fileName);
                 imguiStatusMessage(buf, 6.0f, true, "Close");
             }
 
-            // Free converted mesh data.
-            if (NULL != m_threadParams.m_objToBin.m_data)
-            {
-                BX_FREE(m_threadParams.m_objToBin.m_stackAlloc
-                      , m_threadParams.m_objToBin.m_data);
-                m_threadParams.m_objToBin.m_data = NULL;
-            }
+            imguiRemoveStatusMessage(StatusWindowId::MeshConversion);
 
             // Cleanup.
             if (m_backgroundThread.isRunning())
             {
                 m_backgroundThread.shutdown();
             }
-            m_threadParams.m_objToBin.m_threadStatus = ThreadStatus::Idle;
-            cs::allocFreeStack(m_threadParams.m_objToBin.m_stackAlloc);
+            m_threadParams.m_modelLoad.m_threadStatus = ThreadStatus::Idle;
+            cs::allocFreeStack(m_threadParams.m_modelLoad.m_stackAlloc);
         }
 
         // ProjectWindow action.
@@ -2672,7 +2675,7 @@ private:
         ProjectSaveThreadParams m_projectSave;
         ProjectLoadThreadParams m_projectLoad;
         CmftFilterThreadParams  m_cmftFilter;
-        ObjToBinThreadParams    m_objToBin;
+        ModelLoadThreadParams   m_modelLoad;
     };
     ThreadParams m_threadParams;
     bx::Thread m_backgroundThread;

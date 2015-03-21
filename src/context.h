@@ -13,7 +13,7 @@
 #include "common/datastructures.h"
 
 #include <bgfx.h>                   // bgfx::TextureHandle
-#include <bx/readerwriter.h>        // bx::WriterI, bx::ReaderSeekerI
+#include <dm/readerwriter.h>        // bx::WriterI, bx::ReaderSeekerI
 
 namespace cs
 {
@@ -232,9 +232,9 @@ namespace cs
 
     MeshHandle meshSphere();
     uint32_t   meshNumGroups(MeshHandle _mesh);
-    MeshHandle meshLoad(const void* _data, uint32_t _size);
-    MeshHandle meshLoad(const char* _filePath);
-    MeshHandle meshLoad(bx::ReaderSeekerI& _reader);
+    MeshHandle meshLoad(const void* _data, uint32_t _size, const char* _ext);
+    MeshHandle meshLoad(const char* _filePath, void* _userData = NULL, cs::StackAllocatorI* _stack = g_stackAlloc);
+    MeshHandle meshLoad(dm::ReaderSeekerI& _reader, cs::StackAllocatorI* _stack = g_stackAlloc);
     bool       meshSave(MeshHandle _mesh, const char* _filePath);
 
 
@@ -293,7 +293,7 @@ namespace cs
     EnvHandle    envCreateCmftStudioLogo();
     EnvHandle    envCreate(uint32_t _rgba = 0x303030ff);
     EnvHandle    envCreate(const char* _skyboxPath, const char* _pmremPath, const char* _iemPath);
-    EnvHandle    envCreate(bx::ReaderSeekerI& _reader);
+    EnvHandle    envCreate(dm::ReaderSeekerI& _reader);
     void         envLoad(EnvHandle _handle, Environment::Enum _which, cmft::Image& _image); // Notice: this takes ownership of '_image'.
     bool         envLoad(EnvHandle _handle, Environment::Enum _which, const char* _filePath);
     void         envTransform_UseMacroInstead(EnvHandle _handle, Environment::Enum _which, ...);
@@ -425,11 +425,11 @@ namespace cs
     void release(MeshHandle _handle);
     void release(EnvHandle _handle);
 
-    TextureHandle  readTexture(bx::ReaderSeekerI* _reader);
-    MaterialHandle readMaterial(bx::ReaderSeekerI* _reader);
-    MeshHandle     readMesh(bx::ReaderSeekerI* _reader);
-    EnvHandle      readEnv(bx::ReaderSeekerI* _reader);
-    void           readMeshInstance(bx::ReaderSeekerI* _reader, MeshInstance* _instance);
+    TextureHandle  readTexture(dm::ReaderSeekerI* _reader,cs::StackAllocatorI* _stack = g_stackAlloc);
+    MaterialHandle readMaterial(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack = g_stackAlloc);
+    MeshHandle     readMesh(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack = g_stackAlloc);
+    EnvHandle      readEnv(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack = g_stackAlloc);
+    void           readMeshInstance(dm::ReaderSeekerI* _reader, MeshInstance* _instance);
 
     /// Notice: after read*(), createGpuBuffers*() need to be called from the main thread.
     void createGpuBuffers(TextureHandle _handle, uint32_t _flags = BGFX_TEXTURE_NONE, uint8_t _skip = 0, bgfx::TextureInfo* _info = NULL);

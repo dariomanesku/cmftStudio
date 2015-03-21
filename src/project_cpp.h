@@ -294,7 +294,7 @@ bool projectLoad(const char* _path
     outputWindowPrint(" Resource  |                                                                         Name  |      Size  ");
     outputWindowPrint("--------------------------------------------------------------------------------------------------------");
 
-    bx::MemoryReader reader(data, dataSize);
+    dm::MemoryReader reader(data, dataSize);
     const uint64_t totalBefore = reader.seek(0, bx::Whence::Current);
 
     // Keep track of loaded meshes.
@@ -309,7 +309,7 @@ bool projectLoad(const char* _path
         case CMFTSTUDIO_CHUNK_MAGIC_MSH_BEGIN:
             {
                 const uint64_t before = reader.seek(0, bx::Whence::Current);
-                const cs::MeshHandle mesh = cs::readMesh(&reader);
+                const cs::MeshHandle mesh = cs::readMesh(&reader, _stackAlloc);
                 meshList.add(mesh);
                 const uint64_t after = reader.seek(0, bx::Whence::Current);
 
@@ -336,7 +336,7 @@ bool projectLoad(const char* _path
         case CMFTSTUDIO_CHUNK_MAGIC_ENV_BEGIN:
             {
                 const uint64_t before = reader.seek(0, bx::Whence::Current);
-                const cs::EnvHandle env = cs::readEnv(&reader);
+                const cs::EnvHandle env = cs::readEnv(&reader, _stackAlloc);
                 _envList.add(env);
                 const uint64_t after = reader.seek(0, bx::Whence::Current);
 
@@ -352,7 +352,7 @@ bool projectLoad(const char* _path
         case CMFTSTUDIO_CHUNK_MAGIC_MAT_BEGIN:
             {
                 const uint64_t before = reader.seek(0, bx::Whence::Current);
-                const cs::MaterialHandle material = cs::readMaterial(&reader);
+                const cs::MaterialHandle material = cs::readMaterial(&reader, _stackAlloc);
                 _materialList.add(material);
                 const uint64_t after = reader.seek(0, bx::Whence::Current);
 
@@ -368,7 +368,7 @@ bool projectLoad(const char* _path
         case CMFTSTUDIO_CHUNK_MAGIC_TEX_BEGIN:
             {
                 const uint64_t before = reader.seek(0, bx::Whence::Current);
-                const cs::TextureHandle texture = cs::readTexture(&reader);
+                const cs::TextureHandle texture = cs::readTexture(&reader, _stackAlloc);
                 _textureList.add(texture);
                 const uint64_t after = reader.seek(0, bx::Whence::Current);
 
