@@ -1711,7 +1711,7 @@ private:
                         dm::strscpya(m_threadParams.m_modelLoad.m_fileName, m_widgets.m_meshBrowser.m_fileName);
 
                         // Acquire stack allocator for this thread.
-                        m_threadParams.m_modelLoad.m_stackAlloc = cs::allocSplitStack(DM_MEGABYTES(200), DM_MEGABYTES(400));
+                        m_threadParams.m_modelLoad.m_stackAlloc = cs::allocSplitStack(DM_MEGABYTES(400), DM_MEGABYTES(400));
 
                         // Start thread.
                         m_backgroundThread.init(modelLoadFunc, (void*)&m_threadParams.m_modelLoad);
