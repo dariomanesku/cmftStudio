@@ -67,11 +67,7 @@ bool objLoader(Geometry& _geometry
     }
     else // (_reader->getType() == dm::ReaderWriterTypes::CrtFileReader).
     {
-        const int64_t begin = bx::seek(_reader);
-        const int64_t end   = bx::seek(_reader, 0, bx::Whence::End);
-        bx::seek(_reader, begin, bx::Whence::Begin);
-
-        const uint32_t objSize = uint32_t(end - begin); // Notice: max size is 32bit.
+        const uint32_t objSize = (uint32_t)bx::getSize(_reader);
         objData = (uint8_t*)BX_ALLOC(_stack, objSize);
         bx::read(_reader, objData, objSize);
     }
