@@ -20,20 +20,20 @@ else
 	OS=windows
 endif
 
-GENIE=./../bx/tools/bin/$(OS)/genie
+GENIE=./../bx/tools/bin/$(OS)/genie --unity-build
 
 export CMFTVIEWER_WIN_CLANG_DIR_=$(subst \,\\,$(subst /,\,$(WIN_CLANG_DIR)))
 export CMFTVIEWER_WIN_MINGW_DIR_=$(subst \,\\,$(subst /,\,$(WIN_MINGW_DIR)))
 
 .PHONY: all
 all:
-	$(GENIE) --file=scripts/main.lua --unity-build xcode4
-	$(GENIE) --file=scripts/main.lua --unity-build vs2008
-	$(GENIE) --file=scripts/main.lua --unity-build vs2010
-	$(GENIE) --file=scripts/main.lua --unity-build vs2012
-	$(GENIE) --file=scripts/main.lua --unity-build vs2013
-	$(GENIE) --file=scripts/main.lua --unity-build --gcc=osx       gmake
-	$(GENIE) --file=scripts/main.lua --unity-build --gcc=linux-gcc gmake
+	$(GENIE) --file=scripts/main.lua xcode4
+	$(GENIE) --file=scripts/main.lua vs2008
+	$(GENIE) --file=scripts/main.lua vs2010
+	$(GENIE) --file=scripts/main.lua vs2012
+	$(GENIE) --file=scripts/main.lua vs2013
+	$(GENIE) --file=scripts/main.lua --gcc=osx       gmake
+	$(GENIE) --file=scripts/main.lua --gcc=linux-gcc gmake
 
 .PHONY: clean-projects
 clean-projects:
