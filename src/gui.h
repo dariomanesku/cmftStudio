@@ -885,7 +885,7 @@ struct MagnifyWindowState
     uint8_t m_events;
 };
 
-void imguiModalMagnifyWindow(int32_t _x, int32_t _y, AboutWindowState& _state);
+void imguiModalMagnifyWindow(int32_t _x, int32_t _y, MagnifyWindowState& _state);
 
 
 // Project window.

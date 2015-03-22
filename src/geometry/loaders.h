@@ -12,7 +12,7 @@
 #include "loader_bgfxbin.h"
 #include "loader_obj.h"
 
-static void initGeometryLoaders()
+static inline void initGeometryLoaders()
 {
     // Initialize geometry loaders.
     geometryLoaderRegister("Wavefront obj",   "obj", objLoader);

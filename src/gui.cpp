@@ -22,6 +22,7 @@
 
 #include "renderpipeline.h"
 #include "staticres.h"              // gui_res.h
+#include "common/utils.h"           // vecFromLatLong(), latLongFromVec()
 #include "geometry/loadermanager.h" // cs::geometryLoaderCount(), cs::geometryLoaderGetExtensions()
 
 /// Notice: Always call tinydir functions between push/pop(_stackAlloc);

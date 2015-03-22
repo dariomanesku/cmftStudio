@@ -8,6 +8,12 @@
 
 #include <../../src/vertexdecl.h> // bgfx::VertexDecl
 
+#define BGFX_CHUNK_MAGIC_VB             BX_MAKEFOURCC('V', 'B', ' ', 0x1)
+#define BGFX_CHUNK_MAGIC_IB             BX_MAKEFOURCC('I', 'B', ' ', 0x0)
+#define BGFX_CHUNK_MAGIC_PRI            BX_MAKEFOURCC('P', 'R', 'I', 0x0)
+#define CMFTSTUDIO_CHUNK_MAGIC_MSH_MISC BX_MAKEFOURCC('M', 'S', 'H', 0x2)
+#define CMFTSTUDIO_CHUNK_MAGIC_MSH_DONE BX_MAKEFOURCC('M', 'S', 'H', 0x3)
+
 void write(bx::WriterI* _writer, const void* _vertices, uint32_t _numVertices, uint32_t _stride, uint32_t _obbSteps)
 {
     Sphere maxSphere;

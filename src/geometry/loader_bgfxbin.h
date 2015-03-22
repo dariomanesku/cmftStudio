@@ -17,6 +17,12 @@ namespace bgfx
 // Bgfx bin format loader.
 //-----
 
+#define BGFX_CHUNK_MAGIC_VB             BX_MAKEFOURCC('V', 'B', ' ', 0x1)
+#define BGFX_CHUNK_MAGIC_IB             BX_MAKEFOURCC('I', 'B', ' ', 0x0)
+#define BGFX_CHUNK_MAGIC_PRI            BX_MAKEFOURCC('P', 'R', 'I', 0x0)
+#define CMFTSTUDIO_CHUNK_MAGIC_MSH_MISC BX_MAKEFOURCC('M', 'S', 'H', 0x2)
+#define CMFTSTUDIO_CHUNK_MAGIC_MSH_DONE BX_MAKEFOURCC('M', 'S', 'H', 0x3)
+
 struct BgfxBinInData
 {
 };
@@ -27,20 +33,15 @@ struct BgfxBinOutData : public cs::OutDataHeader
     uint16_t m_handle;
 };
 
-bool bgfxBinLoader(Geometry& _geometry
-                 , dm::ReaderSeekerI* _reader
-                 , cs::StackAllocatorI* _stack
-                 , void* _inData
-                 , cs::OutDataHeader** _outData
-                 , bx::ReallocatorI* _allocator
-                 )
+static bool bgfxBinLoader(Geometry& _geometry
+                        , dm::ReaderSeekerI* _reader
+                        , cs::StackAllocatorI* _stack
+                        , void* _inData
+                        , cs::OutDataHeader** _outData
+                        , bx::ReallocatorI* _allocator
+                        )
 {
     BX_UNUSED(_inData);
-    #define BGFX_CHUNK_MAGIC_VB             BX_MAKEFOURCC('V', 'B', ' ', 0x1)
-    #define BGFX_CHUNK_MAGIC_IB             BX_MAKEFOURCC('I', 'B', ' ', 0x0)
-    #define BGFX_CHUNK_MAGIC_PRI            BX_MAKEFOURCC('P', 'R', 'I', 0x0)
-    #define CMFTSTUDIO_CHUNK_MAGIC_MSH_MISC BX_MAKEFOURCC('M', 'S', 'H', 0x2)
-    #define CMFTSTUDIO_CHUNK_MAGIC_MSH_DONE BX_MAKEFOURCC('M', 'S', 'H', 0x3)
 
     Group group;
     bool done = false;
@@ -167,7 +168,7 @@ bool bgfxBinLoader(Geometry& _geometry
         break;
 
         default:
-            DBG("%08x at %d", chunk, _reader->seek());
+            CS_CHECK(false, "%08x at %d", chunk, _reader->seek());
         break;
         }
     }

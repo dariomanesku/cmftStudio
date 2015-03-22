@@ -1,1 +1,1 @@
-#include "../staticres_cpp.h"
+#include "../staticres.cpp"

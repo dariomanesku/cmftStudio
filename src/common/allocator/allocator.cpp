@@ -13,6 +13,7 @@
 #include "../globals.h"        // g_frameNum
 #include "../config.h"         // g_config.m_memorySize
 #include "../datastructures.h" // HandleAllocT
+#include "../tinystl.h"        // cs::TinyStlAllocator
 
 #include <dm/misc.h>           // DM_MEGABYTES
 #include <bx/thread.h>         // bx::Mutex

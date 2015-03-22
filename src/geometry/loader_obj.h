@@ -29,13 +29,13 @@ struct ObjOutData : public cs::OutDataHeader
 {
 };
 
-bool objLoader(Geometry& _geometry
-             , dm::ReaderSeekerI* _reader
-             , cs::StackAllocatorI* _stack
-             , void* _inData
-             , cs::OutDataHeader** _outData
-             , bx::ReallocatorI* _allocator
-             )
+static bool objLoader(Geometry& _geometry
+                    , dm::ReaderSeekerI* _reader
+                    , cs::StackAllocatorI* _stack
+                    , void* _inData
+                    , cs::OutDataHeader** _outData
+                    , bx::ReallocatorI* _allocator
+                    )
 {
     BX_UNUSED(_outData, _allocator);
 

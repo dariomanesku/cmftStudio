@@ -4,7 +4,7 @@
 #  License: http://www.opensource.org/licenses/BSD-2-Clause
 #
 
-SRC=(../*_cpp.h ../geometry/*_cpp.h ../common/*_cpp.h ../common/allocator/*_cpp.h)
+SRC=(../*.cpp ../geometry/*.cpp ../common/*.cpp ../common/allocator/*.cpp)
 APP=cmftStudioApp.cpp
 RES=cmftStudioApp_static_resources.cpp
 
@@ -13,7 +13,7 @@ echo -n > $APP
 echo -n > $RES
 
 for file in ${SRC[*]}; do
-    if [ $file == "../staticres_cpp.h" ]; then
+    if [ $file == "../staticres.cpp" ]; then
         echo "#include \"$file\"" >> $RES
     else
         echo "#include \"$file\"" >> $APP
