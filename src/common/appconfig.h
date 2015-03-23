@@ -9,6 +9,10 @@
 // Check.
 //-----
 
+// Available options:
+//     -DM_CHECK_CONFIG_NOOP
+//     -DM_CHECK_CONFIG_PRINT
+//     -DM_CHECK_CONFIG_DEBUG_BREAK
 #define DM_CHECK_CONFIG DM_CHECK_CONFIG_NOOP
 #include <dm/check.h>
 #define CS_CHECK DM_CHECK
