@@ -2597,18 +2597,18 @@ public:
 private:
     void initLists()
     {
-        const uint32_t totalSize = m_textureList.sizeFor(CmftStudio::MaxTextures)
-                                 + m_materialList.sizeFor(CmftStudio::MaxMaterials)
-                                 + m_envList.sizeFor(CmftStudio::MaxEnvironments)
-                                 + m_meshInstList.sizeFor(CmftStudio::MaxInstances)
+        const uint32_t totalSize = m_textureList.sizeFor(CS_MAX_TEXTURES)
+                                 + m_materialList.sizeFor(CS_MAX_MATERIALS)
+                                 + m_envList.sizeFor(CS_MAX_ENVIRONMENTS)
+                                 + m_meshInstList.sizeFor(CS_MAX_MESHINSTANCES)
                                  ;
         m_listMem = BX_ALLOC(cs::g_staticAlloc, totalSize);
 
         void* mem = m_listMem;
-        mem = m_textureList.init(CmftStudio::MaxTextures, mem);
-        mem = m_materialList.init(CmftStudio::MaxMaterials, mem);
-        mem = m_envList.init(CmftStudio::MaxEnvironments, mem);
-        mem = m_meshInstList.init(CmftStudio::MaxInstances, mem);
+        mem = m_textureList.init(CS_MAX_TEXTURES, mem);
+        mem = m_materialList.init(CS_MAX_MATERIALS, mem);
+        mem = m_envList.init(CS_MAX_ENVIRONMENTS, mem);
+        mem = m_meshInstList.init(CS_MAX_MESHINSTANCES, mem);
     }
 
     void destroyLists()

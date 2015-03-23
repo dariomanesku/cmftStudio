@@ -21,18 +21,6 @@ extern uint32_t g_guiHeight;
 extern float    g_widthf;
 extern float    g_heightf;
 
-struct CmftStudio
-{
-    enum
-    {
-        MaxTextures     = 256,
-        MaxMaterials    =  64,
-        MaxMeshes       =  32,
-        MaxInstances    =  32,
-        MaxEnvironments =  32,
-    };
-};
-
 #endif // CMFTSTUDIO_GLOBALS_H_HEADER_GUARD
 
 /* vim: set sw=4 ts=4 expandtab: */

@@ -401,7 +401,7 @@ namespace cs
     static ResourceResolver<TextureHandle, CS_MAX_TEXTURES>   s_textureResolver;
     static ResourceResolver<MaterialHandle, CS_MAX_MATERIALS> s_materialResolver;
     static ResourceResolver<MeshHandle, CS_MAX_MESHES>        s_meshResolver;
-    static ResourceResolver<EnvHandle, CS_MAX_ENVMAPS>        s_envResolver;
+    static ResourceResolver<EnvHandle, CS_MAX_ENVIRONMENTS>   s_envResolver;
 
     void resourceMap(uint16_t _id, TextureHandle _handle)
     {
@@ -1990,7 +1990,7 @@ namespace cs
         }
     };
 
-    struct EnvironmentResourceManager : public ResourceManagerT<Environment, EnvironmentImpl, EnvHandle, CS_MAX_ENVMAPS>
+    struct EnvironmentResourceManager : public ResourceManagerT<Environment, EnvironmentImpl, EnvHandle, CS_MAX_ENVIRONMENTS>
     {
         EnvHandle create(uint32_t _rgba)
         {

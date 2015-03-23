@@ -50,15 +50,15 @@ struct ProjectSaveThreadParams
         m_path[0]          = '\0';
         m_name[0]          = '\0';
 
-        const uint32_t size = cs::MaterialList::sizeFor(CmftStudio::MaxMaterials)
-                            + cs::EnvList::sizeFor(CmftStudio::MaxEnvironments)
-                            + cs::MeshInstanceList::sizeFor(CmftStudio::MaxInstances);
+        const uint32_t size = cs::MaterialList::sizeFor(CS_MAX_MATERIALS)
+                            + cs::EnvList::sizeFor(CS_MAX_ENVIRONMENTS)
+                            + cs::MeshInstanceList::sizeFor(CS_MAX_MESHINSTANCES);
         m_memBlock = BX_ALLOC(cs::g_staticAlloc, size);
 
         void* ptr = m_memBlock;
-        ptr = m_materialList.init(CmftStudio::MaxMaterials, ptr);
-        ptr = m_envList.init(CmftStudio::MaxEnvironments, ptr);
-        ptr = m_meshInstList.init(CmftStudio::MaxInstances, ptr);
+        ptr = m_materialList.init(CS_MAX_MATERIALS, ptr);
+        ptr = m_envList.init(CS_MAX_ENVIRONMENTS, ptr);
+        ptr = m_meshInstList.init(CS_MAX_MESHINSTANCES, ptr);
     }
 
     void releaseAll()
@@ -101,17 +101,17 @@ struct ProjectLoadThreadParams
         m_path[0]      = '\0';
         m_name[0]      = '\0';
 
-        const uint32_t size = cs::TextureList::sizeFor(CmftStudio::MaxTextures)
-                            + cs::MaterialList::sizeFor(CmftStudio::MaxMaterials)
-                            + cs::EnvList::sizeFor(CmftStudio::MaxEnvironments)
-                            + cs::MeshInstanceList::sizeFor(CmftStudio::MaxInstances);
+        const uint32_t size = cs::TextureList::sizeFor(CS_MAX_TEXTURES)
+                            + cs::MaterialList::sizeFor(CS_MAX_MATERIALS)
+                            + cs::EnvList::sizeFor(CS_MAX_ENVIRONMENTS)
+                            + cs::MeshInstanceList::sizeFor(CS_MAX_MESHINSTANCES);
         m_memBlock = BX_ALLOC(cs::g_staticAlloc, size);
 
         void* ptr = m_memBlock;
-        ptr = m_textureList.init(CmftStudio::MaxTextures, ptr);
-        ptr = m_materialList.init(CmftStudio::MaxMaterials, ptr);
-        ptr = m_envList.init(CmftStudio::MaxEnvironments, ptr);
-        ptr = m_meshInstList.init(CmftStudio::MaxInstances, ptr);
+        ptr = m_textureList.init(CS_MAX_TEXTURES, ptr);
+        ptr = m_materialList.init(CS_MAX_MATERIALS, ptr);
+        ptr = m_envList.init(CS_MAX_ENVIRONMENTS, ptr);
+        ptr = m_meshInstList.init(CS_MAX_MESHINSTANCES, ptr);
     }
 
     void reset()
