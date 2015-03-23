@@ -1411,8 +1411,11 @@ namespace cs
 
         MeshHandle load(const char* _path, void* _userData, cs::StackAllocatorI* _stack)
         {
+            const char* ext = dm::fileExtension(_path);
+            const bool isBinary = (0 == strcmp(ext, "bin"));
+
             dm::CrtFileReader reader;
-            if (0 != reader.open(_path))
+            if (0 != reader.open(_path, isBinary))
             {
                 return MeshHandle::invalid();
             }
@@ -1420,7 +1423,6 @@ namespace cs
             MeshImpl* mesh = this->createObj();
             const MeshHandle handle = this->getHandle(mesh);
 
-            const char* ext = dm::fileExtension(_path);
             const bool loaded = mesh->load(&reader, ext, _userData, _stack);
             reader.close();
 
