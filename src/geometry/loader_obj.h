@@ -67,9 +67,9 @@ static bool objLoader(Geometry& _geometry
     }
     else // (_reader->getType() == dm::ReaderWriterTypes::CrtFileReader).
     {
-        const uint32_t objSize = (uint32_t)bx::getSize(_reader);
+        uint32_t objSize = (uint32_t)bx::getSize(_reader);
         objData = (uint8_t*)BX_ALLOC(_stack, objSize+1);
-        bx::read(_reader, objData, objSize);
+        objSize = bx::read(_reader, objData, objSize);
         objData[objSize] = '\0';
     }
 

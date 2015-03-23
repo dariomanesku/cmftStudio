@@ -95,7 +95,7 @@ static void triangleReorder(uint16_t* _indices, uint32_t _numIndices, uint32_t _
     delete [] newIndexList;
 }
 
-static void calculateTangents(void* _vertices, uint32_t _numVertices, const bgfx::VertexDecl& _decl, const uint16_t* _indices, uint32_t _numIndices)
+static void calculateTangents(void* _vertices, uint16_t _numVertices, bgfx::VertexDecl _decl, const uint16_t* _indices, uint32_t _numIndices)
 {
     struct PosTexcoord
     {
@@ -571,10 +571,10 @@ uint32_t objToBin(const uint8_t* _objData
 
     Primitive prim;
     prim.m_startVertex = 0;
-    prim.m_startIndex = 0;
+    prim.m_startIndex  = 0;
 
     uint32_t positionOffset = decl.getOffset(bgfx::Attrib::Position);
-    uint32_t color0Offset = decl.getOffset(bgfx::Attrib::Color0);
+    uint32_t color0Offset   = decl.getOffset(bgfx::Attrib::Color0);
 
     uint32_t ii = 0;
     for (BgfxGroupArray::const_iterator groupIt = groups.begin(); groupIt != groups.end(); ++groupIt, ++ii)
@@ -604,7 +604,16 @@ uint32_t objToBin(const uint8_t* _objData
                     calculateTangents(vertexData, numVertices, decl, indexData, numIndices);
                 }
 
-                write(_writer, vertexData, numVertices, decl, indexData, numIndices, material.c_str(), primitives.data(), (uint32_t)primitives.size());
+                write(_writer
+                    , vertexData
+                    , numVertices
+                    , decl
+                    , indexData
+                    , numIndices
+                    , material.c_str()
+                    , primitives.data()
+                    , (uint32_t)primitives.size()
+                    );
                 primitives.clear();
 
                 for (Index3Map::iterator indexIt = indexMap.begin(); indexIt != indexMap.end(); ++indexIt)
