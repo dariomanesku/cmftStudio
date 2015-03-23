@@ -1673,35 +1673,47 @@ namespace cs
 
 void* operator new(size_t _size)
 {
+#if CS_OVERRIDE_NEWDELETE_ALLOCATOR
     // Make sure memory is initialized.
     static const bool assertInitialized = s_memory.init();
     BX_UNUSED(assertInitialized);
-
     return s_memory.alloc(_size);
+#else
+    return ::malloc(_size);
+#endif
 }
 
 void* operator new[](size_t _size)
 {
+#if CS_OVERRIDE_NEWDELETE_ALLOCATOR
     static const bool assertInitialized = s_memory.init();
     BX_UNUSED(assertInitialized);
-
     return s_memory.alloc(_size);
+#else
+    return ::malloc(_size);
+#endif
 }
 
 void operator delete(void* _ptr)
 {
+#if CS_OVERRIDE_NEWDELETE_ALLOCATOR
     static const bool assertInitialized = s_memory.init();
     BX_UNUSED(assertInitialized);
-
     return s_memory.free(_ptr);
+#else
+    return ::free(_ptr);
+#endif
 }
 
 void operator delete[](void* _ptr)
 {
+#if CS_OVERRIDE_NEWDELETE_ALLOCATOR
     static const bool assertInitialized = s_memory.init();
     BX_UNUSED(assertInitialized);
-
     return s_memory.free(_ptr);
+#else
+    return ::free(_ptr);
+#endif
 }
 
 #if !ENTRY_CONFIG_IMPLEMENT_DEFAULT_ALLOCATOR
@@ -1739,18 +1751,25 @@ namespace cs
 {
     void* TinyStlAllocator::static_allocate(size_t _bytes)
     {
+    #if CS_OVERRIDE_TINYSTL_ALLOCATOR
         static const bool assertInitialized = s_memory.init();
         BX_UNUSED(assertInitialized);
-
         return s_memory.alloc(_bytes);
+    #else
+        return ::malloc(_bytes);
+    #endif
     }
 
     void TinyStlAllocator::static_deallocate(void* _ptr, size_t /*_bytes*/)
     {
+    #if CS_OVERRIDE_TINYSTL_ALLOCATOR
         static const bool assertInitialized = s_memory.init();
         BX_UNUSED(assertInitialized);
 
         return s_memory.free(_ptr);
+    #else
+        return ::free(_ptr);
+    #endif
     }
 } // namespace cs
 

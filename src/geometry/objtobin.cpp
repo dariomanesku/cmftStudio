@@ -12,7 +12,6 @@
 #include "geometry.h"           // write(vertices, indices..)
 #include "../common/utils.h"
 #include "../common/memblock.h"
-#include "../common/tinystl.h"  // stl::vector
 #include <dm/misc.h>            // dm::NoCopyNoAssign
 
 // This code is altered from: https://github.com/bkaradzic/bgfx/blob/master/tools/geometryc/geometryc.cpp
@@ -31,6 +30,14 @@
 
 #include <string>
 #include <algorithm>
+#if CS_OBJTOBIN_USES_TINYSTL
+#   include "../common/tinystl.h"
+#   define CS_STL stl
+#else
+#   include <vector>
+#   include <unordered_map>
+#   define CS_STL std
+#endif
 
 #include <forsythtriangleorderoptimizer.h>
 
@@ -51,7 +58,7 @@ struct Vector3
     float z;
 };
 
-typedef stl::vector<Vector3> Vector3Array;
+typedef CS_STL::vector<Vector3> Vector3Array;
 
 struct Index3
 {
@@ -61,14 +68,14 @@ struct Index3
     int32_t m_vertexIndex;
 };
 
-typedef stl::unordered_map<uint64_t, Index3> Index3Map;
+typedef CS_STL::unordered_map<uint64_t, Index3> Index3Map;
 
 struct Triangle
 {
     uint64_t m_index[3];
 };
 
-typedef stl::vector<Triangle> TriangleArray;
+typedef CS_STL::vector<Triangle> TriangleArray;
 
 struct MeshGroup
 {
@@ -78,9 +85,9 @@ struct MeshGroup
     std::string m_material;
 };
 
-typedef stl::vector<MeshGroup> BgfxGroupArray;
+typedef CS_STL::vector<MeshGroup> BgfxGroupArray;
 
-typedef stl::vector<Primitive> BgfxPrimitiveArray;
+typedef CS_STL::vector<Primitive> BgfxPrimitiveArray;
 
 #define BGFX_CHUNK_MAGIC_GEO BX_MAKEFOURCC('G', 'E', 'O', 0x0)
 #define BGFX_CHUNK_MAGIC_VB  BX_MAKEFOURCC('V', 'B', ' ', 0x1)
@@ -301,7 +308,7 @@ uint32_t objToBin(const uint8_t* _objData
                     uint64_t hash2 = uint64_t(index.m_normal)<<40;
                     uint64_t hash = hash0^hash1^hash2;
 
-                    stl::pair<Index3Map::iterator, bool> result = indexMap.insert(stl::make_pair(hash, index) );
+                    CS_STL::pair<Index3Map::iterator, bool> result = indexMap.insert(CS_STL::make_pair(hash, index) );
                     if (!result.second)
                     {
                         Index3& oldIndex = result.first->second;
