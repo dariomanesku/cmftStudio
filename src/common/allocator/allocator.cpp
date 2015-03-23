@@ -497,21 +497,28 @@ struct Memory
 
     struct SegregatedLists
     {
+        #if (CS_OVERRIDE_TINYSTL_ALLOCATOR   &&  CS_OBJTOBIN_USES_TINYSTL) \
+        ||  (CS_OVERRIDE_NEWDELETE_ALLOCATOR && !CS_OBJTOBIN_USES_TINYSTL)
+        #   define NUM64 512
+        #else
+        #   define NUM64 128
+        #endif
+
         enum
         {
-            Size0  =                16, Num0  =  16*1024,
-            Size1  =                32, Num1  =  16*1024,
-            Size2  =                64, Num2  = 256*1024, // Notice: objToBin() uses over 100k of these for std containers.
-            Size3  =               256, Num3  =  16*1024,
-            Size4  =               512, Num4  =   8*1024,
-            Size5  = DM_KILOBYTES(  1), Num5  =   8*1024,
-            Size6  = DM_KILOBYTES( 16), Num6  =       64,
-            Size7  = DM_KILOBYTES( 64), Num7  =       64,
-            Size8  = DM_KILOBYTES(256), Num8  =       32,
-            Size9  = DM_KILOBYTES(512), Num9  =       32,
-            Size10 =   DM_MEGABYTES(1), Num10 =        8,
-            Size11 =   DM_MEGABYTES(4), Num11 =        8,
-            Size12 =   DM_MEGABYTES(8), Num12 =        8,
+            Size0  =                16, Num0  =    16*1024,
+            Size1  =                32, Num1  =    16*1024,
+            Size2  =                64, Num2  = NUM64*1024, // Notice: objToBin() uses over 100k of these for std containers.
+            Size3  =               256, Num3  =    16*1024,
+            Size4  =               512, Num4  =     8*1024,
+            Size5  = DM_KILOBYTES(  1), Num5  =     8*1024,
+            Size6  = DM_KILOBYTES( 16), Num6  =         64,
+            Size7  = DM_KILOBYTES( 64), Num7  =         64,
+            Size8  = DM_KILOBYTES(256), Num8  =         32,
+            Size9  = DM_KILOBYTES(512), Num9  =         32,
+            Size10 =   DM_MEGABYTES(1), Num10 =          8,
+            Size11 =   DM_MEGABYTES(4), Num11 =          8,
+            Size12 =   DM_MEGABYTES(8), Num12 =          8,
 
             Count = 13,
             BiggestSize = Size12,
