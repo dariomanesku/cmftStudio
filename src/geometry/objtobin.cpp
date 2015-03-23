@@ -268,8 +268,8 @@ uint32_t objToBin(const uint8_t* _objData
                 for (uint32_t edge = 0, numEdges = argc-1; edge < numEdges; ++edge)
                 {
                     Index3 index;
-                    index.m_texcoord = -1;
-                    index.m_normal = -1;
+                    index.m_texcoord = 0;
+                    index.m_normal = 0;
                     index.m_vertexIndex = -1;
 
                     char* vertex = argv[edge+1];
@@ -282,13 +282,16 @@ uint32_t objToBin(const uint8_t* _objData
                         if (NULL != normal)
                         {
                             *normal++ = '\0';
-                            index.m_normal = atoi(normal)-1;
+                            const int nn = atoi(normal);
+                            index.m_normal = (nn < 0) ? nn+(int)normals.size() : nn-1;
                         }
 
-                        index.m_texcoord = atoi(texcoord)-1;
+                        const int tex = atoi(texcoord);
+                        index.m_texcoord = (tex < 0) ? tex+(int)texcoords.size() : tex-1;
                     }
 
-                    index.m_position = atoi(vertex)-1;
+                    const int pos = atoi(vertex);
+                    index.m_position = (pos < 0) ? pos+(int)positions.size() : pos-1;
 
                     uint64_t hash0 = index.m_position;
                     uint64_t hash1 = uint64_t(index.m_texcoord)<<20;
@@ -473,8 +476,8 @@ uint32_t objToBin(const uint8_t* _objData
     bool hasTexcoord;
     {
         Index3Map::const_iterator it = indexMap.begin();
-        hasNormal = -1 != it->second.m_normal;
-        hasTexcoord = -1 != it->second.m_texcoord;
+        hasNormal   = 0 != it->second.m_normal;
+        hasTexcoord = 0 != it->second.m_texcoord;
 
         if (!hasTexcoord
         &&  texcoords.size() == positions.size() )
