@@ -14,12 +14,6 @@
 #include <dm/readerwriter.h> //bx::WriterI
 #include <dm/datastructures/objarray.h>
 
-enum
-{
-    MaxGroups = 16,
-    MaxPrimitivesPerGroup = 128,
-};
-
 struct Primitive
 {
     enum { NameLen = 128 };
@@ -35,17 +29,15 @@ struct Primitive
 
     char m_name[NameLen];
 };
-typedef dm::ObjArrayT<Primitive, MaxPrimitivesPerGroup> PrimitiveArray; //TODO: implement and use a dynamic array structure instead.
+typedef dm::ObjArray<Primitive> PrimitiveArray;
 
 struct Group
 {
     enum { MaterialNameLen = 128 };
 
-    void reset()
+    ~Group()
     {
-        memset(&m_vertexData, 0, (uint8_t*)&m_prims - (uint8_t*)&m_vertexData);
-        m_prims.reset();
-        m_materialName[0] = '\0';
+        m_prims.destroy();
     }
 
     void*    m_vertexData;
@@ -64,7 +56,7 @@ struct Group
 
     char m_materialName[MaterialNameLen];
 };
-typedef dm::ObjArrayT<Group, MaxGroups> GroupArray; //TODO: implement and use a dynamic array structure instead.
+typedef dm::ObjArray<Group> GroupArray;
 
 struct Geometry
 {

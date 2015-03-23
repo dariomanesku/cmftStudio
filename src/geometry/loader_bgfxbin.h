@@ -43,7 +43,16 @@ static bool bgfxBinLoader(Geometry& _geometry
 {
     BX_UNUSED(_inData);
 
-    Group group;
+    enum
+    {
+        MaxGroupsEstimate = 64,
+        MaxPrimitivesPerGroupEstimate = 32,
+    };
+    _geometry.m_groups.init(MaxGroupsEstimate);
+
+    Group* group = _geometry.m_groups.addNew();
+    group->m_prims.init(MaxPrimitivesPerGroupEstimate);
+
     bool done = false;
     uint32_t chunk;
     while (!done && 4 == bx::read(_reader, chunk))
@@ -52,28 +61,28 @@ static bool bgfxBinLoader(Geometry& _geometry
         {
         case BGFX_CHUNK_MAGIC_VB:
             {
-                bx::read(_reader, group.m_sphere);
-                bx::read(_reader, group.m_aabb);
-                bx::read(_reader, group.m_obb);
+                bx::read(_reader, group->m_sphere);
+                bx::read(_reader, group->m_aabb);
+                bx::read(_reader, group->m_obb);
 
                 bgfx::read(_reader, _geometry.m_decl);
                 const uint16_t stride = _geometry.m_decl.getStride();
 
-                bx::read(_reader, group.m_numVertices);
+                bx::read(_reader, group->m_numVertices);
 
-                group.m_vertexSize = group.m_numVertices*stride;
-                group.m_vertexData = BX_ALLOC(cs::g_mainAlloc, group.m_vertexSize);
-                bx::read(_reader, group.m_vertexData, group.m_vertexSize);
+                group->m_vertexSize = group->m_numVertices*stride;
+                group->m_vertexData = BX_ALLOC(cs::g_mainAlloc, group->m_vertexSize);
+                bx::read(_reader, group->m_vertexData, group->m_vertexSize);
             }
         break;
 
         case BGFX_CHUNK_MAGIC_IB:
             {
-                bx::read(_reader, group.m_numIndices);
+                bx::read(_reader, group->m_numIndices);
 
-                group.m_indexSize = group.m_numIndices*2;
-                group.m_indexData = BX_ALLOC(cs::g_mainAlloc, group.m_indexSize);
-                bx::read(_reader, group.m_indexData, group.m_indexSize);
+                group->m_indexSize = group->m_numIndices*2;
+                group->m_indexData = BX_ALLOC(cs::g_mainAlloc, group->m_indexSize);
+                bx::read(_reader, group->m_indexData, group->m_indexSize);
             }
         break;
 
@@ -84,8 +93,8 @@ static bool bgfxBinLoader(Geometry& _geometry
 
                 if (len < 256)
                 {
-                    bx::read(_reader, group.m_materialName, len);
-                    group.m_materialName[len] = '\0';
+                    bx::read(_reader, group->m_materialName, len);
+                    group->m_materialName[len] = '\0';
                 }
                 else
                 {
@@ -95,8 +104,8 @@ static bool bgfxBinLoader(Geometry& _geometry
 
                     bx::read(_reader, matName, len);
 
-                    memcpy(group.m_materialName, matName, Group::MaterialNameLen);
-                    group.m_materialName[Group::MaterialNameLen] = '\0';
+                    memcpy(group->m_materialName, matName, Group::MaterialNameLen);
+                    group->m_materialName[Group::MaterialNameLen] = '\0';
 
                     BX_FREE(_stack, matName);
                 }
@@ -124,20 +133,20 @@ static bool bgfxBinLoader(Geometry& _geometry
                         BX_FREE(_stack, matName);
                     }
 
-                    Primitive prim;
-                    bx::read(_reader, prim.m_startIndex);
-                    bx::read(_reader, prim.m_numIndices);
-                    bx::read(_reader, prim.m_startVertex);
-                    bx::read(_reader, prim.m_numVertices);
-                    bx::read(_reader, prim.m_sphere);
-                    bx::read(_reader, prim.m_aabb);
-                    bx::read(_reader, prim.m_obb);
-
-                    group.m_prims.addObj(prim);
+                    Primitive* prim = group->m_prims.addNew();
+                    bx::read(_reader, prim->m_startIndex);
+                    bx::read(_reader, prim->m_numIndices);
+                    bx::read(_reader, prim->m_startVertex);
+                    bx::read(_reader, prim->m_numVertices);
+                    bx::read(_reader, prim->m_sphere);
+                    bx::read(_reader, prim->m_aabb);
+                    bx::read(_reader, prim->m_obb);
                 }
 
-                _geometry.m_groups.addObj(group);
-                group.reset();
+                group->m_prims.shrink();
+
+                group = _geometry.m_groups.addNew();
+                group->m_prims.init(MaxPrimitivesPerGroupEstimate);
             }
         break;
 
@@ -172,6 +181,9 @@ static bool bgfxBinLoader(Geometry& _geometry
         break;
         }
     }
+
+    _geometry.m_groups.pop();
+    _geometry.m_groups.shrink();
 
     return true;
 }
