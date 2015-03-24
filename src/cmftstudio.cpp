@@ -1755,7 +1755,7 @@ private:
             }
         }
 
-        // ObjToBin thread result.
+        // ModelLoad thread result.
         if (ThreadStatus::Completed & m_threadParams.m_modelLoad.m_threadStatus)
         {
             char buf[128];
