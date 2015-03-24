@@ -6,7 +6,7 @@
 #include "globals.h"
 
 uint16_t g_versionMajor = 1;
-uint16_t g_versionMinor = 0;
+uint16_t g_versionMinor = 1;
 
 float    g_texelHalf        = 0.0f;
 bool     g_originBottomLeft = false;

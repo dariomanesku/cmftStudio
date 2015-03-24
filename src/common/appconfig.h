@@ -51,7 +51,6 @@
 #define CS_MAX_TEXTURES     128
 #define CS_MAX_MATERIALS    128
 #define CS_MAX_MESHES        16
-#define CS_MAX_MESH_GROUPS   16
 #define CS_MAX_ENVIRONMENTS  32
 #define CS_MAX_MESHINSTANCES 32
 

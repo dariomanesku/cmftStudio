@@ -606,7 +606,7 @@ struct ModelScene
                  , m_inst->m_pos[2]
                  );
 
-        submitMesh(_viewId, m_inst->m_mesh, _prog, mtx, m_inst->m_materials, _environment);
+        submitMesh(_viewId, m_inst->m_mesh, _prog, mtx, m_inst->m_materials.elements(), _environment);
     }
 
     cs::MeshInstance& getCurrInstance()
@@ -1328,7 +1328,7 @@ private:
                 m_materialList.add(cpy);
 
                 // Assign the newly created material.
-                instance.set(cpy, instance.m_selectedGroup);
+                instance.set(cpy, instance.m_selGroup);
 
             }
             // Handle material creation.
@@ -1342,7 +1342,7 @@ private:
                 m_materialList.add(mat);
 
                 // Assign the newly created material.
-                instance.set(mat, instance.m_selectedGroup);
+                instance.set(mat, instance.m_selGroup);
             }
         }
 
@@ -1390,7 +1390,7 @@ private:
                 {
                     const cs::TextureHandle texture = m_textureList[m_widgets.m_texPicker[matTex].m_selection];
 
-                    cs::Material& material = cs::getObj(instance.m_materials[instance.m_selectedGroup]);
+                    cs::Material& material = cs::getObj(instance.m_materials[instance.m_selGroup]);
                     material.set(matTex, texture);
                 }
                 else if (TexPickerWidgetState::Remove == m_widgets.m_texPicker[matTex].m_action)
@@ -1908,6 +1908,10 @@ private:
             {
                 eventTrigger(Event::ProjectLoaded);
             }
+            else if (threadStatus(ThreadStatus::ExitFailure, m_threadParams.m_projectLoad.m_threadStatus))
+            {
+                m_threadParams.m_projectLoad.m_threadStatus = ThreadStatus::Idle;
+            }
 
             // Update status message.
             imguiRemoveStatusMessage(StatusWindowId::ProjectLoad);
@@ -2274,7 +2278,8 @@ public:
                 for (uint16_t ii = 0, end = m_threadParams.m_projectLoad.m_meshInstList.count(); ii < end; ++ii)
                 {
                     const cs::MeshInstance& inst = m_threadParams.m_projectLoad.m_meshInstList[ii];
-                    memcpy(m_meshInstList.addNew(), &inst, sizeof(cs::MeshInstance));
+                    cs::MeshInstance* cpy = m_meshInstList.addNew();
+                    cpy = new (cpy) cs::MeshInstance(inst);
                 }
                 for (uint16_t ii = 0, end = m_threadParams.m_projectLoad.m_envList.count(); ii < end; ++ii)
                 {

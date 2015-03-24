@@ -398,10 +398,10 @@ namespace cs
         dm::KeyValueMapT<TyHandle, MaxT>        m_resourceMap;
         dm::ObjArrayT<UnresolvedResource, MaxT> m_unresolved;
     };
-    static ResourceResolver<TextureHandle, CS_MAX_TEXTURES>   s_textureResolver;
-    static ResourceResolver<MaterialHandle, CS_MAX_MATERIALS> s_materialResolver;
-    static ResourceResolver<MeshHandle, CS_MAX_MESHES>        s_meshResolver;
-    static ResourceResolver<EnvHandle, CS_MAX_ENVIRONMENTS>   s_envResolver;
+    static ResourceResolver<TextureHandle,  CS_MAX_TEXTURES>      s_textureResolver;
+    static ResourceResolver<MaterialHandle, CS_MAX_MATERIALS>     s_materialResolver;
+    static ResourceResolver<MeshHandle,     CS_MAX_MESHES>        s_meshResolver;
+    static ResourceResolver<EnvHandle,      CS_MAX_ENVIRONMENTS>  s_envResolver;
 
     void resourceMap(uint16_t _id, TextureHandle _handle)
     {
@@ -1007,6 +1007,12 @@ namespace cs
         return s_materials->create();
     }
 
+    MaterialHandle materialDefault()
+    {
+        static MaterialHandle s_material = materialCreatePlain();
+        return s_material;
+    }
+
     MaterialHandle materialCreatePlain()
     {
         static const float sc_material[Material::Size] =
@@ -1185,15 +1191,12 @@ namespace cs
                 const Primitive& prim = group.m_prims[ii];
 
                 // Material.
-                if (cs::isValid(_material))
+                cs::MaterialHandle material = cs::isValid(_material) ? _material : cs::materialDefault();
+                cs::setMaterial(material);
+                const Material& currentMaterial = getObj(material);
+                if (currentMaterial.has(Material::Normal) && 1.0f == currentMaterial.m_normal.sample)
                 {
-                    cs::setMaterial(_material);
-
-                    const Material& currentMaterial = getObj(_material);
-                    if (currentMaterial.has(Material::Normal) && 1.0f == currentMaterial.m_normal.sample)
-                    {
-                        _prog = programNormal(_prog);
-                    }
+                    _prog = programNormal(_prog);
                 }
 
                 // Program.
@@ -1252,15 +1255,12 @@ namespace cs
                 const Primitive& prim = group.m_prims[ii];
 
                 // Material.
-                if (cs::isValid(_material))
+                cs::MaterialHandle material = cs::isValid(_material) ? _material : cs::materialDefault();
+                cs::setMaterial(material);
+                const Material& currentMaterial = getObj(material);
+                if (currentMaterial.has(Material::Normal) && 1.0f == currentMaterial.m_normal.sample)
                 {
-                    cs::setMaterial(_material);
-
-                    const Material& currentMaterial = getObj(_material);
-                    if (currentMaterial.has(Material::Normal) && 1.0f == currentMaterial.m_normal.sample)
-                    {
-                        _prog = programNormal(_prog);
-                    }
+                    _prog = programNormal(_prog);
                 }
 
                 //Program.
@@ -1506,30 +1506,35 @@ namespace cs
         m_pos[1]   = 0.0f;
         m_pos[2]   = 0.0f;
         m_mesh     = MeshHandle::invalid();
-
-        for (uint16_t ii = 0; ii < CS_MAX_MESH_GROUPS; ++ii)
-        {
-            m_materials[ii] = MaterialHandle::invalid();
-        }
-        m_selectedGroup = 0;
+        m_selGroup = 0;
     }
 
     MeshInstance::MeshInstance(const MeshInstance& _other)
     {
-        memcpy(this, &_other, sizeof(MeshInstance));
+        m_scale    = _other.m_scale;
+        m_scaleAdj = _other.m_scaleAdj;
+        m_rot[0]   = _other.m_rot[0];
+        m_rot[1]   = _other.m_rot[1];
+        m_rot[2]   = _other.m_rot[2];
+        m_pos[0]   = _other.m_pos[0];
+        m_pos[1]   = _other.m_pos[1];
+        m_pos[2]   = _other.m_pos[2];
+        m_mesh     = _other.m_mesh;
+        m_selGroup = _other.m_selGroup;
 
-        if (isValid(m_mesh))
+        const uint32_t matCount = _other.m_materials.max();
+        m_materials.reinit(matCount);
+        for (uint32_t ii = matCount; ii--; )
         {
-            cs::acquire(m_mesh);
+            m_materials[ii] = _other.m_materials[ii];
         }
 
-        for (uint32_t ii = 0, count = meshNumGroups(m_mesh); ii < count; ++ii)
-        {
-            if (isValid(m_materials[ii]))
-            {
-                cs::acquire(m_materials[ii]);
-            }
-        }
+        cs::acquire(this);
+    }
+
+    MeshInstance::~MeshInstance()
+    {
+        cs::release(this);
     }
 
     void MeshInstance::set(MeshHandle _mesh)
@@ -1539,20 +1544,51 @@ namespace cs
             cs::release(m_mesh);
         }
         m_mesh = cs::acquire(_mesh);
+
+        const uint32_t groupsCount = meshNumGroups(_mesh);
+
+        if (!m_materials.isInitialized())
+        {
+            m_materials.init(groupsCount);
+            m_materials.fillWith(cs::MaterialHandle::invalid());
+        }
+        else
+        {
+            const uint32_t currMatCount = m_materials.max();
+            if (groupsCount < currMatCount) // Shrink.
+            {
+                m_materials.cut(groupsCount);
+            }
+            else // Expand.
+            {
+                if (groupsCount > m_materials.max())
+                {
+                    m_materials.resize(groupsCount);
+                }
+
+                for (uint16_t ii = groupsCount-currMatCount; ii--; )
+                {
+                    m_materials.add(cs::MaterialHandle::invalid());
+                }
+            }
+        }
     }
 
     void MeshInstance::set(MaterialHandle _material, uint32_t _groupIdx)
     {
-        if (isValid(m_materials[_groupIdx]))
+        if (_groupIdx < m_materials.max())
         {
-            cs::release(m_materials[_groupIdx]);
+            if (isValid(m_materials[_groupIdx]))
+            {
+                cs::release(m_materials[_groupIdx]);
+            }
+            m_materials[_groupIdx] = cs::acquire(_material);
         }
-        m_materials[_groupIdx] = cs::acquire(_material);
     }
 
     cs::MaterialHandle MeshInstance::getActiveMaterial() const
     {
-        return m_materials[m_selectedGroup];
+        return m_materials[m_selGroup];
     }
 
     float* MeshInstance::computeMtx()
@@ -1581,7 +1617,7 @@ namespace cs
             cs::acquire(_inst->m_mesh);
         }
 
-        for (uint16_t ii = 0; ii < CS_MAX_MESH_GROUPS; ++ii)
+        for (uint16_t ii = 0, end = _inst->m_materials.max(); ii < end; ++ii)
         {
             if (isValid(_inst->m_materials[ii]))
             {
@@ -1599,7 +1635,7 @@ namespace cs
             cs::release(_inst->m_mesh);
         }
 
-        for (uint16_t ii = 0; ii < CS_MAX_MESH_GROUPS; ++ii)
+        for (uint16_t ii = 0, end = _inst->m_materials.max(); ii < end; ++ii)
         {
             if (isValid(_inst->m_materials[ii]))
             {
@@ -1607,7 +1643,6 @@ namespace cs
             }
         }
     }
-
 
     // Environment.
     //-----
@@ -2280,7 +2315,7 @@ namespace cs
               )
     {
         MeshImpl* mesh = s_meshes->getImpl(_instance.m_mesh);
-        mesh->submit(_view, _prog, _env, _instance.computeMtx(), _instance.m_materials, _state);
+        mesh->submit(_view, _prog, _env, _instance.computeMtx(), _instance.m_materials.elements(), _state);
     }
 
     void submit(uint8_t _view
@@ -2519,17 +2554,20 @@ namespace cs
 
     void readMeshInstance(dm::ReaderSeekerI* _reader, MeshInstance* _instance)
     {
-        uint16_t id;
-
         bx::read(_reader, _instance->m_scale);
         bx::read(_reader, _instance->m_scaleAdj);
         bx::read(_reader, _instance->m_rot, 3*sizeof(float));
         bx::read(_reader, _instance->m_pos, 3*sizeof(float));
 
+        uint16_t id;
         bx::read(_reader, id);
         resourceResolve(&_instance->m_mesh, id);
 
-        for (uint16_t ii = 0; ii < CS_MAX_MESH_GROUPS; ++ii)
+        uint16_t materialCount;
+        bx::read(_reader, materialCount);
+        _instance->m_materials.reinit(materialCount);
+
+        for (uint16_t ii = 0, end = materialCount; ii < end; ++ii)
         {
             bx::read(_reader, id);
             resourceResolve(&_instance->m_materials[ii], id);
@@ -2628,14 +2666,17 @@ namespace cs
 
     void write(bx::WriterI* _writer, const MeshInstance& _inst)
     {
-        bx::write(_writer, _inst.m_scale);
-        bx::write(_writer, _inst.m_scaleAdj);
+        bx::write(_writer, (float)_inst.m_scale);
+        bx::write(_writer, (float)_inst.m_scaleAdj);
         bx::write(_writer, _inst.m_rot, 3*sizeof(float));
         bx::write(_writer, _inst.m_pos, 3*sizeof(float));
-        bx::write(_writer, _inst.m_mesh.m_idx);
-        for (uint16_t ii = 0; ii < CS_MAX_MESH_GROUPS; ++ii)
+        bx::write(_writer, (uint16_t)_inst.m_mesh.m_idx);
+
+        const uint16_t materialCount = _inst.m_materials.max();
+        bx::write(_writer, (uint16_t)materialCount);
+        for (uint16_t ii = 0, end = materialCount; ii < end; ++ii)
         {
-            bx::write(_writer, _inst.m_materials[ii].m_idx);
+            bx::write(_writer, (uint16_t)_inst.m_materials[ii].m_idx);
         }
     }
 

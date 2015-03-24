@@ -95,6 +95,7 @@ namespace cs
         float* m_uniformSample[6];
     };
 
+    MaterialHandle materialDefault();
     MaterialHandle materialCreate();
     MaterialHandle materialCreatePlain();
     MaterialHandle materialCreateStripes();
@@ -245,6 +246,7 @@ namespace cs
     {
         MeshInstance();
         MeshInstance(const MeshInstance& _other);
+        ~MeshInstance();
 
         void set(cs::MeshHandle _mesh);
         void set(cs::MaterialHandle _material, uint32_t _groupIdx = 0);
@@ -257,8 +259,8 @@ namespace cs
         float m_pos[3];
         float m_mtx[16];
         cs::MeshHandle m_mesh;
-        cs::MaterialHandle m_materials[CS_MAX_MESH_GROUPS];
-        uint16_t m_selectedGroup;
+        uint16_t m_selGroup;
+        dm::Array<MaterialHandle> m_materials;
     };
 
     MeshInstance* acquire(const MeshInstance* _inst);

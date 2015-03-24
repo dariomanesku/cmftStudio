@@ -2717,7 +2717,7 @@ void imguiLeftScrollArea(int32_t _x
                 imguiRegion("Preview", NULL, _guiState.m_showMeshPreview);
                 if (_guiState.m_showMeshPreview)
                 {
-                    updateWireframePreview(instance.m_mesh, instance.m_selectedGroup);
+                    updateWireframePreview(instance.m_mesh, instance.m_selGroup);
                     imguiImage(getWireframeTexture(), 0.0f, 0.5f, 1.0f, ImguiAlign::CenterIndented, true, g_originBottomLeft);
                 }
 
@@ -2768,7 +2768,7 @@ void imguiLeftScrollArea(int32_t _x
                             for (uint16_t ii = 0, end = (uint16_t)cs::meshNumGroups(selectedMesh); ii < end; ++ii)
                             {
                                 bx::snprintf(groupName, sizeof(groupName), "Group - %u", ii);
-                                imguiCheckSelection(groupName, instance.m_selectedGroup, ii);
+                                imguiCheckSelection(groupName, instance.m_selGroup, ii);
                             }
                         }
                         imguiUnindent();
@@ -2855,7 +2855,7 @@ void imguiLeftScrollArea(int32_t _x
                     if (selectedMaterial != matHandle.m_idx)
                     {
                         const cs::MaterialHandle handle = { selectedMaterial };
-                        instance.set(handle, instance.m_selectedGroup);
+                        instance.set(handle, instance.m_selGroup);
                     }
 
                     if (imguiButton("Create new"))
