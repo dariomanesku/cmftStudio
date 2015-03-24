@@ -1007,13 +1007,32 @@ namespace cs
         return s_materials->create();
     }
 
+    MaterialHandle materialCreatePlain()
+    {
+        static const float sc_material[Material::Size] =
+        {
+            0.0f, 0.0f, 0.0f, 0.0f, //albedo
+            0.0f, 0.0f, 0.0f, 0.0f, //specular
+            0.0f, 0.0f, 0.0f, 0.0f, //emissive
+            0.0f, 0.0f, 0.0f, 0.0f, //glossNormal
+            0.0f, 0.0f, 1.0f, 1.2f, //surface
+            0.0f, 0.0f, 1.0f, 0.0f, //misc
+            0.0f, 0.0f, 1.0f, 0.0f, //ao/emissiveIntensity
+            1.0f, 0.0f, 0.0f, 0.0f, //swizSurface
+            1.0f, 0.0f, 0.0f, 0.0f, //swizReflectivity
+            1.0f, 0.0f, 0.0f, 0.0f, //swizAo
+        };
+
+        return s_materials->add(sc_material);
+    }
+
     MaterialHandle materialDefault()
     {
         static MaterialHandle s_material = materialCreatePlain();
         return s_material;
     }
 
-    MaterialHandle materialCreatePlain()
+    MaterialHandle materialCreateShiny()
     {
         static const float sc_material[Material::Size] =
         {
@@ -1028,12 +1047,13 @@ namespace cs
             1.0f, 0.0f, 0.0f, 0.0f, //swizReflectivity
             1.0f, 0.0f, 0.0f, 0.0f, //swizAo
         };
+
         return s_materials->add(sc_material);
     }
 
     MaterialHandle materialCreateStripes()
     {
-        const MaterialHandle mat = materialCreatePlain();
+        const MaterialHandle mat = materialCreateShiny();
         setName(mat, "Stripes");
 
         cs::Material& obj = cs::getObj(mat);
@@ -1046,7 +1066,7 @@ namespace cs
 
     MaterialHandle materialCreateBricks()
     {
-        const MaterialHandle mat = materialCreatePlain();
+        const MaterialHandle mat = materialCreateShiny();
         setName(mat, "Bricks");
 
         cs::Material& obj = cs::getObj(mat);

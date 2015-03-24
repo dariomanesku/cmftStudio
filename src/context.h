@@ -98,6 +98,7 @@ namespace cs
     MaterialHandle materialDefault();
     MaterialHandle materialCreate();
     MaterialHandle materialCreatePlain();
+    MaterialHandle materialCreateShiny();
     MaterialHandle materialCreateStripes();
     MaterialHandle materialCreateBricks();
     MaterialHandle materialCreate(const float* _data

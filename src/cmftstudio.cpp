@@ -666,7 +666,7 @@ struct SpheresScene
 
         m_sphere = cs::meshSphere();
 
-        m_material[Material::Plain]   = cs::materialCreatePlain();
+        m_material[Material::Plain]   = cs::materialCreateShiny();
         m_material[Material::Stripes] = cs::materialCreateStripes();
         m_material[Material::Brick]   = cs::materialCreateBricks();
 
@@ -2137,7 +2137,7 @@ public:
         // Make sure there is at least one material.
         if (m_materialList.count() == 0)
         {
-            cs::MaterialHandle plain = cs::materialCreatePlain();
+            cs::MaterialHandle plain = cs::materialCreateShiny();
             cs::setName(plain, "Plain");
             m_materialList.add(plain);
 
