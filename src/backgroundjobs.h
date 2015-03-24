@@ -21,6 +21,7 @@ struct ThreadStatus
         Idle        = 0x00,
         Started     = 0x01,
         Completed   = 0x02,
+        Halted      = 0x04,
 
         ExitSuccess = 0x10,
         ExitFailure = 0x20,

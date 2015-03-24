@@ -1907,6 +1907,7 @@ private:
             if (threadStatus(ThreadStatus::ExitSuccess, m_threadParams.m_projectLoad.m_threadStatus))
             {
                 eventTrigger(Event::ProjectLoaded);
+                m_threadParams.m_projectLoad.m_threadStatus = ThreadStatus::Halted;
             }
             else if (threadStatus(ThreadStatus::ExitFailure, m_threadParams.m_projectLoad.m_threadStatus))
             {
