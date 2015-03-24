@@ -63,7 +63,7 @@ static bool objLoader(Geometry& _geometry
     if (_reader->getType() == dm::ReaderWriterTypes::MemoryReader)
     {
         dm::MemoryReader* memory = (dm::MemoryReader*)_reader;
-        objData = (uint8_t*)memory->getDataPtr();
+        objData = (uint8_t*)memory->getDataPtr() + _reader->seek();
     }
     else // (_reader->getType() == dm::ReaderWriterTypes::CrtFileReader).
     {
