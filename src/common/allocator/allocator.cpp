@@ -1155,6 +1155,10 @@ struct StackAllocator : public cs::StackAllocatorI
 
 struct FixedStackAllocator : public StackAllocator<FixedStack>
 {
+    virtual ~FixedStackAllocator()
+    {
+    }
+
     void init(void* _begin, size_t _size)
     {
         m_stack.init(_begin, _size);
@@ -1168,6 +1172,10 @@ struct FixedStackAllocator : public StackAllocator<FixedStack>
 
 struct DynamicStackAllocator : public StackAllocator<DynamicStack>
 {
+    virtual ~DynamicStackAllocator()
+    {
+    }
+
     void init(uint8_t** _stackPtr, uint8_t** _stackLimit)
     {
         m_stack.init(_stackPtr, _stackLimit);
