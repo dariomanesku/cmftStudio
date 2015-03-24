@@ -91,7 +91,7 @@ static bool bgfxBinLoader(Geometry& _geometry
                 uint16_t len;
                 bx::read(_reader, len);
 
-                if (len < 256)
+                if (len < Group::MaterialNameLen)
                 {
                     bx::read(_reader, group->m_materialName, len);
                     group->m_materialName[len] = '\0';
@@ -104,8 +104,8 @@ static bool bgfxBinLoader(Geometry& _geometry
 
                     bx::read(_reader, matName, len);
 
-                    memcpy(group->m_materialName, matName, Group::MaterialNameLen);
-                    group->m_materialName[Group::MaterialNameLen] = '\0';
+                    memcpy(group->m_materialName, matName, Group::MaterialNameLen-1);
+                    group->m_materialName[Group::MaterialNameLen-1] = '\0';
 
                     BX_FREE(_stack, matName);
                 }
