@@ -49,7 +49,7 @@
 
 #define CS_MAX_LIGHTS         6
 #define CS_MAX_TEXTURES     128
-#define CS_MAX_MATERIALS    128
+#define CS_MAX_MATERIALS    256
 #define CS_MAX_MESHES        16
 #define CS_MAX_ENVIRONMENTS  32
 #define CS_MAX_MESHINSTANCES 32
