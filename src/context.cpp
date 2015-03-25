@@ -1096,12 +1096,12 @@ namespace cs
     // Mesh.
     //-----
 
-    struct GroupBuffers
+    struct GeometryHandles
     {
         bgfx::VertexBufferHandle m_vbh;
         bgfx::IndexBufferHandle  m_ibh;
     };
-    typedef dm::ObjArray<GroupBuffers> GroupBuffersArray;
+    typedef dm::ObjArray<GeometryHandles> GeometryHandleArray;
 
     struct MeshImpl : public Mesh, public Geometry, public ReadWriteI<MeshHandle>
     {
@@ -1181,7 +1181,7 @@ namespace cs
 
         void createGpuBuffers()
         {
-            m_buffers.init(m_groups.count());
+            m_bufferHandles.init(m_groups.count());
 
             for (uint32_t ii = 0, end = m_groups.count(); ii < end; ++ii)
             {
@@ -1189,10 +1189,10 @@ namespace cs
                 const bgfx::Memory* mem;
 
                 mem = bgfx::makeRef(group.m_vertexData, group.m_vertexSize);
-                m_buffers[ii].m_vbh = bgfx::createVertexBuffer(mem, m_decl);
+                m_bufferHandles[ii].m_vbh = bgfx::createVertexBuffer(mem, m_decl);
 
                 mem = bgfx::makeRef(group.m_indexData, group.m_indexSize);
-                m_buffers[ii].m_ibh = bgfx::createIndexBuffer(mem);
+                m_bufferHandles[ii].m_ibh = bgfx::createIndexBuffer(mem);
             }
         }
 
@@ -1232,8 +1232,8 @@ namespace cs
                 bgfx::setTransform(_mtx);
 
                 // Buffers.
-                bgfx::setIndexBuffer(m_buffers[_groupIdx].m_ibh, prim.m_startIndex, prim.m_numIndices);
-                bgfx::setVertexBuffer(m_buffers[_groupIdx].m_vbh);
+                bgfx::setIndexBuffer(m_bufferHandles[_groupIdx].m_ibh, prim.m_startIndex, prim.m_numIndices);
+                bgfx::setVertexBuffer(m_bufferHandles[_groupIdx].m_vbh);
 
                 // State.
                 bgfx::setState(_state);
@@ -1299,8 +1299,8 @@ namespace cs
                 bgfx::setTransform(_mtx);
 
                 // Buffers.
-                bgfx::setIndexBuffer(m_buffers[_groupIdx].m_ibh, prim.m_startIndex, prim.m_numIndices);
-                bgfx::setVertexBuffer(m_buffers[_groupIdx].m_vbh);
+                bgfx::setIndexBuffer(m_bufferHandles[_groupIdx].m_ibh, prim.m_startIndex, prim.m_numIndices);
+                bgfx::setVertexBuffer(m_bufferHandles[_groupIdx].m_vbh);
 
                 // State.
                 bgfx::setState(_state);
@@ -1398,16 +1398,16 @@ namespace cs
             }
             m_groups.reset();
 
-            for (uint32_t ii = m_buffers.count(); ii--; )
+            for (uint32_t ii = m_bufferHandles.count(); ii--; )
             {
-                if (bgfx::isValid(m_buffers[ii].m_vbh)) { bgfx::destroyVertexBuffer(m_buffers[ii].m_vbh);  }
-                if (bgfx::isValid(m_buffers[ii].m_ibh)) { bgfx::destroyIndexBuffer(m_buffers[ii].m_ibh);   }
+                if (bgfx::isValid(m_bufferHandles[ii].m_vbh)) { bgfx::destroyVertexBuffer(m_bufferHandles[ii].m_vbh);  }
+                if (bgfx::isValid(m_bufferHandles[ii].m_ibh)) { bgfx::destroyIndexBuffer(m_bufferHandles[ii].m_ibh);   }
             }
-            m_buffers.reset();
+            m_bufferHandles.reset();
 
         }
 
-        GroupBuffersArray m_buffers;
+        GeometryHandleArray m_bufferHandles;
     };
 
     struct MeshResourceManager : public ResourceManagerT<Mesh, MeshImpl, MeshHandle, CS_MAX_MESHES>
