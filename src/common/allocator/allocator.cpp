@@ -1490,7 +1490,7 @@ namespace cs
             void*    m_ptr;
         };
 
-        dm::ListT<PostponedFree, 128> m_free;
+        dm::ListT<PostponedFree, 512> m_free;
     };
 
     struct BgfxAllocator : public bx::ReallocatorI
