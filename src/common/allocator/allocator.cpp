@@ -1440,7 +1440,7 @@ namespace cs
         }
     };
 
-    struct DelayedFreeAllocator : public bx::ReallocatorI
+    struct DelayedFreeAllocator : public bx::AllocatorI
     {
         virtual ~DelayedFreeAllocator()
         {
@@ -1460,13 +1460,6 @@ namespace cs
             PostponedFree* free = m_free.addNew();
             free->m_frame = g_frameNum + 2; // Postpone deallocation for two frames.
             free->m_ptr = _ptr;
-        }
-
-        virtual void* realloc(void* _ptr, size_t _size, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
-        {
-            BX_UNUSED(_align, _file, _line);
-
-            return s_memory.realloc(_ptr, _size);
         }
 
         void cleanup()
