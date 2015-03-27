@@ -2053,7 +2053,7 @@ public:
         configFromCli(g_config, _argc, _argv);
 
         // Init bgfx.
-        bgfx::init(g_config.m_renderer, NULL, cs::g_bgfxAlloc);
+        bgfx::init(g_config.m_renderer, BGFX_PCI_ID_NONE, 0, NULL, cs::g_bgfxAlloc);
 
         uint32_t reset = BGFX_RESET_VSYNC;
         bgfx::reset(g_config.m_width, g_config.m_height, reset);

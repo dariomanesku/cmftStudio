@@ -2299,17 +2299,26 @@ namespace cs
 
     void setTexture(TextureUniform::Enum _which, cs::TextureHandle _handle, uint32_t _flags)
     {
-        bgfx::setTexture(s_textureStage[_which], s_uniforms.u_tex[_which], textureGetBgfxHandle(_handle), _flags);
+        if (isValid(_handle))
+        {
+            bgfx::setTexture(s_textureStage[_which], s_uniforms.u_tex[_which], textureGetBgfxHandle(_handle), _flags);
+        }
     }
 
     void setTexture(TextureUniform::Enum _which, bgfx::TextureHandle _handle, uint32_t _flags)
     {
-        bgfx::setTexture(s_textureStage[_which], s_uniforms.u_tex[_which], _handle, _flags);
+        if (isValid(_handle))
+        {
+            bgfx::setTexture(s_textureStage[_which], s_uniforms.u_tex[_which], _handle, _flags);
+        }
     }
 
     void setTexture(TextureUniform::Enum _which, bgfx::FrameBufferHandle _handle, uint32_t _flags, uint8_t _attachment)
     {
-        bgfx::setTexture(s_textureStage[_which], s_uniforms.u_tex[_which], _handle, _attachment, _flags);
+        if (isValid(_handle))
+        {
+            bgfx::setTexture(s_textureStage[_which], s_uniforms.u_tex[_which], _handle, _attachment, _flags);
+        }
     }
 
     void setMaterial(MaterialHandle _handle)
