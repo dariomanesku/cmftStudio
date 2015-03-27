@@ -1409,7 +1409,6 @@ namespace cs
         #endif //CS_ALLOC_PRINT_STATS
 
         uint16_t m_stackFrame;
-        bool m_lock;
     };
 
     struct MainAllocator : public bx::ReallocatorI
