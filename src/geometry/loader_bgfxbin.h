@@ -61,6 +61,12 @@ static bool bgfxBinLoader(Geometry& _geometry
         {
         case BGFX_CHUNK_MAGIC_VB:
             {
+                if (NULL == group)
+                {
+                    group = _geometry.m_groups.addNew();
+                    group->m_prims.init(MaxPrimitivesPerGroupEstimate);
+                }
+
                 bx::read(_reader, group->m_sphere);
                 bx::read(_reader, group->m_aabb);
                 bx::read(_reader, group->m_obb);
@@ -78,6 +84,12 @@ static bool bgfxBinLoader(Geometry& _geometry
 
         case BGFX_CHUNK_MAGIC_IB:
             {
+                if (NULL == group)
+                {
+                    group = _geometry.m_groups.addNew();
+                    group->m_prims.init(MaxPrimitivesPerGroupEstimate);
+                }
+
                 bx::read(_reader, group->m_numIndices);
 
                 group->m_indexSize = group->m_numIndices*2;
@@ -88,6 +100,12 @@ static bool bgfxBinLoader(Geometry& _geometry
 
         case BGFX_CHUNK_MAGIC_PRI:
             {
+                if (NULL == group)
+                {
+                    group = _geometry.m_groups.addNew();
+                    group->m_prims.init(MaxPrimitivesPerGroupEstimate);
+                }
+
                 uint16_t len;
                 bx::read(_reader, len);
 
@@ -144,9 +162,7 @@ static bool bgfxBinLoader(Geometry& _geometry
                 }
 
                 group->m_prims.shrink();
-
-                group = _geometry.m_groups.addNew();
-                group->m_prims.init(MaxPrimitivesPerGroupEstimate);
+                group = NULL;
             }
         break;
 
@@ -182,7 +198,6 @@ static bool bgfxBinLoader(Geometry& _geometry
         }
     }
 
-    _geometry.m_groups.pop();
     _geometry.m_groups.shrink();
 
     return true;
