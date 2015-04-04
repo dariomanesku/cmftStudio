@@ -2522,7 +2522,7 @@ void imguiLatlongWidget(int32_t _screenX
 
     for (uint8_t ii = 0; ii < CS_MAX_LIGHTS; ++ii)
     {
-        if (dm::set(env.m_lights[ii].m_enabled))
+        if (dm::isSet(env.m_lights[ii].m_enabled))
         {
             float luv[2];
             latLongFromVec(luv, env.m_lights[ii].m_dir);
@@ -2577,7 +2577,7 @@ void imguiLatlongWidget(int32_t _screenX
         }
         else if (Mouse::Hold == _click.m_left)
         {
-            if (s_active && UINT8_MAX != _selectedLight && dm::set(env.m_lights[_selectedLight].m_enabled))
+            if (s_active && UINT8_MAX != _selectedLight && dm::isSet(env.m_lights[_selectedLight].m_enabled))
             {
                 // Update direction.
                 vecFromLatLong(env.m_lights[_selectedLight].m_dir, uu, vv);
@@ -2592,7 +2592,7 @@ void imguiLatlongWidget(int32_t _screenX
                 // Iterate to find a disabled light.
                 for (uint8_t ii = 0; ii < CS_MAX_LIGHTS; ++ii)
                 {
-                    if (false == dm::set(env.m_lights[ii].m_enabled))
+                    if (false == dm::isSet(env.m_lights[ii].m_enabled))
                     {
                         // Determine direction.
                         float dir[3];
