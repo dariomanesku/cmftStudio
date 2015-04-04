@@ -1682,6 +1682,7 @@ namespace cs
 
             m_origSkybox = TextureHandle::invalid();
 
+            memset(m_lights, 0, sizeof(m_lights));
             m_edgeFixup = cmft::EdgeFixup::None;
             m_lightsNum = 0;
             for (uint8_t ii = 0; ii < CS_MAX_LIGHTS; ++ii)
