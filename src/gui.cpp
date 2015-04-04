@@ -271,16 +271,14 @@ bool imguiDirectoryLabel(const char* _directory, uint16_t _width = 42)
     if (0 == pos)
     {
         imguiLabel(_directory);
+        imguiSeparator(4);
     }
     else
     {
         char label[256];
         bx::snprintf(label, sizeof(label), "...%s", &_directory[pos]);
 
-        if (imguiButton(label, true, ImguiAlign::CenterIndented))
-        {
-            return true;
-        }
+        return imguiButton(label, true, ImguiAlign::CenterIndented);
     }
 
     return false;
@@ -2295,7 +2293,7 @@ void imguiModalProjectWindow(int32_t _x
                            )
 {
     const int32_t width = 350;
-    const int32_t height = 800 + int32_t(_state.m_confirmButton)*24;
+    const int32_t height = 808 + int32_t(_state.m_confirmButton)*24;
 
     _state.m_events = GuiEvent::None;
 
