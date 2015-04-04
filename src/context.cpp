@@ -1194,8 +1194,6 @@ namespace cs
                 mem = bgfx::makeRef(group.m_indexData, group.m_indexSize);
                 m_bufferHandles[ii].m_ibh = bgfx::createIndexBuffer(mem);
             }
-
-            freeMem(true);
         }
 
         void submit(uint8_t _view
