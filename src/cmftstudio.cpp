@@ -2340,7 +2340,7 @@ public:
                 {
                     m_projTransition.m_texIdx--;
                     const cs::TextureHandle tex = m_threadParams.m_projectLoad.m_textureList[m_projTransition.m_texIdx];
-                    cs::createGpuBuffers(tex, BGFX_TEXTURE_U_CLAMP|BGFX_TEXTURE_V_CLAMP);
+                    cs::createGpuBuffers(tex);
                 }
                 else if (m_projTransition.m_mshIdx)
                 {
