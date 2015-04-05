@@ -33,7 +33,7 @@ struct BgfxBinOutData : public cs::OutDataHeader
     uint16_t m_handle;
 };
 
-static bool bgfxBinLoader(Geometry& _geometry
+static bool loaderBgfxBin(Geometry& _geometry
                         , dm::ReaderSeekerI* _reader
                         , cs::StackAllocatorI* _stack
                         , void* _inData

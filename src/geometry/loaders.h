@@ -15,8 +15,8 @@
 static inline void initGeometryLoaders()
 {
     // Initialize geometry loaders.
-    geometryLoaderRegister("Wavefront obj",   "obj", objLoader);
-    geometryLoaderRegister("Bgfx bin loader", "bin", bgfxBinLoader);
+    geometryLoaderRegister("Wavefront obj",   "obj", loaderObj);
+    geometryLoaderRegister("Bgfx bin loader", "bin", loaderBgfxBin);
 }
 
 #endif // CMFTSTUDIO_LOADERS_H_HEADER_GUARD

@@ -29,7 +29,7 @@ struct ObjOutData : public cs::OutDataHeader
 {
 };
 
-static bool objLoader(Geometry& _geometry
+static bool loaderObj(Geometry& _geometry
                     , dm::ReaderSeekerI* _reader
                     , cs::StackAllocatorI* _stack
                     , void* _inData
@@ -89,7 +89,7 @@ static bool objLoader(Geometry& _geometry
 
     dm::MemoryReader reader(data, dataSize);
 
-    return bgfxBinLoader(_geometry, &reader, _stack, NULL, NULL, NULL);
+    return loaderBgfxBin(_geometry, &reader, _stack, NULL, NULL, NULL);
 }
 
 #endif // CMFTSTUDIO_LOADEROBJ_H_HEADER_GUARD
