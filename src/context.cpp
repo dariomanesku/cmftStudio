@@ -598,10 +598,9 @@ namespace cs
                     // bgfx/src/image.cpp consumes this.
                     uint32_t magic = BGFX_CHUNK_MAGIC_TEX;
                     bgfx::TextureCreate tc;
-                    bgfx::Memory imgMem;
 
                     uint32_t imgSize = stbWidth * stbHeight * 4;
-                    m_size = sizeof(magic) + sizeof(tc) + sizeof(imgMem) + imgSize;
+                    m_size = sizeof(magic) + sizeof(tc) + sizeof(bgfx::Memory) + imgSize;
                     m_data = BX_ALLOC(g_mainAlloc, m_size);
 
                     bx::StaticMemoryBlockWriter memWriter(m_data, m_size);
@@ -618,10 +617,13 @@ namespace cs
                     tc.m_format = bgfx::TextureFormat::RGBA8;
                     tc.m_cubeMap = false;
 
-                    bgfx::Memory* m_mem = (bgfx::Memory *)((uint8_t*)m_data + _writer->seek() + sizeof(tc));
+                    const bgfx::Memory* m_mem = bgfx::makeRef((uint8_t*)m_data + _writer->seek() + sizeof(tc)
+                                                             , imgSize + sizeof(bgfx::Memory)
+                                                             );
                     tc.m_mem = m_mem;
                     bx::write(_writer, tc);
 
+                    bgfx::Memory imgMem;
                     imgMem.data = (uint8_t *)m_data + _writer->seek() + sizeof(imgMem);
                     imgMem.size = imgSize;
 
