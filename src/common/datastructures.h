@@ -13,28 +13,6 @@
 #include <bx/uint32_t.h>       // bx::uint64_cnttz(), bx::uint64_cntlz()
 #include <dm/datastructures.h> // dm::ArrayT
 
-#ifdef CS_USE_CRT_ALLOC_FUNCTIONS
-    #undef CS_ALLOC
-    #undef CS_REALLOC
-    #undef CS_FREE
-    #define CS_ALLOC(_size)         ::malloc(_size)
-    #define CS_REALLOC(_ptr, _size) ::realloc(_ptr, _size)
-    #define CS_FREE(_ptr)           ::free(_ptr)
-#endif
-
-#if    defined(CS_ALLOC) &&  defined(CS_REALLOC) &&  defined(CS_FREE)
-#elif !defined(CS_ALLOC) && !defined(CS_REALLOC) && !defined(CS_FREE)
-#else
-#error "Either define all: alloc, realloc and free functions, or none of them!"
-#endif
-
-#if !defined(CS_ALLOC)
-    #include "allocator/allocator.h"
-    #define CS_ALLOC(_size)         BX_ALLOC(cs::g_mainAlloc, _size)
-    #define CS_REALLOC(_ptr, _size) BX_REALLOC(cs::g_mainAlloc, _ptr, _size)
-    #define CS_FREE(_ptr)           BX_FREE(cs::g_mainAlloc, _ptr)
-#endif //!defined(CS_ALLOC)
-
 // Handle array.
 //-----
 
@@ -144,7 +122,7 @@ DM_INLINE HandleArray<Ty>* createHandleArray(uint16_t _maxHandles, void* _mem, b
 template <typename Ty/*cs handle type*/>
 DM_INLINE HandleArray<Ty>* createHandleArray(uint16_t _maxHandles, bx::AllocatorI* _allocator)
 {
-    uint8_t* ptr = (uint8_t*)CS_ALLOC(sizeof(HandleArray<Ty>) + HandleArray<Ty>::sizeFor(_maxHandles));
+    uint8_t* ptr = (uint8_t*)BX_ALLOC(_allocator, sizeof(HandleArray<Ty>) + HandleArray<Ty>::sizeFor(_maxHandles));
     return createHandleArray<Ty>(_maxHandles, ptr, _allocator);
 }
 
@@ -184,10 +162,11 @@ struct StrHandleMap
     }
 
     // Allocates memory internally.
-    void init(uint16_t _max)
+    void init(uint16_t _max, bx::ReallocatorI* _reallocator)
     {
         m_max = _max;
-        m_str = (char(*)[MaxStrLength])CS_ALLOC(sizeFor(_max));
+        m_str = (char(*)[MaxStrLength])BX_ALLOC(_reallocator, sizeFor(_max));
+        m_reallocator = _reallocator;
         m_cleanup = true;
     }
 
@@ -197,10 +176,11 @@ struct StrHandleMap
     }
 
     // Uses externaly allocated memory.
-    void* init(uint16_t _max, void* _mem)
+    void* init(uint16_t _max, void* _mem, bx::AllocatorI* _allocator = NULL)
     {
         m_max = _max;
         m_str = (char(*)[MaxStrLength])_mem;
+        m_allocator = _allocator;
         m_cleanup = false;
 
         void* end = (void*)((uint8_t*)_mem + sizeFor(_max));
@@ -211,7 +191,7 @@ struct StrHandleMap
     {
         if (m_cleanup && NULL != m_str)
         {
-            CS_FREE(m_str);
+            BX_FREE(m_reallocator, m_str);
             m_str = NULL;
         }
     }
@@ -267,24 +247,34 @@ struct StrHandleMap
         return invalid;
     }
 
+    bx::AllocatorI* allocator()
+    {
+        return m_allocator;
+    }
+
 private:
     uint16_t m_max;
     char (*m_str)[MaxStrLength];
+    union
+    {
+        bx::AllocatorI*   m_allocator;
+        bx::ReallocatorI* m_reallocator;
+    };
     bool m_cleanup;
 };
 
 template <typename Ty/*cs handle type*/>
-static inline StrHandleMap<Ty>* createStrHandleMap(uint16_t _maxHandles)
+static inline StrHandleMap<Ty>* createStrHandleMap(uint16_t _maxHandles, bx::AllocatorI* _allocator)
 {
-    uint8_t* ptr = (uint8_t*)CS_ALLOC(sizeof(StrHandleMap<Ty>) + StrHandleMap<Ty>::sizeFor(_maxHandles));
-    return ::new (ptr) StrHandleMap<Ty>(_maxHandles, ptr + sizeof(StrHandleMap<Ty>));
+    uint8_t* ptr = (uint8_t*)BX_ALLOC(_allocator, sizeof(StrHandleMap<Ty>) + StrHandleMap<Ty>::sizeFor(_maxHandles));
+    return ::new (ptr) StrHandleMap<Ty>(_maxHandles, ptr + sizeof(StrHandleMap<Ty>), _allocator);
 }
 
 template <typename Ty/*cs handle type*/>
 static inline void destroyStrHandleMap(StrHandleMap<Ty>* _strHandleMap)
 {
     _strHandleMap->~StrHandleMap<Ty>();
-    delete _strHandleMap;
+    BX_FREE(_strHandleMap->allocator(), _strHandleMap);
 }
 
 template <typename Ty/*cs handle type*/, uint16_t MaxElementsT=32>
