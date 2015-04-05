@@ -3,8 +3,8 @@
  * License: http://www.opensource.org/licenses/BSD-2-Clause
  */
 
-#ifndef CMFTSTUDIO_OBJLOADER_H_HEADER_GUARD
-#define CMFTSTUDIO_OBJLOADER_H_HEADER_GUARD
+#ifndef CMFTSTUDIO_LOADEROBJ_H_HEADER_GUARD
+#define CMFTSTUDIO_LOADEROBJ_H_HEADER_GUARD
 
 #include "../common/common.h"
 #include "loadermanager.h"
@@ -92,7 +92,7 @@ static bool objLoader(Geometry& _geometry
     return bgfxBinLoader(_geometry, &reader, _stack, NULL, NULL, NULL);
 }
 
-#endif // CMFTSTUDIO_OBJLOADER_H_HEADER_GUARD
+#endif // CMFTSTUDIO_LOADEROBJ_H_HEADER_GUARD
 
 /* vim: set sw=4 ts=4 expandtab: */
 

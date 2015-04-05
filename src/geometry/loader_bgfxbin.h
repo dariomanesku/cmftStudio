@@ -3,8 +3,8 @@
  * License: http://www.opensource.org/licenses/BSD-2-Clause
  */
 
-#ifndef CMFTSTUDIO_BGFXBINLOADER_H_HEADER_GUARD
-#define CMFTSTUDIO_BGFXBINLOADER_H_HEADER_GUARD
+#ifndef CMFTSTUDIO_LOADERBGFXBIN_H_HEADER_GUARD
+#define CMFTSTUDIO_LOADERBGFXBIN_H_HEADER_GUARD
 
 #include "../common/common.h"
 #include "loadermanager.h"
@@ -203,6 +203,6 @@ static bool bgfxBinLoader(Geometry& _geometry
     return true;
 }
 
-#endif // CMFTSTUDIO_BGFXBINLOADER_H_HEADER_GUARD
+#endif // CMFTSTUDIO_LOADERBGFXBIN_H_HEADER_GUARD
 
 /* vim: set sw=4 ts=4 expandtab: */
