@@ -11,7 +11,7 @@
 
 struct Config
 {
-    void init()
+    Config()
     {
         #if BX_ARCH_64BIT
         m_memorySize        = DM_GIGABYTES(2);
@@ -21,6 +21,7 @@ struct Config
         m_width             = 1920;
         m_height            = 1027;
         m_renderer          = bgfx::RendererType::Count;
+        m_loaded            = false;
         m_startupProject[0] = '\0';
     }
 
@@ -28,11 +29,13 @@ struct Config
     uint32_t m_width;
     uint32_t m_height;
     bgfx::RendererType::Enum m_renderer;
+    bool m_loaded;
     char m_startupProject[DM_PATH_LEN];
 };
 
 void configWriteDefault(const char* _path);
 void configFromFile(Config& _config, const char* _path);
+void configFromDefaultPaths(Config& _config);
 void configFromCli(Config& _config, int _argc, const char* const* _argv);
 void printCliHelp();
 

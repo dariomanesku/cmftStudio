@@ -7,22 +7,22 @@
 #include "context.h"
 
 #include <stdio.h>
-#include <string.h>          // strcpy
+#include <string.h>            // strcpy
 
 #include "common/timer.h"
 #include "geometry/loaders.h"
 #include "geometry/objtobin.h"
 #include "staticres.h"
 
-#include <dm/misc.h>         // DM_PATH_LEN, dm::fsize
+#include <dm/misc.h>           // DM_PATH_LEN, dm::fsize
 #include <dm/readerwriter.h>
 #include <dm/pi.h>
 
-#include <bgfx_utils.h>      // loadProgram
-#include <common.h>          // DBG
+#include <bgfx_utils.h>        // loadProgram
+#include <common.h>            // DBG
 
 #include <bx/fpumath.h>
-#include <bx/macros.h>       // BX_UNUSED
+#include <bx/macros.h>         // BX_UNUSED
 
 #ifndef CS_LOAD_SHADERS_FROM_DATA_SEGMENT
     #define CS_LOAD_SHADERS_FROM_DATA_SEGMENT 0
@@ -1181,7 +1181,7 @@ namespace cs
 
         void createGpuBuffers()
         {
-            m_bufferHandles.init(m_groups.count());
+            m_bufferHandles.init(m_groups.count(), cs::g_mainAlloc);
 
             for (uint32_t ii = 0, end = m_groups.count(); ii < end; ++ii)
             {
@@ -1391,20 +1391,25 @@ namespace cs
 
         void destroy()
         {
-            for (uint32_t ii = m_groups.count(); ii--; )
+            if (m_groups.isInitialized())
             {
-                if (NULL != m_groups[ii].m_vertexData)  { BX_FREE(g_mainAlloc, m_groups[ii].m_vertexData); }
-                if (NULL != m_groups[ii].m_indexData)   { BX_FREE(g_mainAlloc, m_groups[ii].m_indexData);  }
+                for (uint32_t ii = m_groups.count(); ii--; )
+                {
+                    if (NULL != m_groups[ii].m_vertexData)  { BX_FREE(g_mainAlloc, m_groups[ii].m_vertexData); }
+                    if (NULL != m_groups[ii].m_indexData)   { BX_FREE(g_mainAlloc, m_groups[ii].m_indexData);  }
+                }
+                m_groups.reset();
             }
-            m_groups.reset();
 
-            for (uint32_t ii = m_bufferHandles.count(); ii--; )
+            if (m_bufferHandles.isInitialized())
             {
-                if (bgfx::isValid(m_bufferHandles[ii].m_vbh)) { bgfx::destroyVertexBuffer(m_bufferHandles[ii].m_vbh);  }
-                if (bgfx::isValid(m_bufferHandles[ii].m_ibh)) { bgfx::destroyIndexBuffer(m_bufferHandles[ii].m_ibh);   }
+                for (uint32_t ii = m_bufferHandles.count(); ii--; )
+                {
+                    if (bgfx::isValid(m_bufferHandles[ii].m_vbh)) { bgfx::destroyVertexBuffer(m_bufferHandles[ii].m_vbh); }
+                    if (bgfx::isValid(m_bufferHandles[ii].m_ibh)) { bgfx::destroyIndexBuffer(m_bufferHandles[ii].m_ibh);  }
+                }
+                m_bufferHandles.reset();
             }
-            m_bufferHandles.reset();
-
         }
 
         GeometryHandleArray m_bufferHandles;
@@ -1543,7 +1548,7 @@ namespace cs
         m_selGroup = _other.m_selGroup;
 
         const uint32_t matCount = _other.m_materials.max();
-        m_materials.reinit(matCount);
+        m_materials.reinit(matCount, cs::g_mainAlloc);
         for (uint32_t ii = matCount; ii--; )
         {
             m_materials[ii] = _other.m_materials[ii];
@@ -1569,7 +1574,7 @@ namespace cs
 
         if (!m_materials.isInitialized())
         {
-            m_materials.init(groupsCount);
+            m_materials.init(groupsCount, cs::g_mainAlloc);
             m_materials.fillWith(cs::MaterialHandle::invalid());
         }
         else
@@ -2594,7 +2599,7 @@ namespace cs
 
         uint16_t materialCount;
         bx::read(_reader, materialCount);
-        _instance->m_materials.reinit(materialCount);
+        _instance->m_materials.reinit(materialCount, cs::g_mainAlloc);
 
         for (uint16_t ii = 0, end = materialCount; ii < end; ++ii)
         {

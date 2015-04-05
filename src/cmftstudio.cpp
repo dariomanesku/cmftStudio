@@ -2032,6 +2032,8 @@ public:
             return;
         }
 
+        configFromDefaultPaths(g_config);
+
         // Setup allocator.
         cs::allocInit();
         cmft::setAllocator(cs::g_mainAlloc);
@@ -2611,10 +2613,10 @@ private:
         m_listMem = BX_ALLOC(cs::g_staticAlloc, totalSize);
 
         void* mem = m_listMem;
-        mem = m_textureList.init(CS_MAX_TEXTURES, mem);
-        mem = m_materialList.init(CS_MAX_MATERIALS, mem);
-        mem = m_envList.init(CS_MAX_ENVIRONMENTS, mem);
-        mem = m_meshInstList.init(CS_MAX_MESHINSTANCES, mem);
+        mem = m_textureList.init(CS_MAX_TEXTURES,       mem, cs::g_staticAlloc);
+        mem = m_materialList.init(CS_MAX_MATERIALS,     mem, cs::g_staticAlloc);
+        mem = m_envList.init(CS_MAX_ENVIRONMENTS,       mem, cs::g_staticAlloc);
+        mem = m_meshInstList.init(CS_MAX_MESHINSTANCES, mem, cs::g_staticAlloc);
     }
 
     void destroyLists()

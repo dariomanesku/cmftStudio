@@ -237,8 +237,47 @@ void configFromFile(Config& _config, const char* _path)
         _config.m_startupProject[0] = '\0';
     }
 
+    _config.m_loaded = true;
+
     free(data);
 }
+
+void configFromDefaultPaths(Config& _config)
+{
+    if (_config.m_loaded)
+    {
+        return;
+    }
+
+    char home[DM_PATH_LEN];
+    dm::homeDir(home);
+
+    char configPath[DM_PATH_LEN];
+
+    dm::strscpya(configPath, home);
+    bx::strlcat(configPath, "/.cmftStudio.conf", DM_PATH_LEN);
+    configFromFile(_config, configPath);
+
+    configWriteDefault(configPath); // Write default config if there isn't one.
+
+    dm::strscpya(configPath, home);
+    bx::strlcat(configPath, "/.cmftstudio.conf", DM_PATH_LEN);
+    configFromFile(_config, configPath);
+
+    dm::strscpya(configPath, home);
+    bx::strlcat(configPath, "/.cmftStudio/cmftStudio.conf", DM_PATH_LEN);
+    configFromFile(_config, configPath);
+
+    dm::strscpya(configPath, home);
+    bx::strlcat(configPath, "/.cmftStudio/cmftstudio.conf", DM_PATH_LEN);
+    configFromFile(_config, configPath);
+
+    configFromFile(_config, ".cmftstudio.conf");
+    configFromFile(_config, ".cmftStudio.conf");
+    configFromFile(_config, "cmftstudio.conf");
+    configFromFile(_config, "cmftStudio.conf");
+}
+
 
 void configFromCli(Config& _config, int _argc, const char* const* _argv)
 {

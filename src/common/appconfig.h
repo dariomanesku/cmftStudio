@@ -20,6 +20,8 @@
 // Allocator.
 //-----
 
+#define CS_OVERRIDE_CRT_ALLOCATOR 1
+
 #define CS_NATURAL_ALIGNMENT 16
 #define CS_ALLOC_PRINT_FILELINE 0
 

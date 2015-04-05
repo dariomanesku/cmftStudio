@@ -59,7 +59,8 @@ DM_INLINE bool handleArrayRemove(HandleArray* _ha, HandleTy _handle)
 {
     for (uint16_t ii = 0, end = _ha->count(); ii < end; ++ii)
     {
-        if (_handle.m_idx == _ha->m_values[ii].m_idx)
+        const HandleTy* values = _ha->elements();
+        if (_handle.m_idx == values[ii].m_idx)
         {
             _ha->remove(ii);
             return true;
@@ -74,7 +75,8 @@ DM_INLINE uint16_t handleArrayIdxOf(HandleArray* _ha, HandleTy _handle)
 {
     for (uint16_t ii = 0, end = _ha->count(); ii < end; ++ii)
     {
-        if (_handle.m_idx == _ha->m_values[ii].m_idx)
+        const HandleTy* values = _ha->elements();
+        if (_handle.m_idx == values[ii].m_idx)
         {
             return ii;
         }
@@ -134,23 +136,23 @@ struct HandleArray : public dm::Array<Ty>
 };
 
 template <typename Ty/*cs handle type*/>
-DM_INLINE HandleArray<Ty>* createHandleArray(uint16_t _maxHandles, void* _mem)
+DM_INLINE HandleArray<Ty>* createHandleArray(uint16_t _maxHandles, void* _mem, bx::AllocatorI* _allocator)
 {
-    return ::new (_mem) HandleArray<Ty>(_maxHandles, (uint8_t*)_mem + sizeof(HandleArray<Ty>));
+    return ::new (_mem) HandleArray<Ty>(_maxHandles, (uint8_t*)_mem + sizeof(HandleArray<Ty>, bx::AllocatorI* _allocator));
 }
 
 template <typename Ty/*cs handle type*/>
-DM_INLINE HandleArray<Ty>* createHandleArray(uint16_t _maxHandles)
+DM_INLINE HandleArray<Ty>* createHandleArray(uint16_t _maxHandles, bx::AllocatorI* _allocator)
 {
     uint8_t* ptr = (uint8_t*)CS_ALLOC(sizeof(HandleArray<Ty>) + HandleArray<Ty>::sizeFor(_maxHandles));
-    return createHandleArray<Ty>(_maxHandles, ptr);
+    return createHandleArray<Ty>(_maxHandles, ptr, _allocator);
 }
 
 template <typename Ty/*cs handle type*/>
 DM_INLINE void destroyHandleArray(HandleArray<Ty>* _array)
 {
     _array->~HandleArray<Ty>();
-    delete _array;
+    BX_FREE(_array->m_allocator, _array);
 }
 
 template <typename Ty/*cs handle type*/>

@@ -57,9 +57,9 @@ struct ProjectSaveThreadParams
         m_memBlock = BX_ALLOC(cs::g_staticAlloc, size);
 
         void* ptr = m_memBlock;
-        ptr = m_materialList.init(CS_MAX_MATERIALS, ptr);
-        ptr = m_envList.init(CS_MAX_ENVIRONMENTS, ptr);
-        ptr = m_meshInstList.init(CS_MAX_MESHINSTANCES, ptr);
+        ptr = m_materialList.init(CS_MAX_MATERIALS,     ptr, cs::g_staticAlloc);
+        ptr = m_envList.init(CS_MAX_ENVIRONMENTS,       ptr, cs::g_staticAlloc);
+        ptr = m_meshInstList.init(CS_MAX_MESHINSTANCES, ptr, cs::g_staticAlloc);
     }
 
     void releaseAll()
@@ -109,10 +109,10 @@ struct ProjectLoadThreadParams
         m_memBlock = BX_ALLOC(cs::g_staticAlloc, size);
 
         void* ptr = m_memBlock;
-        ptr = m_textureList.init(CS_MAX_TEXTURES, ptr);
-        ptr = m_materialList.init(CS_MAX_MATERIALS, ptr);
-        ptr = m_envList.init(CS_MAX_ENVIRONMENTS, ptr);
-        ptr = m_meshInstList.init(CS_MAX_MESHINSTANCES, ptr);
+        ptr = m_textureList.init(CS_MAX_TEXTURES,       ptr, cs::g_staticAlloc);
+        ptr = m_materialList.init(CS_MAX_MATERIALS,     ptr, cs::g_staticAlloc);
+        ptr = m_envList.init(CS_MAX_ENVIRONMENTS,       ptr, cs::g_staticAlloc);
+        ptr = m_meshInstList.init(CS_MAX_MESHINSTANCES, ptr, cs::g_staticAlloc);
     }
 
     void reset()

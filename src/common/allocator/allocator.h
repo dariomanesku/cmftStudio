@@ -43,7 +43,9 @@ namespace cs
         StackAllocatorI* m_stack;
     };
 
-    extern bx::ReallocatorI* g_crtAlloc;    // Default C-runtime allocator.
+    extern bx::ReallocatorI* g_crtAlloc;      // C-runtime allocator.
+    extern StackAllocatorI*  g_crtStackAlloc; // C-runtime stack allocator.
+
     extern bx::ReallocatorI* g_staticAlloc; // Allocated memory is released on exit.
     extern StackAllocatorI*  g_stackAlloc;  // Used for temporary allocations.
     extern bx::ReallocatorI* g_mainAlloc;   // Default allocator.

@@ -48,10 +48,10 @@ static bool bgfxBinLoader(Geometry& _geometry
         MaxGroupsEstimate = 64,
         MaxPrimitivesPerGroupEstimate = 32,
     };
-    _geometry.m_groups.init(MaxGroupsEstimate);
+    _geometry.m_groups.init(MaxGroupsEstimate, cs::g_mainAlloc);
 
     Group* group = _geometry.m_groups.addNew();
-    group->m_prims.init(MaxPrimitivesPerGroupEstimate);
+    group->m_prims.init(MaxPrimitivesPerGroupEstimate, cs::g_mainAlloc);
 
     bool done = false;
     uint32_t chunk;
@@ -64,7 +64,7 @@ static bool bgfxBinLoader(Geometry& _geometry
                 if (NULL == group)
                 {
                     group = _geometry.m_groups.addNew();
-                    group->m_prims.init(MaxPrimitivesPerGroupEstimate);
+                    group->m_prims.init(MaxPrimitivesPerGroupEstimate, cs::g_mainAlloc);
                 }
 
                 bx::read(_reader, group->m_sphere);
@@ -87,7 +87,7 @@ static bool bgfxBinLoader(Geometry& _geometry
                 if (NULL == group)
                 {
                     group = _geometry.m_groups.addNew();
-                    group->m_prims.init(MaxPrimitivesPerGroupEstimate);
+                    group->m_prims.init(MaxPrimitivesPerGroupEstimate, cs::g_mainAlloc);
                 }
 
                 bx::read(_reader, group->m_numIndices);
@@ -103,7 +103,7 @@ static bool bgfxBinLoader(Geometry& _geometry
                 if (NULL == group)
                 {
                     group = _geometry.m_groups.addNew();
-                    group->m_prims.init(MaxPrimitivesPerGroupEstimate);
+                    group->m_prims.init(MaxPrimitivesPerGroupEstimate, cs::g_mainAlloc);
                 }
 
                 uint16_t len;
