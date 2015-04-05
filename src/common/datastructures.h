@@ -138,7 +138,7 @@ struct HandleArray : public dm::Array<Ty>
 template <typename Ty/*cs handle type*/>
 DM_INLINE HandleArray<Ty>* createHandleArray(uint16_t _maxHandles, void* _mem, bx::AllocatorI* _allocator)
 {
-    return ::new (_mem) HandleArray<Ty>(_maxHandles, (uint8_t*)_mem + sizeof(HandleArray<Ty>, bx::AllocatorI* _allocator));
+    return ::new (_mem) HandleArray<Ty>(_maxHandles, (uint8_t*)_mem + sizeof(HandleArray<Ty>), _allocator);
 }
 
 template <typename Ty/*cs handle type*/>
