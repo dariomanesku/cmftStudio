@@ -35,7 +35,7 @@
 #define CS_ALLOC_PRINT_BGFX   0
 
 #define IMGUI_CONFIG_CUSTOM_ALLOCATOR   1
-#define CS_OVERRIDE_NEWDELETE_ALLOCATOR 1
+#define CS_OVERRIDE_NEWDELETE           1
 #define CS_OVERRIDE_TINYSTL_ALLOCATOR   1
 #define CS_OBJTOBIN_USES_TINYSTL        1 // 1 == tinystl, 0 == std containers.
 

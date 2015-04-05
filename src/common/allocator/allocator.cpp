@@ -475,8 +475,8 @@ namespace cs
 
             struct SegregatedLists
             {
-                #if (CS_OVERRIDE_TINYSTL_ALLOCATOR   &&  CS_OBJTOBIN_USES_TINYSTL) \
-                ||  (CS_OVERRIDE_NEWDELETE_ALLOCATOR && !CS_OBJTOBIN_USES_TINYSTL)
+                #if (CS_OVERRIDE_TINYSTL_ALLOCATOR &&  CS_OBJTOBIN_USES_TINYSTL) \
+                ||  (CS_OVERRIDE_NEWDELETE         && !CS_OBJTOBIN_USES_TINYSTL)
                 #   define NUM64 512
                 #else
                 #   define NUM64 128
@@ -1870,7 +1870,7 @@ namespace cs
 // Alloc redirection.
 //-----
 
-#if CS_OVERRIDE_NEWDELETE_ALLOCATOR && CS_OVERRIDE_CRT_ALLOCATOR
+#if CS_OVERRIDE_NEWDELETE && CS_OVERRIDE_CRT_ALLOCATOR
     void* operator new(size_t _size)
     {
         // Make sure memory is initialized.
@@ -1899,7 +1899,7 @@ namespace cs
         BX_UNUSED(assertInitialized);
         return cs::s_memory.free(_ptr);
     }
-#endif // CS_OVERRIDE_NEWDELETE_ALLOCATOR && CS_OVERRIDE_TINYSTL_ALLOCATOR
+#endif // CS_OVERRIDE_NEWDELETE && CS_OVERRIDE_TINYSTL_ALLOCATOR
 
 #if IMGUI_CONFIG_CUSTOM_ALLOCATOR && CS_OVERRIDE_CRT_ALLOCATOR
     void* imguiMalloc(size_t _size, void* /*_userptr*/)
