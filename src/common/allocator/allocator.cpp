@@ -27,7 +27,7 @@ namespace cs
 {
     enum { StaticStorageSize = DM_MEGABYTES(32) };
 
-    #if CS_OVERRIDE_CRT_ALLOCATOR
+    #if CS_USE_INTERNAL_ALLOCATOR
         struct Memory
         {
             Memory()
@@ -1548,7 +1548,7 @@ namespace cs
             #endif //CS_ALLOC_PRINT_STATS
         };
         static CsBgfxAllocator s_bgfxAllocator;
-    #endif // CS_OVERRIDE_CRT_ALLOCATOR
+    #endif // CS_USE_INTERNAL_ALLOCATOR
 
     struct CrtAllocator : public bx::ReallocatorI
     {
@@ -1567,7 +1567,7 @@ namespace cs
         {
             BX_UNUSED(_align, _file, _line);
 
-            #if CS_OVERRIDE_CRT_ALLOCATOR
+            #if CS_USE_INTERNAL_ALLOCATOR
                 if (s_memory.contains(_ptr))
                 {
                     s_memory.free(_ptr);
@@ -1578,14 +1578,14 @@ namespace cs
                 }
             #else
                 ::free(_ptr);
-            #endif // CS_OVERRIDE_CRT_ALLOCATOR
+            #endif // CS_USE_INTERNAL_ALLOCATOR
         }
 
         virtual void* realloc(void* _ptr, size_t _size, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
         {
             BX_UNUSED(_align, _file, _line);
 
-            #if CS_OVERRIDE_CRT_ALLOCATOR
+            #if CS_USE_INTERNAL_ALLOCATOR
                 if (s_memory.contains(_ptr))
                 {
                     return s_memory.realloc(_ptr, _size);
@@ -1596,7 +1596,7 @@ namespace cs
                 }
             #else
                 return ::realloc(_ptr, _size);
-            #endif // CS_OVERRIDE_CRT_ALLOCATOR
+            #endif // CS_USE_INTERNAL_ALLOCATOR
         }
     };
     static CrtAllocator s_crtAllocator;
@@ -1763,7 +1763,7 @@ namespace cs
     bx::ReallocatorI* g_crtAlloc      = &s_crtAllocator;
     StackAllocatorI*  g_crtStackAlloc = &s_crtStackAllocator;
 
-    #if CS_OVERRIDE_CRT_ALLOCATOR
+    #if CS_USE_INTERNAL_ALLOCATOR
         bx::ReallocatorI* g_staticAlloc = &s_staticAllocator;
         StackAllocatorI*  g_stackAlloc  = &s_stackAllocator;
         bx::ReallocatorI* g_mainAlloc   = &s_mainAllocator;
@@ -1775,10 +1775,10 @@ namespace cs
         bx::ReallocatorI* g_mainAlloc   = &s_crtAllocator;
         bx::AllocatorI*   g_delayedFree = &s_delayedFreeCrtAllocator;
         bx::ReallocatorI* g_bgfxAlloc   = &s_crtAllocator;
-    #endif // CS_OVERRIDE_CRT_ALLOCATOR
+    #endif // CS_USE_INTERNAL_ALLOCATOR
 
 
-    #if CS_OVERRIDE_CRT_ALLOCATOR
+    #if CS_USE_INTERNAL_ALLOCATOR
         bool allocInit()
         {
             return s_memory.init();
@@ -1863,14 +1863,14 @@ namespace cs
         void allocFreeStack(StackAllocatorI* /*_stackAlloc*/)
         {
         }
-    #endif //CS_OVERRIDE_CRT_ALLOCATOR
+    #endif //CS_USE_INTERNAL_ALLOCATOR
 
 } // namespace cs
 
 // Alloc redirection.
 //-----
 
-#if CS_OVERRIDE_NEWDELETE && CS_OVERRIDE_CRT_ALLOCATOR
+#if CS_OVERRIDE_NEWDELETE && CS_USE_INTERNAL_ALLOCATOR
     void* operator new(size_t _size)
     {
         // Make sure memory is initialized.
@@ -1901,7 +1901,7 @@ namespace cs
     }
 #endif // CS_OVERRIDE_NEWDELETE && CS_OVERRIDE_TINYSTL_ALLOCATOR
 
-#if IMGUI_CONFIG_CUSTOM_ALLOCATOR && CS_OVERRIDE_CRT_ALLOCATOR
+#if IMGUI_CONFIG_CUSTOM_ALLOCATOR && CS_USE_INTERNAL_ALLOCATOR
     void* imguiMalloc(size_t _size, void* /*_userptr*/)
     {
         static const bool assertInitialized = cs::s_memory.init();
@@ -1927,28 +1927,28 @@ namespace cs
     {
         return ::free(_ptr);
     }
-#endif // IMGUI_CONFIG_CUSTOM_ALLOCATOR && CS_OVERRIDE_CRT_ALLOCATOR
+#endif // IMGUI_CONFIG_CUSTOM_ALLOCATOR && CS_USE_INTERNAL_ALLOCATOR
 
 #if !ENTRY_CONFIG_IMPLEMENT_DEFAULT_ALLOCATOR
     namespace entry
     {
         bx::ReallocatorI* getDefaultAllocator()
         {
-            #if CS_OVERRIDE_CRT_ALLOCATOR
+            #if CS_USE_INTERNAL_ALLOCATOR
                 static const bool assertInitialized = cs::s_memory.init();
                 BX_UNUSED(assertInitialized);
 
                 return &cs::s_mainAllocator;
             #else
                 return &cs::s_crtAllocator;
-            #endif // CS_OVERRIDE_CRT_ALLOCATOR
+            #endif // CS_USE_INTERNAL_ALLOCATOR
         }
     }
 #endif // !ENTRY_CONFIG_IMPLEMENT_DEFAULT_ALLOCATOR
 
 namespace cs
 {
-    #if CS_OVERRIDE_TINYSTL_ALLOCATOR && CS_OVERRIDE_CRT_ALLOCATOR
+    #if CS_OVERRIDE_TINYSTL_ALLOCATOR && CS_USE_INTERNAL_ALLOCATOR
         void* TinyStlAllocator::static_allocate(size_t _bytes)
         {
             static const bool assertInitialized = cs::s_memory.init();
@@ -1973,7 +1973,7 @@ namespace cs
         {
             return ::free(_ptr);
         }
-    #endif // CS_OVERRIDE_TINYSTL_ALLOCATOR && CS_OVERRIDE_CRT_ALLOCATOR
+    #endif // CS_OVERRIDE_TINYSTL_ALLOCATOR && CS_USE_INTERNAL_ALLOCATOR
 } // namespace cs
 
 /* vim: set sw=4 ts=4 expandtab: */
