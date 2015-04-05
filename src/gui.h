@@ -323,8 +323,51 @@ void imguiBrowser(int32_t _height
                 , bool _showHidden       = false
                 );
 
-// FileBrowser widget.
+// TextureBrowser widget.
 //-----
+
+struct TextureExt
+{
+    enum Enum
+    {
+        Dds,
+        Ktx,
+        Tga,
+        Hdr,
+        Bmp,
+        Gif,
+        Jpg,
+        Jpeg,
+        Png,
+        Pvr,
+        Tif,
+        Tiff,
+
+        Count,
+    };
+};
+
+static const char* sc_textureExtStr[TextureExt::Count] =
+{
+    "dds",
+    "ktx",
+    "tga",
+    "hdr",
+    "bmp",
+    "gif",
+    "jpg",
+    "jpeg",
+    "png",
+    "pvr",
+    "tif",
+    "tiff",
+};
+
+static const char* getTextureExtensionStr(uint8_t _ext)
+{
+    CS_CHECK(_ext < TextureExt::Count, "Accessing array out of bounds.");
+    return sc_textureExtStr[_ext];
+}
 
 enum { TextureBrowser_MaxSelectedFiles = 8 };
 struct TextureBrowserWidgetState : public BrowserStateFor<TextureBrowser_MaxSelectedFiles>
@@ -334,32 +377,17 @@ struct TextureBrowserWidgetState : public BrowserStateFor<TextureBrowser_MaxSele
     TextureBrowserWidgetState(const char* _directory = ".")
         : BrowserState(_directory)
     {
-       m_extBmp = true;
-       m_extDds = true;
-       m_extGif = true;
-       m_extJpg = true;
-       m_extJpeg = true;
-       m_extKtx = true;
-       m_extPng = true;
-       m_extPvr = true;
-       m_extTga = true;
-       m_extTif = true;
-       m_extTiff = true;
-       m_events = GuiEvent::None;
-       m_texPickerFor = cs::Material::Albedo;
+        m_scroll = 0;
+        for (uint8_t ii = 0; ii < TextureExt::Count; ++ii)
+        {
+            m_extFlag[ii] = true;
+        }
+        m_events = GuiEvent::None;
+        m_texPickerFor = cs::Material::Albedo;
     }
 
-    bool m_extBmp;
-    bool m_extDds;
-    bool m_extGif;
-    bool m_extJpg;
-    bool m_extJpeg;
-    bool m_extKtx;
-    bool m_extPng;
-    bool m_extPvr;
-    bool m_extTga;
-    bool m_extTif;
-    bool m_extTiff;
+    int32_t m_scroll;
+    bool m_extFlag[TextureExt::Count];
     uint8_t m_events;
     cs::Material::Texture m_texPickerFor;
 };
@@ -368,6 +396,7 @@ void imguiTextureBrowserWidget(int32_t _x
                              , int32_t _y
                              , int32_t _width
                              , TextureBrowserWidgetState& _state
+                             , bool _enabled = true
                              );
 
 // MeshSave widget.

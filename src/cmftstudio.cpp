@@ -1428,25 +1428,14 @@ private:
 
                 if ('\0' != file.m_path[0])
                 {
-                    if (0 == strcmp("bmp", file.m_ext)
-                    || 0 == strcmp("dds", file.m_ext)
-                    || 0 == strcmp("gif", file.m_ext)
-                    || 0 == strcmp("jpg", file.m_ext)
-                    || 0 == strcmp("jpeg", file.m_ext)
-                    || 0 == strcmp("ktx", file.m_ext)
-                    || 0 == strcmp("png", file.m_ext)
-                    || 0 == strcmp("pvr", file.m_ext)
-                    || 0 == strcmp("tga", file.m_ext)
-                    || 0 == strcmp("tif", file.m_ext)
-                    || 0 == strcmp("tiff", file.m_ext))
-                    {
-                        const cs::TextureHandle texture = cs::textureLoad(file.m_path);
-                        cs::setName(texture, file.m_name);
-                        m_textureList.add(texture);
-                        m_widgets.m_texPicker[m_widgets.m_textureBrowser.m_texPickerFor].m_selection = m_textureList.count()-1;
-                    }
+                    const cs::TextureHandle texture = cs::textureLoad(file.m_path);
+                    cs::setName(texture, file.m_name);
+                    m_textureList.add(texture);
+                    m_widgets.m_texPicker[m_widgets.m_textureBrowser.m_texPickerFor].m_selection = m_textureList.count()-1;
                 }
             }
+
+            m_widgets.m_textureBrowser.m_files.reset();
         }
 
         // CmftInfoSkybox action.
@@ -2100,7 +2089,7 @@ public:
 
         // Draw splash screen.
         initVertexDecls();
-        const cs::TextureHandle splashTex = cs::textureLoad(g_loadingScreenTex, g_loadingScreenTexSize);
+        const cs::TextureHandle splashTex = cs::textureLoadRaw(g_loadingScreenTex, g_loadingScreenTexSize);
         drawSplashScreen(splashTex, g_config.m_width, g_config.m_height);
         bx::sleep(100);
 
@@ -2133,7 +2122,7 @@ public:
         for (uint16_t ii = 0, end = m_textureList.count(); ii < end; ++ii)
         {
             const cs::TextureHandle handle = m_textureList[ii];
-            cs::createGpuBuffers(handle); // this has to be executed here on the main thread.
+            cs::createGpuBuffers(handle, BGFX_TEXTURE_U_CLAMP|BGFX_TEXTURE_V_CLAMP); // this has to be executed here on the main thread.
         }
         for (uint16_t ii = 0, end = m_meshInstList.count(); ii < end; ++ii)
         {
@@ -2351,7 +2340,7 @@ public:
                 {
                     m_projTransition.m_texIdx--;
                     const cs::TextureHandle tex = m_threadParams.m_projectLoad.m_textureList[m_projTransition.m_texIdx];
-                    cs::createGpuBuffers(tex);
+                    cs::createGpuBuffers(tex, BGFX_TEXTURE_U_CLAMP|BGFX_TEXTURE_V_CLAMP);
                 }
                 else if (m_projTransition.m_mshIdx)
                 {

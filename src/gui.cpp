@@ -378,10 +378,18 @@ void imguiTextureBrowserWidget(int32_t _x
                              , int32_t _y
                              , int32_t _width
                              , TextureBrowserWidgetState& _state
+                             , bool _enabled
                              )
 {
+    enum
+    {
+        ListVisibleElements = 6,
+        ListElementHeight   = 24,
+        ListHeight = ListVisibleElements*ListElementHeight,
+    };
+
     const int32_t browserHeight = 400;
-    const int32_t height = browserHeight + 557;
+    const int32_t height = 293 + ListHeight + browserHeight;
 
     _state.m_events = GuiEvent::None;
 
@@ -402,17 +410,37 @@ void imguiTextureBrowserWidget(int32_t _x
     imguiLabelBorder("Filter:");
     imguiIndent();
     {
-        imguiBool("*.bmp", _state.m_extBmp);
-        imguiBool("*.dds", _state.m_extDds);
-        imguiBool("*.gif", _state.m_extGif);
-        imguiBool("*.jpg", _state.m_extJpg);
-        imguiBool("*.jpeg", _state.m_extJpeg);
-        imguiBool("*.ktx", _state.m_extKtx);
-        imguiBool("*.png", _state.m_extPng);
-        imguiBool("*.pvr", _state.m_extPvr);
-        imguiBool("*.tga", _state.m_extTga);
-        imguiBool("*.tif", _state.m_extTif);
-        imguiBool("*.tiff", _state.m_extTiff);
+        imguiBeginScroll(ListHeight, &_state.m_scroll, _enabled);
+        {
+            const uint8_t selection = imguiTabs(UINT8_MAX, true, ImguiAlign::LeftIndented, 21, 4, 2, "Select all", "Select none");
+            if (0 == selection)
+            {
+                for (uint8_t ii = 0; ii < TextureExt::Count; ++ii)
+                {
+                    _state.m_extFlag[ii] = true;
+                }
+            }
+            else if (1 == selection)
+            {
+                for (uint8_t ii = 0; ii < TextureExt::Count; ++ii)
+                {
+                    _state.m_extFlag[ii] = false;
+                }
+            }
+
+            char extLabel[FileExtensionLength+2];
+            for (uint8_t ii = 0; ii < TextureExt::Count; ++ii)
+            {
+                extLabel[0] = '*';
+                extLabel[1] = '.';
+                strcpy(&extLabel[2], getTextureExtensionStr(ii));
+
+                imguiBool(extLabel, _state.m_extFlag[ii]);
+            }
+
+            imguiSeparator(2);
+        }
+        imguiEndScroll();
     }
     imguiSeparator();
     imguiUnindent();
@@ -421,18 +449,14 @@ void imguiTextureBrowserWidget(int32_t _x
     imguiIndent();
     {
         uint8_t count = 0;
-        char extensions[11][FileExtensionLength];
-        if (_state.m_extBmp) { strcpy(extensions[count++], "bmp"); }
-        if (_state.m_extDds) { strcpy(extensions[count++], "dds"); }
-        if (_state.m_extGif) { strcpy(extensions[count++], "gif"); }
-        if (_state.m_extKtx) { strcpy(extensions[count++], "ktx"); }
-        if (_state.m_extPvr) { strcpy(extensions[count++], "pvr"); }
-        if (_state.m_extPng) { strcpy(extensions[count++], "png"); }
-        if (_state.m_extJpg) { strcpy(extensions[count++], "jpg"); }
-        if (_state.m_extJpeg) { strcpy(extensions[count++], "jpeg"); }
-        if (_state.m_extTga) { strcpy(extensions[count++], "tga"); }
-        if (_state.m_extTif) { strcpy(extensions[count++], "tif"); }
-        if (_state.m_extTiff) { strcpy(extensions[count++], "tiff"); }
+        char extensions[TextureExt::Count][FileExtensionLength];
+        for (uint8_t ii = 0; ii < TextureExt::Count; ++ii)
+        {
+            if (_state.m_extFlag[ii])
+            {
+                strcpy(extensions[count++], getTextureExtensionStr(ii));
+            }
+        }
         imguiBrowser(browserHeight, _state, extensions, count);
     }
     imguiUnindent();
@@ -2185,7 +2209,7 @@ void imguiBrowser(int32_t _height
                     dirNum = ii;
                 }
             }
-            else if (!_showDirsOnly)
+            else if (!_showDirsOnly && _extCount > 0)
             {
                 bool show;
                 if (NULL == _ext
@@ -2266,13 +2290,13 @@ void imguiBrowser(int32_t _height
         tinydir_open_subdir_n(&dir, dirNum);
 
         _state.m_scroll = 0;
-        _state.m_files.removeAll();
+        _state.m_files.reset();
         dm::realpath(_state.m_directory, dir.path);
     }
     else if (UINT8_MAX != button)
     {
         _state.m_scroll = 0;
-        _state.m_files.removeAll();
+        _state.m_files.reset();
 
         if (0 == button) // root
         {

@@ -211,6 +211,7 @@ namespace cs
     cs::TextureHandle   textureBricksAo();
     cs::TextureHandle   textureLoad(const char* _path);
     cs::TextureHandle   textureLoad(const void* _data, uint32_t _size);
+    cs::TextureHandle   textureLoadRaw(const void* _data, uint32_t _size);
     bgfx::TextureHandle textureGetBgfxHandle(cs::TextureHandle _handle);
 
 
@@ -427,9 +428,7 @@ namespace cs
     void           readMeshInstance(dm::ReaderSeekerI* _reader, MeshInstance* _instance);
 
     /// Notice: after read*(), createGpuBuffers*() need to be called from the main thread.
-    void createGpuBuffers(TextureHandle _handle, uint32_t _flags = BGFX_TEXTURE_NONE, uint8_t _skip = 0, bgfx::TextureInfo* _info = NULL);
-    void createGpuBuffersTex2D(TextureHandle _handle, uint32_t _flags = BGFX_TEXTURE_U_CLAMP|BGFX_TEXTURE_V_CLAMP);
-    void createGpuBuffersCube(TextureHandle _handle, uint32_t _flags = BGFX_TEXTURE_U_CLAMP|BGFX_TEXTURE_V_CLAMP|BGFX_TEXTURE_W_CLAMP);
+    void createGpuBuffers(TextureHandle _handle, uint32_t _flags = BGFX_TEXTURE_NONE);
     void createGpuBuffers(MeshHandle _handle);
     void createGpuBuffers(EnvHandle _handle);
 

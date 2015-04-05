@@ -14,9 +14,6 @@
 #include "geometry/objtobin.h"
 #include "staticres.h"
 
-// _p probably means private, but the TextureCreate struct is defined here.
-#include "../../bgfx/src/bgfx_p.h"
-
 #include <dm/misc.h>           // DM_PATH_LEN, dm::fsize
 #include <dm/readerwriter.h>
 #include <dm/pi.h>
@@ -27,7 +24,7 @@
 #include <bx/fpumath.h>
 #include <bx/macros.h>         // BX_UNUSED
 
-#include "../../bgfx/3rdparty/stb/stb_image.c"
+#include "../../bgfx/3rdparty/stb/stb_image.c" //TODO
 
 #ifndef CS_LOAD_SHADERS_FROM_DATA_SEGMENT
     #define CS_LOAD_SHADERS_FROM_DATA_SEGMENT 0
@@ -558,15 +555,26 @@ namespace cs
 
     struct TextureImpl : public Texture, public ReadWriteI<TextureHandle>
     {
+        struct Type
+        {
+            enum Enum
+            {
+                Unknown,
+                Tex2D,
+                TexCube,
+            };
+        };
+
         TextureImpl()
         {
             m_bgfxHandle.idx = bgfx::invalidHandle;
-            m_size           = 0;
             m_data           = NULL;
+            m_size           = 0;
             m_numMips        = 0;
             m_width          = 0;
             m_height         = 0;
             m_format         = bgfx::TextureFormat::BGRA8;
+            m_type           = Type::Unknown;
             m_freeData       = true;
         }
 
@@ -575,84 +583,117 @@ namespace cs
             destroy();
         }
 
-        void load(const void* _data, uint32_t _size)
+        void loadRaw(const void* _data, uint32_t _size)
         {
             m_data = BX_ALLOC(g_mainAlloc, _size);
             memcpy(m_data, _data, _size);
             m_size = _size;
+            m_type = Type::Unknown;
         }
 
-        bool load(const char* _path)
+        bool load(const void* _dataOrPath, uint32_t _sizeOrInvalid)
         {
+            const bool isFile = (UINT32_MAX == _sizeOrInvalid);
+
+            const char*    path = (const char*)_dataOrPath;
+            const void*    data = (const void*)_dataOrPath;
+            const uint32_t size = _sizeOrInvalid;
+
+            // Try loading the image through cmft.
+            cmft::Image image;
+            if (isFile)
             {
-                // First, try to load using stb_image, which covers tga, tif, bmp, jpeg, and gif
-                // (and can support a few others if we want).
-                int stbWidth, stbHeight, stbNumComponents;
-                uint8_t *rgbaData = (uint8_t *) stbi_load(_path, &stbWidth, &stbHeight, &stbNumComponents, 4);
-                if(rgbaData) {
-                    // Copy the stb image data into the BGFX texture format:
-                    // |====================================================================================|
-                    // |magic| TextureCreate (tc)   | bgfx::Memory (imgMem) | RGBA data (rgbaData)          |
-                    // |     |          tc.m_mem--->|         imgMem.data-->|                               |
-                    // |_____|______________________|_______________________|_______________________________|
-                    // bgfx/src/image.cpp consumes this.
-                    uint32_t magic = BGFX_CHUNK_MAGIC_TEX;
-                    bgfx::TextureCreate tc;
+                cmft::imageLoad(image, path);
+            }
+            else
+            {
+                cmft::imageLoad(image, data, size);
+            }
 
-                    uint32_t imgSize = stbWidth * stbHeight * 4;
-                    m_size = sizeof(magic) + sizeof(tc) + sizeof(bgfx::Memory) + imgSize;
+            if (cmft::imageIsValid(image))
+            {
+                cmft::ImageSoftRef imageBgfx;
+
+                const TextureFormatInfo tfi = cmftToBgfx(image.m_format);
+                if (tfi.convert())
+                {
+                    cmft::imageConvert(imageBgfx, tfi.cmftFormat(), image);
+                    cmft::imageUnload(image);
+                }
+                else
+                {
+                    cmft::imageRef(imageBgfx, image);
+                }
+
+                m_data     = imageBgfx.m_data;
+                m_size     = imageBgfx.m_dataSize;
+                m_numMips  = imageBgfx.m_numMips;
+                m_width    = (uint16_t)imageBgfx.m_width;
+                m_height   = (uint16_t)imageBgfx.m_height;
+                m_format   = cmftToBgfx(imageBgfx.m_format).bgfxFormat();
+                m_type     = imageBgfx.m_numFaces == 6 ? Type::TexCube : Type::Tex2D;
+                m_freeData = true;
+
+                return true;
+            }
+
+            // Try loading the image through stb_image.
+            //TODO stb allocator.
+
+            int stbWidth, stbHeight, stbNumComponents;
+            if (isFile)
+            {
+                m_data = (uint8_t*)stbi_load(path, &stbWidth, &stbHeight, &stbNumComponents, 4);
+            }
+            else
+            {
+                m_data = (uint8_t*)stbi_load_from_memory((stbi_uc*)data, (int)size, &stbWidth, &stbHeight, &stbNumComponents, 4);
+            }
+
+            if (m_data)
+            {
+                m_numMips  = 0;
+                m_width    = (uint16_t)stbWidth;
+                m_height   = (uint16_t)stbHeight;
+                m_format   = bgfx::TextureFormat::RGBA8;
+                m_type     = Type::Tex2D;
+                m_freeData = true;
+
+                return true;
+            }
+
+            // Read/copy raw data.
+
+            if (isFile)
+            {
+                FILE* file = fopen(path, "rb");
+                if (NULL != file)
+                {
+                    m_size = (uint32_t)dm::fsize(file);
                     m_data = BX_ALLOC(g_mainAlloc, m_size);
+                    m_type = Type::Unknown;
 
-                    bx::StaticMemoryBlockWriter memWriter(m_data, m_size);
-                    bx::WriterSeekerI* _writer = &memWriter;
-
-                    bx::write(_writer, magic);
-
-                    tc.m_flags = 0;
-                    tc.m_width = stbWidth;
-                    tc.m_height = stbHeight;
-                    tc.m_sides = 0;
-                    tc.m_depth = 0;
-                    tc.m_numMips = 1;
-                    tc.m_format = bgfx::TextureFormat::RGBA8;
-                    tc.m_cubeMap = false;
-
-                    const bgfx::Memory* m_mem = bgfx::makeRef((uint8_t*)m_data + _writer->seek() + sizeof(tc)
-                                                             , imgSize + sizeof(bgfx::Memory)
-                                                             );
-                    tc.m_mem = m_mem;
-                    bx::write(_writer, tc);
-
-                    bgfx::Memory imgMem;
-                    imgMem.data = (uint8_t *)m_data + _writer->seek() + sizeof(imgMem);
-                    imgMem.size = imgSize;
-
-                    bx::write(_writer, imgMem);
-                    bx::write(_writer, rgbaData, imgMem.size);
-
-                    stbi_image_free(rgbaData);
+                    size_t read = fread(m_data, 1, m_size, file);
+                    CS_CHECK(read == m_size, "Error reading file.");
+                    BX_UNUSED(read);
+                    fclose(file);
 
                     return true;
                 }
             }
-
-            // If stb_image didn't work, assume it's a texture format that bgfx understands
-            // (e.g. DXT/PVR) and load it as-is.
-            FILE* file = fopen(_path, "rb");
-            if (NULL != file)
+            else
             {
-                m_size = (uint32_t)dm::fsize(file);
-                m_data = BX_ALLOC(g_mainAlloc, m_size);
-
-                size_t read = fread(m_data, 1, m_size, file);
-                CS_CHECK(read == m_size, "Error reading file.");
-                BX_UNUSED(read);
-                fclose(file);
+                loadRaw(data, size);
 
                 return true;
             }
 
             return false;
+        }
+
+        bool load(const char* _path)
+        {
+            return load((void*)_path, UINT32_MAX);
         }
 
         void read(dm::ReaderSeekerI* _reader, TextureHandle _handle = TextureHandle::invalid(), cs::StackAllocatorI* _stack = g_stackAlloc)
@@ -670,25 +711,39 @@ namespace cs
             bx::read(_reader, m_data, m_size);
         }
 
-        void createGpuBuffers(uint32_t _flags = BGFX_TEXTURE_NONE, uint8_t _skip = 0, bgfx::TextureInfo* _info = NULL)
+        void createGpuBuffers(uint32_t _flags = BGFX_TEXTURE_NONE)
         {
             const bgfx::Memory* mem = bgfx::makeRef(m_data, m_size);
             BGFX_SAFE_DESTROY_TEXTURE(m_bgfxHandle);
-            m_bgfxHandle = bgfx::createTexture(mem, _flags, _skip, _info);
-        }
 
-        void createGpuBuffersCube(uint32_t _flags = BGFX_TEXTURE_U_CLAMP|BGFX_TEXTURE_V_CLAMP|BGFX_TEXTURE_W_CLAMP)
-        {
-            const bgfx::Memory* mem = bgfx::makeRef(m_data, m_size);
-            BGFX_SAFE_DESTROY_TEXTURE(m_bgfxHandle);
-            m_bgfxHandle = bgfx::createTextureCube(m_width, m_numMips, m_format, _flags, mem);
-        }
+            switch (m_type)
+            {
+            case Type::Unknown:
+                {
+                    bgfx::TextureInfo info;
+                    m_bgfxHandle = bgfx::createTexture(mem, _flags, 0, &info);
 
-        void createGpuBuffersTex2D(uint32_t _flags = BGFX_TEXTURE_U_CLAMP|BGFX_TEXTURE_V_CLAMP)
-        {
-            const bgfx::Memory* mem = bgfx::makeRef(m_data, m_size);
-            BGFX_SAFE_DESTROY_TEXTURE(m_bgfxHandle);
-            m_bgfxHandle = bgfx::createTexture2D(m_width, m_height, m_numMips, m_format, _flags, mem);
+                    m_data     = NULL;
+                    m_size     = 0;
+                    m_numMips  = info.numMips;
+                    m_width    = info.width;
+                    m_height   = info.height;
+                    m_format   = info.format;
+                    m_type     = info.cubeMap ? Type::TexCube : Type::Tex2D;
+                    m_freeData = false;
+                }
+            break;
+            case Type::Tex2D:
+                {
+                    m_bgfxHandle = bgfx::createTexture2D(m_width, m_height, m_numMips, m_format, _flags, mem);
+                }
+            break;
+            case Type::TexCube:
+                {
+                    m_bgfxHandle = bgfx::createTextureCube(m_width, m_numMips, m_format, _flags, mem);
+                }
+            break;
+            };
         }
 
         void write(bx::WriterI* _writer, uint16_t _id = ResourceId::Invalid) const
@@ -723,6 +778,7 @@ namespace cs
         uint16_t m_width;
         uint16_t m_height;
         bgfx::TextureFormat::Enum m_format;
+        Type::Enum m_type;
         bool m_freeData;
     };
 
@@ -732,6 +788,17 @@ namespace cs
         {
             const TextureImpl* texture = this->createObj();
             const TextureHandle handle = this->getHandle(texture);
+            return this->acquire(handle);
+        }
+
+        TextureHandle loadRaw(const void* _data, uint32_t _size)
+        {
+            TextureImpl* texture = this->createObj();
+            texture->loadRaw(_data, _size);
+            texture->createGpuBuffers();
+
+            const TextureHandle handle = this->getHandle(texture);
+
             return this->acquire(handle);
         }
 
@@ -761,7 +828,7 @@ namespace cs
 
     TextureHandle loadTextureStripes()
     {
-        const cs::TextureHandle tex = textureLoad(g_stripesS, g_stripesSSize);
+        const cs::TextureHandle tex = textureLoadRaw(g_stripesS, g_stripesSSize);
         setName(tex, "Stripes");
         return acquire(tex);
     }
@@ -774,7 +841,7 @@ namespace cs
 
     TextureHandle loadTextureBricksN()
     {
-        const cs::TextureHandle tex = textureLoad(g_bricksN, g_bricksNSize);
+        const cs::TextureHandle tex = textureLoadRaw(g_bricksN, g_bricksNSize);
         setName(tex, "Bricks normal");
         return acquire(tex);
     }
@@ -787,7 +854,7 @@ namespace cs
 
     TextureHandle loadTextureBricksAo()
     {
-        const cs::TextureHandle tex = textureLoad(g_bricksAo, g_bricksAoSize);
+        const cs::TextureHandle tex = textureLoadRaw(g_bricksAo, g_bricksAoSize);
         setName(tex, "Bricks occlusion");
         return acquire(tex);
     }
@@ -806,6 +873,11 @@ namespace cs
     TextureHandle textureLoad(const void* _data, uint32_t _size)
     {
         return s_textures->load(_data, _size);
+    }
+
+    TextureHandle textureLoadRaw(const void* _data, uint32_t _size)
+    {
+        return s_textures->loadRaw(_data, _size);
     }
 
     bgfx::TextureHandle textureGetBgfxHandle(cs::TextureHandle _handle)
@@ -1710,6 +1782,7 @@ namespace cs
             tex->m_width    = (uint16_t)_image.m_width;
             tex->m_height   = (uint16_t)_image.m_height;
             tex->m_format   = cmftToBgfx(_image.m_format).bgfxFormat();
+            tex->m_type     = TextureImpl::Type::TexCube;
             tex->m_freeData = false;
         }
 
@@ -1952,10 +2025,12 @@ namespace cs
 
         void createGpuBuffers(cs::TextureHandle _cubemap)
         {
+            enum { CubeTexFlags = BGFX_TEXTURE_U_CLAMP|BGFX_TEXTURE_V_CLAMP|BGFX_TEXTURE_W_CLAMP };
+
             TextureImpl* cube = s_textures->getImpl(_cubemap);
             if (!isValid(cube->m_bgfxHandle))
             {
-                cube->createGpuBuffersCube();
+                cube->createGpuBuffers(CubeTexFlags);
             }
         }
 
@@ -2608,22 +2683,10 @@ namespace cs
         }
     }
 
-    void createGpuBuffers(TextureHandle _handle, uint32_t _flags, uint8_t _skip, bgfx::TextureInfo* _info)
+    void createGpuBuffers(TextureHandle _handle, uint32_t _flags)
     {
         TextureImpl* tex = s_textures->getImpl(_handle);
-        tex->createGpuBuffers(_flags, _skip, _info);
-    }
-
-    void createGpuBuffersTex2D(TextureHandle _handle, uint32_t _flags)
-    {
-        TextureImpl* tex = s_textures->getImpl(_handle);
-        tex->createGpuBuffersTex2D(_flags);
-    }
-
-    void createGpuBuffersCube(TextureHandle _handle, uint32_t _flags)
-    {
-        TextureImpl* tex = s_textures->getImpl(_handle);
-        tex->createGpuBuffersCube(_flags);
+        tex->createGpuBuffers(_flags);
     }
 
     void createGpuBuffers(MeshHandle _handle)

@@ -1084,6 +1084,7 @@ bool guiDraw(ImguiState& _guiState
                                 , int32_t(s_animators[Animators::LeftTextureBrowser].m_y)
                                 , Gui::PaneWidth
                                 , _widgetState.m_textureBrowser
+                                , enabled
                                 );
 
         if (guiEvent(GuiEvent::GuiUpdate, _widgetState.m_textureBrowser.m_events))
