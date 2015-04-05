@@ -1428,9 +1428,17 @@ private:
 
                 if ('\0' != file.m_path[0])
                 {
-                    if (0 == strcmp("dds", file.m_ext)
-                    ||  0 == strcmp("ktx", file.m_ext)
-                    ||  0 == strcmp("pvr", file.m_ext))
+                    if (0 == strcmp("bmp", file.m_ext)
+                    || 0 == strcmp("dds", file.m_ext)
+                    || 0 == strcmp("gif", file.m_ext)
+                    || 0 == strcmp("jpg", file.m_ext)
+                    || 0 == strcmp("jpeg", file.m_ext)
+                    || 0 == strcmp("ktx", file.m_ext)
+                    || 0 == strcmp("png", file.m_ext)
+                    || 0 == strcmp("pvr", file.m_ext)
+                    || 0 == strcmp("tga", file.m_ext)
+                    || 0 == strcmp("tif", file.m_ext)
+                    || 0 == strcmp("tiff", file.m_ext))
                     {
                         const cs::TextureHandle texture = cs::textureLoad(file.m_path);
                         cs::setName(texture, file.m_name);

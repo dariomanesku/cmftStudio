@@ -334,16 +334,32 @@ struct TextureBrowserWidgetState : public BrowserStateFor<TextureBrowser_MaxSele
     TextureBrowserWidgetState(const char* _directory = ".")
         : BrowserState(_directory)
     {
+       m_extBmp = true;
        m_extDds = true;
+       m_extGif = true;
+       m_extJpg = true;
+       m_extJpeg = true;
        m_extKtx = true;
+       m_extPng = true;
        m_extPvr = true;
+       m_extTga = true;
+       m_extTif = true;
+       m_extTiff = true;
        m_events = GuiEvent::None;
        m_texPickerFor = cs::Material::Albedo;
     }
 
+    bool m_extBmp;
     bool m_extDds;
+    bool m_extGif;
+    bool m_extJpg;
+    bool m_extJpeg;
     bool m_extKtx;
+    bool m_extPng;
     bool m_extPvr;
+    bool m_extTga;
+    bool m_extTif;
+    bool m_extTiff;
     uint8_t m_events;
     cs::Material::Texture m_texPickerFor;
 };

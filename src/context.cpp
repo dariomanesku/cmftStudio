@@ -14,6 +14,9 @@
 #include "geometry/objtobin.h"
 #include "staticres.h"
 
+// _p probably means private, but the TextureCreate struct is defined here.
+#include "../../bgfx/src/bgfx_p.h"
+
 #include <dm/misc.h>           // DM_PATH_LEN, dm::fsize
 #include <dm/readerwriter.h>
 #include <dm/pi.h>
@@ -23,6 +26,8 @@
 
 #include <bx/fpumath.h>
 #include <bx/macros.h>         // BX_UNUSED
+
+#include "../../bgfx/3rdparty/stb/stb_image.c"
 
 #ifndef CS_LOAD_SHADERS_FROM_DATA_SEGMENT
     #define CS_LOAD_SHADERS_FROM_DATA_SEGMENT 0
@@ -579,6 +584,58 @@ namespace cs
 
         bool load(const char* _path)
         {
+            {
+                // First, try to load using stb_image, which covers tga, tif, bmp, jpeg, and gif
+                // (and can support a few others if we want).
+                int stbWidth, stbHeight, stbNumComponents;
+                uint8_t *rgbaData = (uint8_t *) stbi_load(_path, &stbWidth, &stbHeight, &stbNumComponents, 4);
+                if(rgbaData) {
+                    // Copy the stb image data into the BGFX texture format:
+                    // |====================================================================================|
+                    // |magic| TextureCreate (tc)   | bgfx::Memory (imgMem) | RGBA data (rgbaData)          |
+                    // |     |          tc.m_mem--->|         imgMem.data-->|                               |
+                    // |_____|______________________|_______________________|_______________________________|
+                    // bgfx/src/image.cpp consumes this.
+                    uint32_t magic = BGFX_CHUNK_MAGIC_TEX;
+                    bgfx::TextureCreate tc;
+                    bgfx::Memory imgMem;
+
+                    uint32_t imgSize = stbWidth * stbHeight * 4;
+                    m_size = sizeof(magic) + sizeof(tc) + sizeof(imgMem) + imgSize;
+                    m_data = BX_ALLOC(g_mainAlloc, m_size);
+
+                    bx::StaticMemoryBlockWriter memWriter(m_data, m_size);
+                    bx::WriterSeekerI* _writer = &memWriter;
+
+                    bx::write(_writer, magic);
+
+                    tc.m_flags = 0;
+                    tc.m_width = stbWidth;
+                    tc.m_height = stbHeight;
+                    tc.m_sides = 0;
+                    tc.m_depth = 0;
+                    tc.m_numMips = 1;
+                    tc.m_format = bgfx::TextureFormat::RGBA8;
+                    tc.m_cubeMap = false;
+
+                    bgfx::Memory* m_mem = (bgfx::Memory *)((uint8_t*)m_data + _writer->seek() + sizeof(tc));
+                    tc.m_mem = m_mem;
+                    bx::write(_writer, tc);
+
+                    imgMem.data = (uint8_t *)m_data + _writer->seek() + sizeof(imgMem);
+                    imgMem.size = imgSize;
+
+                    bx::write(_writer, imgMem);
+                    bx::write(_writer, rgbaData, imgMem.size);
+
+                    stbi_image_free(rgbaData);
+
+                    return true;
+                }
+            }
+
+            // If stb_image didn't work, assume it's a texture format that bgfx understands
+            // (e.g. DXT/PVR) and load it as-is.
             FILE* file = fopen(_path, "rb");
             if (NULL != file)
             {
