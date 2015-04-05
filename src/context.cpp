@@ -652,6 +652,7 @@ namespace cs
 
             if (m_data)
             {
+                m_size     = stbWidth*stbHeight*stbNumComponents;
                 m_numMips  = 0;
                 m_width    = (uint16_t)stbWidth;
                 m_height   = (uint16_t)stbHeight;
