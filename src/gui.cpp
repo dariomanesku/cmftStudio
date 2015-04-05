@@ -351,7 +351,8 @@ void guiInit()
     initFonts();
 
     // Init textures.
-    s_res.m_texSunIcon = cs::textureLoadMem(sunIconData, sunIconDataSize, BGFX_TEXTURE_U_CLAMP|BGFX_TEXTURE_V_CLAMP);
+    const bgfx::Memory* mem = bgfx::makeRef(sunIconData, sunIconDataSize);
+    s_res.m_texSunIcon = bgfx::createTexture(mem, BGFX_TEXTURE_U_CLAMP|BGFX_TEXTURE_V_CLAMP);
 }
 
 void guiDrawOverlay()

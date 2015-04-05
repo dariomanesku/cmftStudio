@@ -655,34 +655,6 @@ namespace cs
             return false;
         }
 
-        bool loadBgfxOnly(const char* _path, uint32_t _flags, uint8_t _skip, bgfx::TextureInfo* _info)
-        {
-            FILE* file = fopen(_path, "rb");
-            if (NULL != file)
-            {
-                uint32_t size = (uint32_t)dm::fsize(file);
-                const bgfx::Memory* mem = bgfx::alloc(size+1);
-
-                size_t read = fread(mem->data, 1, size, file);
-                mem->data[read] = '\0';
-                CS_CHECK(read == size, "Error reading file.");
-                BX_UNUSED(read);
-                fclose(file);
-
-                m_bgfxHandle = bgfx::createTexture(mem, _flags, _skip, _info);
-
-                return true;
-            }
-
-            return false;
-        }
-
-        void loadBgfxOnly(const void* _data, uint32_t _size, uint32_t _flags, uint8_t _skip, bgfx::TextureInfo* _info)
-        {
-            const bgfx::Memory* mem = bgfx::makeRef(_data, _size);
-            m_bgfxHandle = bgfx::createTexture(mem, _flags, _skip, _info);
-        }
-
         void read(dm::ReaderSeekerI* _reader, TextureHandle _handle = TextureHandle::invalid(), cs::StackAllocatorI* _stack = g_stackAlloc)
         {
             BX_UNUSED(_stack);
@@ -784,28 +756,6 @@ namespace cs
 
             return this->acquire(handle);
         }
-
-        bgfx::TextureHandle load(const char* _path, uint32_t _flags, uint8_t _skip, bgfx::TextureInfo* _info)
-        {
-            TextureImpl* texture = this->createObj();
-            texture->loadBgfxOnly(_path, _flags, _skip, _info);
-
-            const TextureHandle handle = this->getHandle(texture);
-            this->acquire(handle);
-
-            return texture->m_bgfxHandle;
-        }
-
-        bgfx::TextureHandle load(const void* _data, uint32_t _size, uint32_t _flags, uint8_t _skip, bgfx::TextureInfo* _info)
-        {
-            TextureImpl* texture = this->createObj();
-            texture->loadBgfxOnly(_data, _size, _flags, _skip, _info);
-
-            const TextureHandle handle = this->getHandle(texture);
-            this->acquire(handle);
-
-            return texture->m_bgfxHandle;
-        }
     };
     static TextureResourceManager* s_textures;
 
@@ -856,16 +806,6 @@ namespace cs
     TextureHandle textureLoad(const void* _data, uint32_t _size)
     {
         return s_textures->load(_data, _size);
-    }
-
-    bgfx::TextureHandle textureLoadPath(const char* _path, uint32_t _flags, uint8_t _skip, bgfx::TextureInfo* _info)
-    {
-        return s_textures->load(_path, _flags, _skip, _info);
-    }
-
-    bgfx::TextureHandle textureLoadMem(const void* _data, uint32_t _size, uint32_t _flags, uint8_t _skip, bgfx::TextureInfo* _info)
-    {
-        return s_textures->load(_data, _size, _flags, _skip, _info);
     }
 
     bgfx::TextureHandle textureGetBgfxHandle(cs::TextureHandle _handle)

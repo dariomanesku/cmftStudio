@@ -211,16 +211,6 @@ namespace cs
     cs::TextureHandle   textureBricksAo();
     cs::TextureHandle   textureLoad(const char* _path);
     cs::TextureHandle   textureLoad(const void* _data, uint32_t _size);
-    bgfx::TextureHandle textureLoadPath(const char* _path
-                                      , uint32_t _flags = BGFX_TEXTURE_NONE
-                                      , uint8_t _skip = 0
-                                      , bgfx::TextureInfo* _info = NULL
-                                      );
-    bgfx::TextureHandle textureLoadMem(const void* _data, uint32_t _size
-                                     , uint32_t _flags = BGFX_TEXTURE_NONE
-                                     , uint8_t _skip = 0
-                                     , bgfx::TextureInfo* _info = NULL
-                                     );
     bgfx::TextureHandle textureGetBgfxHandle(cs::TextureHandle _handle);
 
 
