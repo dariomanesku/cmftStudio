@@ -14,17 +14,17 @@
 #include "geometry/objtobin.h"
 #include "staticres.h"
 
+#include <bgfx_utils.h>        // loadProgram
+#include <common.h>            // DBG
+
 #include <dm/misc.h>           // DM_PATH_LEN, dm::fsize
 #include <dm/readerwriter.h>
 #include <dm/pi.h>
 
-#include <bgfx_utils.h>        // loadProgram
-#include <common.h>            // DBG
-
 #include <bx/fpumath.h>
 #include <bx/macros.h>         // BX_UNUSED
 
-#include "../../bgfx/3rdparty/stb/stb_image.c" //TODO
+#include <stb/stb_image.h>
 
 #ifndef CS_LOAD_SHADERS_FROM_DATA_SEGMENT
     #define CS_LOAD_SHADERS_FROM_DATA_SEGMENT 0
