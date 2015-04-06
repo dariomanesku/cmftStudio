@@ -9,6 +9,10 @@
 #include <stdio.h>
 #include <string.h>            // strcpy
 
+#define STB_IMAGE_STATIC
+#define STB_IMAGE_IMPLEMENTATION
+#include "common/stb_image.h"
+
 #include "common/timer.h"
 #include "geometry/loaders.h"
 #include "geometry/objtobin.h"
@@ -23,8 +27,6 @@
 
 #include <bx/fpumath.h>
 #include <bx/macros.h>         // BX_UNUSED
-
-#include <stb/stb_image.h>
 
 #ifndef CS_LOAD_SHADERS_FROM_DATA_SEGMENT
     #define CS_LOAD_SHADERS_FROM_DATA_SEGMENT 0
@@ -644,11 +646,11 @@ namespace cs
             const int reqNumComponents = 4;
             if (isFile)
             {
-                m_data = (uint8_t*)stbi_load(path, &stbWidth, &stbHeight, &stbNumComponents, reqNumComponents);
+                m_data = (uint8_t*)stb::stbi_load(path, &stbWidth, &stbHeight, &stbNumComponents, reqNumComponents);
             }
             else
             {
-                m_data = (uint8_t*)stbi_load_from_memory((stbi_uc*)data, (int)size, &stbWidth, &stbHeight, &stbNumComponents, reqNumComponents);
+                m_data = (uint8_t*)stb::stbi_load_from_memory((stb::stbi_uc*)data, (int)size, &stbWidth, &stbHeight, &stbNumComponents, reqNumComponents);
             }
 
             if (m_data)
