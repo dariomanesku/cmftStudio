@@ -639,20 +639,22 @@ namespace cs
 
             // Try loading the image through stb_image.
             //TODO stb allocator.
-
             int stbWidth, stbHeight, stbNumComponents;
+            // Passing reqNumComponents as 4 forces RGBA8 in m_data.
+            // After stbi_load, stbNumComponents will hold the actual # of components from the source image.
+            const int reqNumComponents = 4;
             if (isFile)
             {
-                m_data = (uint8_t*)stbi_load(path, &stbWidth, &stbHeight, &stbNumComponents, 4);
+                m_data = (uint8_t*)stbi_load(path, &stbWidth, &stbHeight, &stbNumComponents, reqNumComponents);
             }
             else
             {
-                m_data = (uint8_t*)stbi_load_from_memory((stbi_uc*)data, (int)size, &stbWidth, &stbHeight, &stbNumComponents, 4);
+                m_data = (uint8_t*)stbi_load_from_memory((stbi_uc*)data, (int)size, &stbWidth, &stbHeight, &stbNumComponents, reqNumComponents);
             }
 
             if (m_data)
             {
-                m_size     = stbWidth*stbHeight*stbNumComponents;
+                m_size     = stbWidth*stbHeight*reqNumComponents;
                 m_numMips  = 0;
                 m_width    = (uint16_t)stbWidth;
                 m_height   = (uint16_t)stbHeight;
