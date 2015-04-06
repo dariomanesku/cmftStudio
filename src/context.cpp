@@ -638,7 +638,6 @@ namespace cs
             }
 
             // Try loading the image through stb_image.
-            //TODO stb allocator.
             int stbWidth, stbHeight, stbNumComponents;
             // Passing reqNumComponents as 4 forces RGBA8 in m_data.
             // After stbi_load, stbNumComponents will hold the actual # of components from the source image.
