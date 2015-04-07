@@ -74,7 +74,9 @@ static bool loaderBgfxBin(Geometry& _geometry
                 bgfx::read(_reader, _geometry.m_decl);
                 const uint16_t stride = _geometry.m_decl.getStride();
 
-                bx::read(_reader, group->m_numVertices);
+                uint16_t numVertices;
+                bx::read(_reader, numVertices);
+                group->m_numVertices = numVertices;
 
                 group->m_vertexSize = group->m_numVertices*stride;
                 group->m_vertexData = BX_ALLOC(cs::g_mainAlloc, group->m_vertexSize);

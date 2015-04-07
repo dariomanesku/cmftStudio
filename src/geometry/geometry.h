@@ -42,7 +42,7 @@ struct Group
 
     void*    m_vertexData;
     uint32_t m_vertexSize;
-    uint16_t m_numVertices;
+    uint32_t m_numVertices;
 
     void*    m_indexData;
     uint32_t m_indexSize;
