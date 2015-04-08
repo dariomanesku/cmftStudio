@@ -656,7 +656,7 @@ namespace cs
             if (m_data)
             {
                 m_size     = stbWidth*stbHeight*reqNumComponents;
-                m_numMips  = 0;
+                m_numMips  = 1;
                 m_width    = (uint16_t)stbWidth;
                 m_height   = (uint16_t)stbHeight;
                 m_format   = bgfx::TextureFormat::RGBA8;
