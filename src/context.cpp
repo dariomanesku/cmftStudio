@@ -1266,8 +1266,9 @@ namespace cs
                 mem = bgfx::makeRef(group.m_vertexData, group.m_vertexSize);
                 m_bufferHandles[ii].m_vbh = bgfx::createVertexBuffer(mem, m_decl);
 
+                const uint8_t flags = (group.m_32bitIndexBuffer ? BGFX_BUFFER_32BIT : 0);
                 mem = bgfx::makeRef(group.m_indexData, group.m_indexSize);
-                m_bufferHandles[ii].m_ibh = bgfx::createIndexBuffer(mem);
+                m_bufferHandles[ii].m_ibh = bgfx::createIndexBuffer(mem, flags);
             }
         }
 

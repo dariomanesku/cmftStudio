@@ -94,7 +94,8 @@ static bool loaderBgfxBin(Geometry& _geometry
 
                 bx::read(_reader, group->m_numIndices);
 
-                group->m_indexSize = group->m_numIndices*2;
+                group->m_32bitIndexBuffer = false;
+                group->m_indexSize = group->m_numIndices*sizeof(uint16_t);
                 group->m_indexData = BX_ALLOC(cs::g_mainAlloc, group->m_indexSize);
                 bx::read(_reader, group->m_indexData, group->m_indexSize);
             }

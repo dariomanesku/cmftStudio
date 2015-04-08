@@ -48,6 +48,8 @@ struct Group
     uint32_t m_indexSize;
     uint32_t m_numIndices;
 
+    bool m_32bitIndexBuffer;
+
     Sphere m_sphere;
     Aabb   m_aabb;
     Obb    m_obb;
