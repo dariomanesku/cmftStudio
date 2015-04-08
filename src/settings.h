@@ -40,9 +40,9 @@ struct SpheresSceneState
         m_rot[0]           = 0.0f;
         m_rot[1]           = 0.0f;
         m_rot[2]           = 0.0f;
-        m_color0[0]        = 0.37f;
-        m_color0[1]        = 0.03f;
-        m_color0[2]        = 0.03f;
+        m_color0[0]        = 0.8f;
+        m_color0[1]        = 0.8f;
+        m_color0[2]        = 0.8f;
         m_color1[0]        = 0.03f;
         m_color1[1]        = 0.03f;
         m_color1[2]        = 0.03f;
