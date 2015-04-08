@@ -2122,7 +2122,7 @@ public:
         for (uint16_t ii = 0, end = m_textureList.count(); ii < end; ++ii)
         {
             const cs::TextureHandle handle = m_textureList[ii];
-            cs::createGpuBuffers(handle, BGFX_TEXTURE_U_CLAMP|BGFX_TEXTURE_V_CLAMP); // this has to be executed here on the main thread.
+            cs::createGpuBuffers(handle); // this has to be executed here on the main thread.
         }
         for (uint16_t ii = 0, end = m_meshInstList.count(); ii < end; ++ii)
         {
