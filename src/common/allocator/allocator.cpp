@@ -17,7 +17,7 @@
 
 #include <dm/misc.h>                     // DM_MEGABYTES
 #include <dm/datastructures/array.h>     // dm::Array
-#include <dm/datastructures/objArray.h>  // dm::ObjArray
+#include <dm/datastructures/objarray.h>  // dm::ObjArray
 
 #include <bx/thread.h>                   // bx::Mutex
 #include <bx/uint32_t.h>                 // bx::uint32_cntlz
@@ -585,19 +585,19 @@ namespace cs
                     }
 
                     void* ptr = m_allocsData;
-                    ptr = m_allocs[ 0].init(Num0,  ptr, NULL);
-                    ptr = m_allocs[ 1].init(Num1,  ptr, NULL);
-                    ptr = m_allocs[ 2].init(Num2,  ptr, NULL);
-                    ptr = m_allocs[ 3].init(Num3,  ptr, NULL);
-                    ptr = m_allocs[ 4].init(Num4,  ptr, NULL);
-                    ptr = m_allocs[ 5].init(Num5,  ptr, NULL);
-                    ptr = m_allocs[ 6].init(Num6,  ptr, NULL);
-                    ptr = m_allocs[ 7].init(Num7,  ptr, NULL);
-                    ptr = m_allocs[ 8].init(Num8,  ptr, NULL);
-                    ptr = m_allocs[ 9].init(Num9,  ptr, NULL);
-                    ptr = m_allocs[10].init(Num10, ptr, NULL);
-                    ptr = m_allocs[11].init(Num11, ptr, NULL);
-                    ptr = m_allocs[12].init(Num12, ptr, NULL);
+                    ptr = m_allocs[ 0].init(Num0,  ptr);
+                    ptr = m_allocs[ 1].init(Num1,  ptr);
+                    ptr = m_allocs[ 2].init(Num2,  ptr);
+                    ptr = m_allocs[ 3].init(Num3,  ptr);
+                    ptr = m_allocs[ 4].init(Num4,  ptr);
+                    ptr = m_allocs[ 5].init(Num5,  ptr);
+                    ptr = m_allocs[ 6].init(Num6,  ptr);
+                    ptr = m_allocs[ 7].init(Num7,  ptr);
+                    ptr = m_allocs[ 8].init(Num8,  ptr);
+                    ptr = m_allocs[ 9].init(Num9,  ptr);
+                    ptr = m_allocs[10].init(Num10, ptr);
+                    ptr = m_allocs[11].init(Num11, ptr);
+                    ptr = m_allocs[12].init(Num12, ptr);
 
                     m_begin[0] = (uint8_t*)m_mem;
                     for (uint8_t ii = 1; ii < Count; ++ii)
@@ -760,7 +760,7 @@ namespace cs
                     m_end = _heap;
                     m_stackPtr = _stackPtr;
 
-                    m_ptrs.init(MaxAllocations, m_ptrsData, NULL);
+                    m_ptrs.init(MaxAllocations, m_ptrsData);
 
                     // Add an empty chunk at the beginning.
                     Pointer* mem = m_ptrs.addNew();
