@@ -1335,7 +1335,7 @@ private:
             else if (LeftScrollAreaState::CreateMaterial == m_widgets.m_leftScrollArea.m_action)
             {
                 // Create a plain material.
-                const cs::MaterialHandle mat = cs::materialCreatePlain();
+                const cs::MaterialHandle mat = cs::materialCreateShiny();
                 cs::setName(mat, "Unnamed");
 
                 // Add to the list.
