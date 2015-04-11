@@ -40,13 +40,6 @@
 
 #define CS_ALLOC_PRINT_FILELINE 0
 
-// Bgfx.
-//-----
-
-#define BGFX_CONFIG_RENDERER_DIRECT3D9  1
-#define BGFX_CONFIG_RENDERER_DIRECT3D11 1
-#define BGFX_CONFIG_RENDERER_OPENGL     21
-
 // Resources.
 //-----
 
