@@ -121,30 +121,6 @@ osx-release64: _projects/gmake-osx
 	make -R -C _projects/gmake-osx config=release64
 osx: osx-debug32 osx-release32 osx-debug64 osx-release64
 
-#_projects/gmake-linux-clang:
-#	$(GENIE) --file=scripts/main.lua --clang=linux-clang gmake
-#linux-clang-debug32: _projects/gmake-linux-clang
-#	make -R -C _projects/gmake-linux-clang config=debug32
-#linux-clang-release32: _projects/gmake-linux-clang
-#	make -R -C _projects/gmake-linux-clang config=release32
-#linux-clang-debug64: _projects/gmake-linux-clang
-#	make -R -C _projects/gmake-linux-clang config=debug64
-#linux-clang-release64: _projects/gmake-linux-clang
-#	make -R -C _projects/gmake-linux-clang config=release64
-#linux-clang: linux-debug32 linux-release32 linux-debug64 linux-release64
-
-#_projects/gmake-mingw-clang:
-#	$(GENIE) --file=scripts/main.lua --gcc=mingw-clang gmake
-#mingw-clang-debug32: _projects/gmake-mingw-clang
-#	make -R -C _projects/gmake-mingw-clang config=debug32
-#mingw-clang-release32: _projects/gmake-mingw-clang
-#	make -R -C _projects/gmake-mingw-clang config=release32
-#mingw-clang-debug64: _projects/gmake-mingw-clang
-#	make -R -C _projects/gmake-mingw-clang config=debug64
-#mingw-clang-release64: _projects/gmake-mingw-clang
-#	make -R -C _projects/gmake-mingw-clang config=release64
-#mingw: mingw-clang-debug32 mingw-clang-release32 mingw-clang-debug64 mingw-clang-release64
-
 _projects/gmake-mingw-gcc:
 	$(GENIE) --file=scripts/main.lua --gcc=mingw-gcc gmake
 mingw-gcc-debug32: _projects/gmake-mingw-gcc
