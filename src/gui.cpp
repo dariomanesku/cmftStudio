@@ -607,7 +607,7 @@ void imguiMeshBrowserWidget(int32_t _x
             imguiBool(extLabel, _state.m_extFlag[ii]);
         }
     }
-    imguiSeparator();
+    imguiSeparator(8);
     imguiUnindent();
 
     imguiLabelBorder("Browse:");
