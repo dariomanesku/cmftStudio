@@ -8,27 +8,25 @@
 #include "allocator.h"
 #include "allocator_p.h"
 
-#include <stdio.h>                       // fprintf
-#include <emmintrin.h>                   // __m128i
+#include <stdio.h>                      // fprintf
+#include <emmintrin.h>                  // __m128i
 
-#include "stack.h"                       // DynamicStack, FreeStack
+#include "stack.h"                      // DynamicStack, FreeStack
 
-#include "../globals.h"                  // g_frameNum
-#include "../config.h"                   // g_config.m_memorySize
-#include "../datastructures.h"           // HandleAllocT
-#include "../tinystl.h"                  // cs::TinyStlAllocator
+#include "../globals.h"                 // g_frameNum
+#include "../config.h"                  // g_config.m_memorySize
+#include "../datastructures.h"          // HandleAllocT
+#include "../tinystl.h"                 // cs::TinyStlAllocator
 
-#include <dm/misc.h>                     // DM_MEGABYTES
-#include <dm/datastructures/array.h>     // dm::Array
-#include <dm/datastructures/objarray.h>  // dm::ObjArray
+#include <dm/misc.h>                    // DM_MEGABYTES
+#include <dm/datastructures/array.h>    // dm::Array
+#include <dm/datastructures/objarray.h> // dm::ObjArray
 
-#include <bx/thread.h>                   // bx::Mutex
-#include <bx/uint32_t.h>                 // bx::uint32_cntlz
+#include <bx/thread.h>                  // bx::Mutex
+#include <bx/uint32_t.h>                // bx::uint32_cntlz
 
 namespace cs
 {
-    enum { StaticStorageSize = DM_MEGABYTES(32) };
-
     #if !CS_USE_INTERNAL_ALLOCATOR
         struct Memory
         {
@@ -111,7 +109,7 @@ namespace cs
 
                 // Init memory regions.
                 void* ptr = m_memory;
-                ptr = m_staticStorage.init(ptr, StaticStorageSize);
+                ptr = m_staticStorage.init(ptr, DM_STATIC_STORAGE_SIZE);
                 ptr = m_segregatedLists.init(ptr, SegregatedLists::DataSize);
 
                 void* end = (void*)((uint8_t*)m_memory + m_size);
@@ -496,62 +494,32 @@ namespace cs
 
             struct SegregatedLists
             {
-                #if (CS_OVERRIDE_TINYSTL_ALLOCATOR &&  CS_OBJTOBIN_USES_TINYSTL) \
-                ||  (CS_OVERRIDE_NEWDELETE         && !CS_OBJTOBIN_USES_TINYSTL)
-                #   define NUM64 512
-                #else
-                #   define NUM64 128
-                #endif
-
                 enum
                 {
-                    Size0  =                16, Num0  =    16*1024,
-                    Size1  =                32, Num1  =    16*1024,
-                    Size2  =                64, Num2  = NUM64*1024, // Notice: objToBin() uses over 100k of these for std containers.
-                    Size3  =               256, Num3  =    16*1024,
-                    Size4  =               512, Num4  =     8*1024,
-                    Size5  = DM_KILOBYTES(  1), Num5  =     8*1024,
-                    Size6  = DM_KILOBYTES( 16), Num6  =         64,
-                    Size7  = DM_KILOBYTES( 64), Num7  =         64,
-                    Size8  = DM_KILOBYTES(256), Num8  =         32,
-                    Size9  = DM_KILOBYTES(512), Num9  =         32,
-                    Size10 =   DM_MEGABYTES(1), Num10 =          8,
-                    Size11 =   DM_MEGABYTES(4), Num11 =          8,
-                    Size12 =   DM_MEGABYTES(8), Num12 =          8,
+                    #define DM_SMALL_ALLOC_DEF(_idx, _size, _num) \
+                        Size ## _idx = _size, Num ## _idx = _num,
+                    #include "allocator_config.h"
 
-                    Count = 13,
-                    BiggestSize = Size12,
+                    DataSize = 0
+                    #define DM_SMALL_ALLOC_DEF(_idx, _size, _num) \
+                        + Size ## _idx * Num ## _idx
+                    #include "allocator_config.h"
+                        , // DataSize.
+
+                    ListsSize = 0
+                    #define DM_SIZE_FOR(_num) ((_num>>6)+1)*sizeof(uint64_t)
+                    #define DM_SMALL_ALLOC_DEF(_idx, _size, _num) \
+                        + DM_SIZE_FOR(Num ## _idx)
+                    #include "allocator_config.h"
+                    #undef DM_SIZE_FOR
+                        , // ListsSize.
+
+                    #define DM_SMALL_ALLOC_CONFIG
+                    #include "allocator_config.h"
+                    Count       = DM_SMALL_ALLOC_COUNT,
+                    BiggestSize = DM_SMALL_ALLOC_BIGGEST_SIZE,
                     Steps = dm::Log<2,BiggestSize>::Value + 1,
 
-                    DataSize = Size0*Num0
-                             + Size1*Num1
-                             + Size2*Num2
-                             + Size3*Num3
-                             + Size4*Num4
-                             + Size5*Num5
-                             + Size6*Num6
-                             + Size7*Num7
-                             + Size8*Num8
-                             + Size9*Num9
-                             + Size10*Num10
-                             + Size11*Num11
-                             + Size12*Num12,
-
-                    #define CS_SIZE_FOR(_num) ((_num>>6)+1)*sizeof(uint64_t)
-                    ListsSize = CS_SIZE_FOR(Num0)
-                              + CS_SIZE_FOR(Num1)
-                              + CS_SIZE_FOR(Num2)
-                              + CS_SIZE_FOR(Num3)
-                              + CS_SIZE_FOR(Num4)
-                              + CS_SIZE_FOR(Num5)
-                              + CS_SIZE_FOR(Num6)
-                              + CS_SIZE_FOR(Num7)
-                              + CS_SIZE_FOR(Num8)
-                              + CS_SIZE_FOR(Num9)
-                              + CS_SIZE_FOR(Num10)
-                              + CS_SIZE_FOR(Num11)
-                              + CS_SIZE_FOR(Num12),
-                    #undef CS_SIZE_FOR
                 };
 
                 SegregatedLists()
@@ -578,19 +546,9 @@ namespace cs
                            );
                     CS_PRINT_MEM_STATS("Init: Using %llu.%lluMB for segregated lists", dm::U_UMB(DataSize));
 
-                    m_sizes[ 0] = Size0;
-                    m_sizes[ 1] = Size1;
-                    m_sizes[ 2] = Size2;
-                    m_sizes[ 3] = Size3;
-                    m_sizes[ 4] = Size4;
-                    m_sizes[ 5] = Size5;
-                    m_sizes[ 6] = Size6;
-                    m_sizes[ 7] = Size7;
-                    m_sizes[ 8] = Size8;
-                    m_sizes[ 9] = Size9;
-                    m_sizes[10] = Size10;
-                    m_sizes[11] = Size11;
-                    m_sizes[12] = Size12;
+                    #define DM_SMALL_ALLOC_DEF(_idx, _size, _num) \
+                        m_sizes[_idx] = Size ## _idx;
+                    #include "allocator_config.h"
                     CS_CHECK(m_sizes[Count-1] == BiggestSize, "Error! 'BiggestSize' is not well defined");
 
                     for (uint8_t idx = 0, ii = 0; ii < Steps; ++ii)
@@ -606,19 +564,9 @@ namespace cs
                     }
 
                     void* ptr = m_allocsData;
-                    ptr = m_allocs[ 0].init(Num0,  ptr);
-                    ptr = m_allocs[ 1].init(Num1,  ptr);
-                    ptr = m_allocs[ 2].init(Num2,  ptr);
-                    ptr = m_allocs[ 3].init(Num3,  ptr);
-                    ptr = m_allocs[ 4].init(Num4,  ptr);
-                    ptr = m_allocs[ 5].init(Num5,  ptr);
-                    ptr = m_allocs[ 6].init(Num6,  ptr);
-                    ptr = m_allocs[ 7].init(Num7,  ptr);
-                    ptr = m_allocs[ 8].init(Num8,  ptr);
-                    ptr = m_allocs[ 9].init(Num9,  ptr);
-                    ptr = m_allocs[10].init(Num10, ptr);
-                    ptr = m_allocs[11].init(Num11, ptr);
-                    ptr = m_allocs[12].init(Num12, ptr);
+                    #define DM_SMALL_ALLOC_DEF(_idx, _size, _num) \
+                        ptr = m_allocs[_idx].init(Num ## _idx, ptr);
+                    #include "allocator_config.h"
 
                     m_begin[0] = (uint8_t*)m_mem;
                     for (uint8_t ii = 1; ii < Count; ++ii)
@@ -760,6 +708,8 @@ namespace cs
 
             struct Heap
             {
+                #define DM_HEAP_ARRAY_IMPL (DM_ALLOCATOR_IMPL_ARRAY == DM_HEAP_ARRAY_IMPL)
+
                 enum
                 {
                     HeaderSize = sizeof(uint64_t),
@@ -768,40 +718,26 @@ namespace cs
 
                     MinimalSlotSize = HeaderFooterSize + 64,
 
-                    SmallestRegion    = DM_MEGABYTES(2),
+                    #define DM_ALLOC_CONFIG
+                    #include "allocator_config.h"
+                    MaxBigFreeSlots   = DM_ALLOC_MAX_BIG_FREE_SLOTS,
+                    NumRegions        = DM_ALLOC_NUM_REGIONS,
+                    NumSubRegions     = DM_ALLOC_NUM_SUB_REGIONS,
+                    SmallestRegion    = DM_ALLOC_SMALLEST_REGION,
+                    BiggestRegion     = DM_ALLOC_SMALLEST_REGION<<(DM_ALLOC_NUM_REGIONS-1),
                     SmallestRegionPwr = dm::Log<2,(SmallestRegion>>20ul)>::Value,
 
-                    NumSlots0 = 2048, // for region:    2MB
-                    NumSlots1 = 2048, // for region:    4MB
-                    NumSlots2 = 1024, // for region:    8MB
-                    NumSlots3 = 1024, // for region:   16MB
-                    NumSlots4 = 1024, // for region:   32MB
-                    NumSlots5 = 512,  // for region:   64MB
-                    NumSlots6 = 256,  // for region:  128MB
-                    NumSlots7 = 128,  // for region:  256MB
-                    NumSlots8 = 64,   // for region:  512MB
-                    NumSlots9 = 32,   // for region: 1024MB
+                    #define DM_ALLOC_DEF(_regionIdx, _num) \
+                        NumSlots ## _regionIdx = _num,
+                    #include "allocator_config.h"
 
-                    BiggestRegion    = DM_MEGABYTES(1024),
-                    BiggestRegionPwr = dm::Log<2,(BiggestRegion>>20ul)>::Value,
-
-                    MaxBigFreeSlots = 32,
-
-                    NumRegions    = 10, /* == BiggestRegionPwr - SmallestRegionPwr*/
-                    NumSubRegions = 16,
-
-                    #if !CS_ALLOCAOTR_IMPL
-                        TotalSlotCount = (NumSlots0
-                                       +  NumSlots1
-                                       +  NumSlots2
-                                       +  NumSlots3
-                                       +  NumSlots4
-                                       +  NumSlots5
-                                       +  NumSlots6
-                                       +  NumSlots7
-                                       +  NumSlots8
-                                       +  NumSlots9) * NumSubRegions,
-                    #endif //!CS_ALLOCAOTR_IMPL
+                    #if !DM_HEAP_ARRAY_IMPL
+                        TotalSlotCount = (0
+                        #define DM_ALLOC_DEF(_regionIdx, _num) \
+                            + NumSlots ## _regionIdx
+                        #include "allocator_config.h"
+                            ) * NumSubRegions, // TotalSlotCount.
+                    #endif //!DM_HEAP_ARRAY_IMPL
                 };
 
                 void init(uint8_t** _stackPtr, uint8_t** _heap)
@@ -820,77 +756,51 @@ namespace cs
                     memset(m_bigFreeSlotsPtr,  0, sizeof(m_bigFreeSlotsPtr));
 
                     memset(m_regionInfo, 0xff, sizeof(m_regionInfo));
+                    memset(m_freeSlotsCount, 0, sizeof(m_freeSlotsCount));
 
-                    #if CS_ALLOCAOTR_IMPL
-                        m_freeSlotsMax[0] = NumSlots0;
-                        m_freeSlotsMax[1] = NumSlots1;
-                        m_freeSlotsMax[2] = NumSlots2;
-                        m_freeSlotsMax[3] = NumSlots3;
-                        m_freeSlotsMax[4] = NumSlots4;
-                        m_freeSlotsMax[5] = NumSlots5;
-                        m_freeSlotsMax[6] = NumSlots6;
-                        m_freeSlotsMax[7] = NumSlots7;
-                        m_freeSlotsMax[8] = NumSlots8;
-                        m_freeSlotsMax[9] = NumSlots9;
+                    #if DM_HEAP_ARRAY_IMPL
+                        #define DM_ALLOC_DEF(_regionIdx, _num) \
+                            m_freeSlotsMax[_regionIdx] = NumSlots ## _regionIdx;
+                        #include "allocator_config.h"
 
-                        memset(m_freeSlotsCount, 0, sizeof(m_freeSlotsCount));
+                        // Free slots size.
 
                         memset(m_freeSlotsSize,  0, sizeof(m_freeSlotsSize));
-                        memset(m_freeSlotsSize0, 0, sizeof(m_freeSlotsSize0));
-                        memset(m_freeSlotsSize1, 0, sizeof(m_freeSlotsSize1));
-                        memset(m_freeSlotsSize2, 0, sizeof(m_freeSlotsSize2));
-                        memset(m_freeSlotsSize3, 0, sizeof(m_freeSlotsSize3));
-                        memset(m_freeSlotsSize4, 0, sizeof(m_freeSlotsSize4));
-                        memset(m_freeSlotsSize5, 0, sizeof(m_freeSlotsSize5));
-                        memset(m_freeSlotsSize6, 0, sizeof(m_freeSlotsSize6));
-                        memset(m_freeSlotsSize7, 0, sizeof(m_freeSlotsSize7));
-                        memset(m_freeSlotsSize8, 0, sizeof(m_freeSlotsSize8));
-                        memset(m_freeSlotsSize9, 0, sizeof(m_freeSlotsSize9));
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[0*NumSubRegions+ii] = m_freeSlotsSize0[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[1*NumSubRegions+ii] = m_freeSlotsSize1[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[2*NumSubRegions+ii] = m_freeSlotsSize2[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[3*NumSubRegions+ii] = m_freeSlotsSize3[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[4*NumSubRegions+ii] = m_freeSlotsSize4[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[5*NumSubRegions+ii] = m_freeSlotsSize5[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[6*NumSubRegions+ii] = m_freeSlotsSize6[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[7*NumSubRegions+ii] = m_freeSlotsSize7[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[8*NumSubRegions+ii] = m_freeSlotsSize8[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[9*NumSubRegions+ii] = m_freeSlotsSize9[ii]; }
 
-                        memset(m_freeSlotsPtr,  0, sizeof(m_freeSlotsPtr));
-                        memset(m_freeSlotsPtr0, 0, sizeof(m_freeSlotsPtr0));
-                        memset(m_freeSlotsPtr1, 0, sizeof(m_freeSlotsPtr1));
-                        memset(m_freeSlotsPtr2, 0, sizeof(m_freeSlotsPtr2));
-                        memset(m_freeSlotsPtr3, 0, sizeof(m_freeSlotsPtr3));
-                        memset(m_freeSlotsPtr4, 0, sizeof(m_freeSlotsPtr4));
-                        memset(m_freeSlotsPtr5, 0, sizeof(m_freeSlotsPtr5));
-                        memset(m_freeSlotsPtr6, 0, sizeof(m_freeSlotsPtr6));
-                        memset(m_freeSlotsPtr7, 0, sizeof(m_freeSlotsPtr7));
-                        memset(m_freeSlotsPtr8, 0, sizeof(m_freeSlotsPtr8));
-                        memset(m_freeSlotsPtr9, 0, sizeof(m_freeSlotsPtr9));
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[0*NumSubRegions+ii] = m_freeSlotsPtr0[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[1*NumSubRegions+ii] = m_freeSlotsPtr1[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[2*NumSubRegions+ii] = m_freeSlotsPtr2[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[3*NumSubRegions+ii] = m_freeSlotsPtr3[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[4*NumSubRegions+ii] = m_freeSlotsPtr4[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[5*NumSubRegions+ii] = m_freeSlotsPtr5[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[6*NumSubRegions+ii] = m_freeSlotsPtr6[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[7*NumSubRegions+ii] = m_freeSlotsPtr7[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[8*NumSubRegions+ii] = m_freeSlotsPtr8[ii]; }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[9*NumSubRegions+ii] = m_freeSlotsPtr9[ii]; }
+                        #define DM_ALLOC_DEF(_regionIdx, _num) \
+                            memset(m_freeSlotsSize ## _regionIdx, 0, sizeof(m_freeSlotsSize ## _regionIdx));
+                        #include "allocator_config.h"
+
+                        #define DM_ALLOC_DEF(_regionIdx, _num)                                                        \
+                            for (uint32_t ii = 0; ii < NumSubRegions; ++ii)                                           \
+                            {                                                                                         \
+                                m_freeSlotsSize[_regionIdx*NumSubRegions+ii] = m_freeSlotsSize ## _regionIdx ## [ii]; \
+                            }
+                        #include "allocator_config.h"
+
+                        // Free slots ptr.
+
+                        memset(m_freeSlotsPtr,   0, sizeof(m_freeSlotsPtr));
+
+                        #define DM_ALLOC_DEF(_regionIdx, _num) \
+                            memset(m_freeSlotsPtr ## _regionIdx, 0, sizeof(m_freeSlotsPtr ## _regionIdx));
+                        #include "allocator_config.h"
+
+                        #define DM_ALLOC_DEF(_regionIdx, _num)                                                      \
+                            for (uint32_t ii = 0; ii < NumSubRegions; ++ii)                                         \
+                            {                                                                                       \
+                                m_freeSlotsPtr[_regionIdx*NumSubRegions+ii] = m_freeSlotsPtr ## _regionIdx ## [ii]; \
+                            }
+                        #include "allocator_config.h"
                     #else
                         void* ptr = (void*)m_freeSlotsData;
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[0*NumSubRegions+ii].init(NumSlots0, ptr); }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[1*NumSubRegions+ii].init(NumSlots1, ptr); }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[2*NumSubRegions+ii].init(NumSlots2, ptr); }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[3*NumSubRegions+ii].init(NumSlots3, ptr); }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[4*NumSubRegions+ii].init(NumSlots4, ptr); }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[5*NumSubRegions+ii].init(NumSlots5, ptr); }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[6*NumSubRegions+ii].init(NumSlots6, ptr); }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[7*NumSubRegions+ii].init(NumSlots7, ptr); }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[8*NumSubRegions+ii].init(NumSlots8, ptr); }
-                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[9*NumSubRegions+ii].init(NumSlots9, ptr); }
-                    #endif //CS_ALLOCAOTR_IMPL
+                        #define DM_ALLOC_DEF(_regionIdx, _num)                                                    \
+                            for (uint32_t ii = 0; ii < NumSubRegions; ++ii)                                       \
+                            {                                                                                     \
+                                ptr = m_freeSlots[_regionIdx*NumSubRegions+ii].init(NumSlots ## _regionIdx, ptr); \
+                            }
+                        #include "allocator_config.h"
+                    #endif //DM_HEAP_ARRAY_IMPL
                 }
 
                 uint16_t getRegion(uint16_t _slotGroup)
@@ -1030,7 +940,7 @@ namespace cs
 
                     const uint16_t group = getSlotGroup(_size);
 
-                    #if CS_ALLOCAOTR_IMPL
+                    #if DM_HEAP_ARRAY_IMPL
                         const uint16_t count = m_freeSlotsCount[group];
                         const uint16_t max   = m_freeSlotsMax[group/NumRegions];
                         //TODO: Print warning if count >= max.
@@ -1060,7 +970,7 @@ namespace cs
                             const uint16_t handle = UINT16_MAX;
                             writeHeaderFooter(_ptr, (uint64_t)_size, group, handle);
                         }
-                    #endif //CS_ALLOCAOTR_IMPL
+                    #endif //DM_HEAP_ARRAY_IMPL
                 }
 
                 void addBigFreeSpace(void* _ptr, uint64_t _size)
@@ -1089,13 +999,13 @@ namespace cs
 
                 void removeFreeSlot(uint32_t _group, uint32_t _idx)
                 {
-                    #if CS_ALLOCAOTR_IMPL
+                    #if DM_HEAP_ARRAY_IMPL
                         const uint32_t last = --m_freeSlotsCount[_group];
                         m_freeSlotsSize[_group][_idx] = m_freeSlotsSize[_group][last];
                         m_freeSlotsPtr [_group][_idx] = m_freeSlotsPtr [_group][last];
                     #else
                         m_freeSlots[_group].remove(_idx);
-                    #endif //CS_ALLOCAOTR_IMPL
+                    #endif //DM_HEAP_ARRAY_IMPL
 
                     unregisterSlotGroup(uint16_t(_group));
                 }
@@ -1107,7 +1017,7 @@ namespace cs
                     m_bigFreeSlotsPtr [_idx] = m_bigFreeSlotsPtr [last];
                 }
 
-                #if CS_ALLOCAOTR_IMPL
+                #if DM_HEAP_ARRAY_IMPL
                     bool removeFreeSpaceRef(void* _ptr, uint32_t _size)
                     {
                         uint16_t group = getSlotGroup(_size);
@@ -1181,7 +1091,7 @@ namespace cs
 
                         return false;
                     }
-                #endif //CS_ALLOCAOTR_IMPL
+                #endif //DM_HEAP_ARRAY_IMPL
 
 
                 bool removeBigFreeSpaceRef(void* _ptr)
@@ -1236,7 +1146,7 @@ namespace cs
                     return removeBigFreeSpaceSSE(_ptr);
                 }
 
-                #if CS_ALLOCAOTR_IMPL
+                #if DM_HEAP_ARRAY_IMPL
                 #   define DM_UsedMask  0x8000000000000000UL
                 #   define DM_UsedShift 63UL
                 #   define DM_SizeMask  0x7fffffffffffffffUL
@@ -1250,7 +1160,7 @@ namespace cs
                 #   define DM_GroupShift  36UL
                 #   define DM_SizeMask    0x0000000fffffffffUL
                 #   define DM_SizeShift   0UL
-                #endif //CS_ALLOCAOTR_IMPL
+                #endif //DM_HEAP_ARRAY_IMPL
 
                 uint64_t packHeader(bool _used, uint64_t _size) const
                 {
@@ -1259,7 +1169,7 @@ namespace cs
                          ;
                 }
 
-                #if !CS_ALLOCAOTR_IMPL
+                #if !DM_HEAP_ARRAY_IMPL
                     uint64_t packHeader(bool _used, uint16_t _group, uint16_t _handle, uint64_t _size) const
                     {
                         return ((uint64_t(_size)<<DM_SizeShift)&DM_SizeMask)
@@ -1268,14 +1178,14 @@ namespace cs
                              | ((uint64_t(_used)<<DM_UsedShift)&DM_UsedMask)
                              ;
                     }
-                #endif //CS_ALLOCAOTR_IMPL
+                #endif //DM_HEAP_ARRAY_IMPL
 
                 bool unpackUsed(uint64_t _header) const
                 {
                     return DM_BOOL((_header&DM_UsedMask)>>DM_UsedShift);
                 }
 
-                #if !CS_ALLOCAOTR_IMPL
+                #if !DM_HEAP_ARRAY_IMPL
                     uint16_t unpackHandle(uint64_t _header) const
                     {
                         return uint16_t((_header&DM_HandleMask)>>DM_HandleShift);
@@ -1285,7 +1195,7 @@ namespace cs
                     {
                         return uint16_t((_header&DM_GroupMask)>>DM_GroupShift);
                     }
-                #endif //CS_ALLOCAOTR_IMPL
+                #endif //DM_HEAP_ARRAY_IMPL
 
                 uint64_t unpackSize(uint64_t _header) const
                 {
@@ -1308,7 +1218,7 @@ namespace cs
                     return data;
                 }
 
-                #if !CS_ALLOCAOTR_IMPL
+                #if !DM_HEAP_ARRAY_IMPL
                     void* writeHeaderFooter(const void* _begin, uint64_t _totalSize, uint16_t _group, uint16_t _handle)
                     {
                         uint8_t* end = (uint8_t*)_begin+_totalSize;
@@ -1324,7 +1234,7 @@ namespace cs
 
                         return data;
                     }
-                #endif //CS_ALLOCAOTR_IMPL
+                #endif //DM_HEAP_ARRAY_IMPL
 
                 bool isFree(uint64_t _header)
                 {
@@ -1351,11 +1261,11 @@ namespace cs
 
                 void* consumeFreeSpace(uint32_t _group, uint32_t _idx, uint32_t _slotSize, uint32_t _consume)
                 {
-                    #if CS_ALLOCAOTR_IMPL
+                    #if DM_HEAP_ARRAY_IMPL
                         void* beg = m_freeSlotsPtr[_group][_idx];
                     #else
                         void* beg = m_freeSlots[_group][_idx].m_ptr;
-                    #endif //CS_ALLOCAOTR_IMPL
+                    #endif //DM_HEAP_ARRAY_IMPL
                     void* ptr;
 
                     const uint32_t remainingSize = _slotSize - _consume;
@@ -1428,7 +1338,7 @@ namespace cs
                         uint16_t group = getSlotGroup(uint32_t(totalSize));
                         do
                         {
-                            #if CS_ALLOCAOTR_IMPL
+                            #if DM_HEAP_ARRAY_IMPL
                                 const uint16_t count = m_freeSlotsCount[group];
                                 const __m128i totalSizeSplat = _mm_set1_epi32(uint32_t(totalSize));
 
@@ -1470,7 +1380,7 @@ namespace cs
                                     }
 
                                 }
-                            #endif //CS_ALLOCAOTR_IMPL
+                            #endif //DM_HEAP_ARRAY_IMPL
 
                         } while (UINT16_MAX != (group = nextSlotGroup(group)));
                     }
@@ -1556,13 +1466,13 @@ namespace cs
                             {
                                 if (rightTotalSize <= BiggestRegion)
                                 {
-                                    #if CS_ALLOCAOTR_IMPL
+                                    #if DM_HEAP_ARRAY_IMPL
                                         removeFreeSpace(rightBeg, uint32_t(rightTotalSize));
                                     #else
                                         const uint16_t group  = unpackGroup(rightUsedSize);
                                         const uint16_t handle = unpackHandle(rightUsedSize);
                                         removeFreeSpace(rightBeg, uint32_t(rightTotalSize), group, handle);
-                                    #endif //CS_ALLOCAOTR_IMPL
+                                    #endif //DM_HEAP_ARRAY_IMPL
                                 }
                                 else
                                 {
@@ -1616,13 +1526,13 @@ namespace cs
 
                         if (rightTotalSize <= BiggestRegion)
                         {
-                            #if CS_ALLOCAOTR_IMPL
+                            #if DM_HEAP_ARRAY_IMPL
                                 removeFreeSpace(rightBeg, uint32_t(rightTotalSize));
                             #else
                                 const uint16_t group  = unpackGroup(rightUsedSize);
                                 const uint16_t handle = unpackHandle(rightUsedSize);
                                 removeFreeSpace(rightBeg, uint32_t(rightTotalSize), group, handle);
-                            #endif //CS_ALLOCAOTR_IMPL
+                            #endif //DM_HEAP_ARRAY_IMPL
                         }
                         else
                         {
@@ -1654,13 +1564,13 @@ namespace cs
                             void* leftBeg = (uint8_t*)beg - leftTotalSize;
                             if (leftTotalSize <= BiggestRegion)
                             {
-                                #if CS_ALLOCAOTR_IMPL
+                                #if DM_HEAP_ARRAY_IMPL
                                     removeFreeSpace(leftBeg, uint32_t(leftTotalSize));
                                 #else
                                     const uint16_t group  = unpackGroup(leftUsedSize);
                                     const uint16_t handle = unpackHandle(leftUsedSize);
                                     removeFreeSpace(leftBeg, uint32_t(leftTotalSize), group, handle);
-                                #endif //CS_ALLOCAOTR_IMPL
+                                #endif //DM_HEAP_ARRAY_IMPL
                             }
                             else
                             {
@@ -1714,33 +1624,20 @@ namespace cs
                 };
                 RegionInfo m_regionInfo[NumRegions];
 
-                uint16_t m_freeSlotsMax[NumRegions];
                 uint16_t m_freeSlotsCount[NumRegions*NumSubRegions];
 
-                #if CS_ALLOCAOTR_IMPL
+                #if DM_HEAP_ARRAY_IMPL
+                    uint16_t m_freeSlotsMax[NumRegions];
+
                     BX_ALIGN_DECL_16(uint32_t* m_freeSlotsSize[NumRegions*NumSubRegions]);
-                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize0[NumSubRegions][NumSlots0]);
-                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize1[NumSubRegions][NumSlots1]);
-                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize2[NumSubRegions][NumSlots2]);
-                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize3[NumSubRegions][NumSlots3]);
-                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize4[NumSubRegions][NumSlots4]);
-                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize5[NumSubRegions][NumSlots5]);
-                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize6[NumSubRegions][NumSlots6]);
-                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize7[NumSubRegions][NumSlots7]);
-                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize8[NumSubRegions][NumSlots8]);
-                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize9[NumSubRegions][NumSlots9]);
+                    #define DM_ALLOC_DEF(_regionIdx, _num) \
+                        BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize ## _regionIdx ## [NumSubRegions][NumSlots ## _regionIdx ## ]);
+                    #include "allocator_config.h"
 
                     BX_ALIGN_DECL_16(void** m_freeSlotsPtr[NumRegions*NumSubRegions]);
-                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr0[NumSubRegions][NumSlots0]);
-                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr1[NumSubRegions][NumSlots1]);
-                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr2[NumSubRegions][NumSlots2]);
-                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr3[NumSubRegions][NumSlots3]);
-                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr4[NumSubRegions][NumSlots4]);
-                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr5[NumSubRegions][NumSlots5]);
-                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr6[NumSubRegions][NumSlots6]);
-                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr7[NumSubRegions][NumSlots7]);
-                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr8[NumSubRegions][NumSlots8]);
-                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr9[NumSubRegions][NumSlots9]);
+                    #define DM_ALLOC_DEF(_regionIdx, _num) \
+                        BX_ALIGN_DECL_16(void* m_freeSlotsPtr ## _regionIdx ## [NumSubRegions][NumSlots ## _regionIdx ##]);
+                    #include "allocator_config.h"
                 #else
                     struct FreeSlot
                     {
@@ -1751,7 +1648,7 @@ namespace cs
 
                     FreeSlotList m_freeSlots[NumRegions*NumSubRegions];
                     uint8_t m_freeSlotsData[TotalSlotCount*FreeSlotList::SizePerElement];
-                #endif //CS_ALLOCAOTR_IMPL
+                #endif //DM_HEAP_ARRAY_IMPL
             };
 
             StaticStorage   m_staticStorage;
