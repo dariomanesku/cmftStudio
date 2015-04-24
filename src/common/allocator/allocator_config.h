@@ -11,6 +11,13 @@
 // Config.
 //-----
 
+#define CS_ALLOCATOR_IMPL_LIST  0 // Slower.
+#define CS_ALLOCATOR_IMPL_ARRAY 1 // Faster.
+
+#ifndef CS_ALLOCAOTR_IMPL
+    #define CS_ALLOCAOTR_IMPL CS_ALLOCATOR_IMPL_ARRAY
+#endif //CS_ALLOCAOTR_IMPL
+
 #ifndef CS_NATURAL_ALIGNMENT
     #define CS_NATURAL_ALIGNMENT 16
 #endif //CS_NATURAL_ALIGNMENT

@@ -8,6 +8,8 @@
 #include "allocator.h"
 
 #include <stdio.h>                       // fprintf
+#include <emmintrin.h>                   // __m128i
+
 #include "stack.h"                       // DynamicStack, FreeStack
 
 #include "../globals.h"                  // g_frameNum
@@ -22,12 +24,35 @@
 #include <bx/thread.h>                   // bx::Mutex
 #include <bx/uint32_t.h>                 // bx::uint32_cntlz
 
-
 namespace cs
 {
     enum { StaticStorageSize = DM_MEGABYTES(32) };
 
-    #if CS_USE_INTERNAL_ALLOCATOR
+    #if !CS_USE_INTERNAL_ALLOCATOR
+        struct Memory
+        {
+            void* alloc(size_t _size)
+            {
+                return ::malloc(_size);
+            }
+
+            void* realloc(void* _ptr, size_t _size)
+            {
+                return ::realloc(_ptr, _size);
+            }
+
+            void free(void* _ptr)
+            {
+                return ::free(_ptr);
+            }
+
+            bool contains(void* /*_ptr*/)
+            {
+                return true;
+            }
+        };
+        static Memory s_memory;
+    #else // CS_USE_INTERNAL_ALLOCATOR.
         struct Memory
         {
             Memory()
@@ -80,6 +105,9 @@ namespace cs
                 m_memory = alignedPtr;
                 m_size   = alignedSize;
 
+                // Touch every piece of memory, effectively forcing OS to add all memory pages to the process's address space.
+                memset(m_memory, 0, m_size);
+
                 // Init memory regions.
                 void* ptr = m_memory;
                 ptr = m_staticStorage.init(ptr, StaticStorageSize);
@@ -91,9 +119,6 @@ namespace cs
 
                 m_stack.init(&m_stackPtr, &m_heapEnd);
                 m_heap.init(&m_stackPtr, &m_heapEnd);
-
-                // Touch every piece of memory, effectively forcing OS to add all memory pages to the process's address space.
-                memset(m_memory, 0, m_size);
 
                 return false; // return value is not important.
             }
@@ -359,11 +384,6 @@ namespace cs
             size_t sizeBetweenStackAndHeap()
             {
                 return m_heap.getRemainingSpace();
-            }
-
-            void* allocBetweenStackAndHeap(size_t _size)
-            {
-                return m_heap.allocExpand(_size);
             }
 
             struct StaticStorage
@@ -737,106 +757,740 @@ namespace cs
                 #endif //CS_ALLOC_PRINT_STATS
             };
 
-            // TODO: reimplement heap!
             struct Heap
             {
-                enum { MaxAllocations = UINT16_MAX/4 };
+                enum
+                {
+                    HeaderSize = sizeof(uint64_t),
+                    FooterSize = sizeof(uint64_t),
+                    HeaderFooterSize = HeaderSize+FooterSize,
 
-                ///
-                /// Notice: heap grows backwards!
-                ///
-                ///      _stackPtr                                  _heap
-                ///      ___|_________________________________________|
-                ///  ...    |           |..|  |..| <- Heap |...| |.|..|
-                ///      ___|___________|_____________________________|
-                ///         .           .                             .
-                ///     m_stackPtr    m_end                        m_begin
-                ///
-                ///
+                    MinimalSlotSize = HeaderFooterSize + 64,
+
+                    SmallestRegion    = DM_MEGABYTES(2),
+                    SmallestRegionPwr = dm::Log<2,(SmallestRegion>>20ul)>::Value,
+
+                    NumSlots0 = 2048, // for region:    2MB
+                    NumSlots1 = 2048, // for region:    4MB
+                    NumSlots2 = 1024, // for region:    8MB
+                    NumSlots3 = 1024, // for region:   16MB
+                    NumSlots4 = 1024, // for region:   32MB
+                    NumSlots5 = 512,  // for region:   64MB
+                    NumSlots6 = 256,  // for region:  128MB
+                    NumSlots7 = 128,  // for region:  256MB
+                    NumSlots8 = 64,   // for region:  512MB
+                    NumSlots9 = 32,   // for region: 1024MB
+
+                    BiggestRegion    = DM_MEGABYTES(1024),
+                    BiggestRegionPwr = dm::Log<2,(BiggestRegion>>20ul)>::Value,
+
+                    MaxBigFreeSlots = 32,
+
+                    NumRegions    = 10, /* == BiggestRegionPwr - SmallestRegionPwr*/
+                    NumSubRegions = 16,
+
+                    #if !CS_ALLOCAOTR_IMPL
+                        TotalSlotCount = (NumSlots0
+                                       +  NumSlots1
+                                       +  NumSlots2
+                                       +  NumSlots3
+                                       +  NumSlots4
+                                       +  NumSlots5
+                                       +  NumSlots6
+                                       +  NumSlots7
+                                       +  NumSlots8
+                                       +  NumSlots9) * NumSubRegions,
+                    #endif //!CS_ALLOCAOTR_IMPL
+                };
 
                 void init(uint8_t** _stackPtr, uint8_t** _heap)
                 {
-                    m_begin = *_heap;
-                    m_end = _heap;
+                    m_begin    = *_heap;
+                    m_end      = _heap;
                     m_stackPtr = _stackPtr;
 
-                    m_ptrs.init(MaxAllocations, m_ptrsData);
+                    *m_end -= 2*sizeof(uint64_t);
+                    uint64_t* terminator = (uint64_t*)*m_end;
+                    terminator[0] = UINT64_MAX;
+                    terminator[1] = UINT64_MAX;
 
-                    // Add an empty chunk at the beginning.
-                    Pointer* mem = m_ptrs.addNew();
-                    mem->m_ptr = m_begin;
-                    writeSize(mem, HeaderSize);
-                    writeHandle(mem);
+                    m_bigFreeSlotsCount = 0;
+                    memset(m_bigFreeSlotsSize, 0, sizeof(m_bigFreeSlotsSize));
+                    memset(m_bigFreeSlotsPtr,  0, sizeof(m_bigFreeSlotsPtr));
+
+                    memset(m_regionInfo, 0xff, sizeof(m_regionInfo));
+
+                    #if CS_ALLOCAOTR_IMPL
+                        m_freeSlotsMax[0] = NumSlots0;
+                        m_freeSlotsMax[1] = NumSlots1;
+                        m_freeSlotsMax[2] = NumSlots2;
+                        m_freeSlotsMax[3] = NumSlots3;
+                        m_freeSlotsMax[4] = NumSlots4;
+                        m_freeSlotsMax[5] = NumSlots5;
+                        m_freeSlotsMax[6] = NumSlots6;
+                        m_freeSlotsMax[7] = NumSlots7;
+                        m_freeSlotsMax[8] = NumSlots8;
+                        m_freeSlotsMax[9] = NumSlots9;
+
+                        memset(m_freeSlotsCount, 0, sizeof(m_freeSlotsCount));
+
+                        memset(m_freeSlotsSize,  0, sizeof(m_freeSlotsSize));
+                        memset(m_freeSlotsSize0, 0, sizeof(m_freeSlotsSize0));
+                        memset(m_freeSlotsSize1, 0, sizeof(m_freeSlotsSize1));
+                        memset(m_freeSlotsSize2, 0, sizeof(m_freeSlotsSize2));
+                        memset(m_freeSlotsSize3, 0, sizeof(m_freeSlotsSize3));
+                        memset(m_freeSlotsSize4, 0, sizeof(m_freeSlotsSize4));
+                        memset(m_freeSlotsSize5, 0, sizeof(m_freeSlotsSize5));
+                        memset(m_freeSlotsSize6, 0, sizeof(m_freeSlotsSize6));
+                        memset(m_freeSlotsSize7, 0, sizeof(m_freeSlotsSize7));
+                        memset(m_freeSlotsSize8, 0, sizeof(m_freeSlotsSize8));
+                        memset(m_freeSlotsSize9, 0, sizeof(m_freeSlotsSize9));
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[0*NumSubRegions+ii] = m_freeSlotsSize0[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[1*NumSubRegions+ii] = m_freeSlotsSize1[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[2*NumSubRegions+ii] = m_freeSlotsSize2[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[3*NumSubRegions+ii] = m_freeSlotsSize3[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[4*NumSubRegions+ii] = m_freeSlotsSize4[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[5*NumSubRegions+ii] = m_freeSlotsSize5[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[6*NumSubRegions+ii] = m_freeSlotsSize6[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[7*NumSubRegions+ii] = m_freeSlotsSize7[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[8*NumSubRegions+ii] = m_freeSlotsSize8[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsSize[9*NumSubRegions+ii] = m_freeSlotsSize9[ii]; }
+
+                        memset(m_freeSlotsPtr,  0, sizeof(m_freeSlotsPtr));
+                        memset(m_freeSlotsPtr0, 0, sizeof(m_freeSlotsPtr0));
+                        memset(m_freeSlotsPtr1, 0, sizeof(m_freeSlotsPtr1));
+                        memset(m_freeSlotsPtr2, 0, sizeof(m_freeSlotsPtr2));
+                        memset(m_freeSlotsPtr3, 0, sizeof(m_freeSlotsPtr3));
+                        memset(m_freeSlotsPtr4, 0, sizeof(m_freeSlotsPtr4));
+                        memset(m_freeSlotsPtr5, 0, sizeof(m_freeSlotsPtr5));
+                        memset(m_freeSlotsPtr6, 0, sizeof(m_freeSlotsPtr6));
+                        memset(m_freeSlotsPtr7, 0, sizeof(m_freeSlotsPtr7));
+                        memset(m_freeSlotsPtr8, 0, sizeof(m_freeSlotsPtr8));
+                        memset(m_freeSlotsPtr9, 0, sizeof(m_freeSlotsPtr9));
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[0*NumSubRegions+ii] = m_freeSlotsPtr0[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[1*NumSubRegions+ii] = m_freeSlotsPtr1[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[2*NumSubRegions+ii] = m_freeSlotsPtr2[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[3*NumSubRegions+ii] = m_freeSlotsPtr3[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[4*NumSubRegions+ii] = m_freeSlotsPtr4[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[5*NumSubRegions+ii] = m_freeSlotsPtr5[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[6*NumSubRegions+ii] = m_freeSlotsPtr6[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[7*NumSubRegions+ii] = m_freeSlotsPtr7[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[8*NumSubRegions+ii] = m_freeSlotsPtr8[ii]; }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { m_freeSlotsPtr[9*NumSubRegions+ii] = m_freeSlotsPtr9[ii]; }
+                    #else
+                        void* ptr = (void*)m_freeSlotsData;
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[0*NumSubRegions+ii].init(NumSlots0, ptr); }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[1*NumSubRegions+ii].init(NumSlots1, ptr); }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[2*NumSubRegions+ii].init(NumSlots2, ptr); }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[3*NumSubRegions+ii].init(NumSlots3, ptr); }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[4*NumSubRegions+ii].init(NumSlots4, ptr); }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[5*NumSubRegions+ii].init(NumSlots5, ptr); }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[6*NumSubRegions+ii].init(NumSlots6, ptr); }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[7*NumSubRegions+ii].init(NumSlots7, ptr); }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[8*NumSubRegions+ii].init(NumSlots8, ptr); }
+                        for (uint32_t ii = 0; ii < NumSubRegions; ++ii) { ptr = m_freeSlots[9*NumSubRegions+ii].init(NumSlots9, ptr); }
+                    #endif //CS_ALLOCAOTR_IMPL
+                }
+
+                uint16_t getRegion(uint16_t _slotGroup)
+                {
+                    return _slotGroup/NumSubRegions;
+                }
+
+                uint16_t nextSlotGroup(uint16_t _slotGroup)
+                {
+                    const uint16_t region = getRegion(_slotGroup);
+
+                    const uint16_t incr = _slotGroup+1;
+                    const uint16_t end  = region*NumSubRegions + NumSubRegions;
+                    if (incr < end)
+                    {
+                        return incr;
+                    }
+                    else
+                    {
+                        const uint16_t nextRegion = m_regionInfo[region].m_next;
+                        if (UINT16_MAX == nextRegion)
+                        {
+                            return UINT16_MAX;
+                        }
+                        else
+                        {
+                            const uint16_t first = m_regionInfo[nextRegion].m_first;
+                            if (UINT16_MAX == first)
+                            {
+                                return UINT16_MAX;
+                            }
+
+                            return nextRegion*NumSubRegions + first;
+                        }
+                    }
+                }
+
+                void registerSlotGroup(uint16_t _slotGroup)
+                {
+                    const uint16_t region = getRegion(_slotGroup);
+                    for (uint16_t ii = region; ii--; )
+                    {
+                        if (m_regionInfo[ii].m_next > region)
+                        {
+                            m_regionInfo[ii].m_next = region;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    const uint16_t subRegion = _slotGroup - region*NumSubRegions;
+                    if (m_regionInfo[region].m_first > subRegion)
+                    {
+                        m_regionInfo[region].m_first = subRegion;
+                    }
+                }
+
+                void unregisterSlotGroup(uint16_t _slotGroup)
+                {
+                    const uint16_t region    = getRegion(_slotGroup);
+                    const uint16_t subRegion = _slotGroup - region*NumSubRegions;
+
+                    uint16_t first = m_regionInfo[region].m_first;
+                    if (subRegion == first)
+                    {
+                        // Find and assign first.
+                        for (uint16_t ii = subRegion+1; ii < NumSubRegions; ++ii)
+                        {
+                            if (m_freeSlotsCount[ii] > 0)
+                            {
+                                first = ii;
+                                break;
+                            }
+                        }
+
+                        if (subRegion == first)
+                        {
+                            // Region is empty.
+                            m_regionInfo[region].m_first = UINT16_MAX;
+
+                            // Reassign pointers to point to the next one.
+                            const uint16_t nextRegion = m_regionInfo[region].m_next;
+                            for (uint16_t ii = 0; ii < region; ++ii)
+                            {
+                                if (m_regionInfo[ii].m_next == region)
+                                {
+                                    m_regionInfo[ii].m_next = nextRegion;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            m_regionInfo[region].m_first = first;
+                        }
+                    }
+                }
+
+                uint16_t getSlotGroup(uint32_t _size)
+                {
+                    const uint32_t sizePwrTwo   = dm::nextPowTwo(_size);
+                    const uint32_t sizePwrTwoMB = sizePwrTwo >> 20;
+
+                    if (0 == sizePwrTwoMB)
+                    {
+                        return 0;
+                    }
+
+                    // Determine region.
+                    const uint32_t region = dm::max(0, int32_t(bx::uint32_cnttz(sizePwrTwoMB)) - SmallestRegionPwr);
+
+                    // Determine subRegion.
+                    uint32_t subRegion = 0;
+                    const uint32_t leftover = sizePwrTwo - _size;
+                    if (0 != leftover)
+                    {
+                        const uint32_t subRegionSize = (sizePwrTwo - (sizePwrTwo>>1))/NumSubRegions;
+                        subRegion = leftover/subRegionSize;
+                    }
+
+                    // Determine slot group.
+                    const uint32_t slotGroup = region*NumSubRegions+subRegion;
+
+                    CS_CHECK(slotGroup < NumRegions*NumSubRegions, "Invalid slot group %d/%d [slotGroup][max].", slotGroup, NumRegions*NumSubRegions);
+
+                    return uint16_t(slotGroup);
+                }
+
+                void addFreeSpace(void* _ptr, uint32_t _size)
+                {
+                    DM_CHECK(_size >= HeaderFooterSize, "Error _size param is invalid.");
+
+                    const uint16_t group = getSlotGroup(_size);
+
+                    #if CS_ALLOCAOTR_IMPL
+                        const uint16_t count = m_freeSlotsCount[group];
+                        const uint16_t max   = m_freeSlotsMax[group/NumRegions];
+                        //TODO: Print warning if count >= max.
+                        if (max > count)
+                        {
+                            registerSlotGroup(group);
+
+                            const uint32_t last = m_freeSlotsCount[group]++;
+                            m_freeSlotsSize[group][last] = _size;
+                            m_freeSlotsPtr [group][last] = _ptr;
+                        }
+                        writeHeaderFooter(_ptr, (uint64_t)_size, false);
+                    #else
+                        //TODO: Print warning if count >= max.
+                        if (m_freeSlots[group].count() < m_freeSlots[group].max())
+                        {
+                            registerSlotGroup(group);
+
+                            FreeSlot* freeSlot = m_freeSlots[group].addNew();
+                            freeSlot->m_size = _size;
+                            freeSlot->m_ptr  = _ptr;
+                            const uint16_t handle = m_freeSlots[group].getHandleOf(freeSlot);
+                            writeHeaderFooter(_ptr, (uint64_t)_size, group, handle);
+                        }
+                        else
+                        {
+                            const uint16_t handle = UINT16_MAX;
+                            writeHeaderFooter(_ptr, (uint64_t)_size, group, handle);
+                        }
+                    #endif //CS_ALLOCAOTR_IMPL
+                }
+
+                void addBigFreeSpace(void* _ptr, uint64_t _size)
+                {
+                    CS_CHECK(m_bigFreeSlotsCount < 32
+                           , "There are not enough slots big allocations. %d/%d", m_bigFreeSlotsCount, 32);
+
+                    const uint32_t last = m_bigFreeSlotsCount++;
+                    m_bigFreeSlotsSize[last] = _size;
+                    m_bigFreeSlotsPtr [last] = _ptr;
+                    writeHeaderFooter(_ptr, _size, false);
+                }
+
+                void addSpace(void* _ptr, uint64_t _size)
+                {
+                    if (_size <= BiggestRegion)
+                    {
+                        addFreeSpace(_ptr, uint32_t(_size));
+                    }
+                    else
+                    {
+                        bx::debugBreak();
+                        addBigFreeSpace(_ptr, _size);
+                    }
+                }
+
+                void removeFreeSlot(uint32_t _group, uint32_t _idx)
+                {
+                    #if CS_ALLOCAOTR_IMPL
+                        const uint32_t last = --m_freeSlotsCount[_group];
+                        m_freeSlotsSize[_group][_idx] = m_freeSlotsSize[_group][last];
+                        m_freeSlotsPtr [_group][_idx] = m_freeSlotsPtr [_group][last];
+                    #else
+                        m_freeSlots[_group].remove(_idx);
+                    #endif //CS_ALLOCAOTR_IMPL
+
+                    unregisterSlotGroup(uint16_t(_group));
+                }
+
+                void removeBigFreeSlot(uint32_t _idx)
+                {
+                    const uint32_t last = --m_bigFreeSlotsCount;
+                    m_bigFreeSlotsSize[_idx] = m_bigFreeSlotsSize[last];
+                    m_bigFreeSlotsPtr [_idx] = m_bigFreeSlotsPtr [last];
+                }
+
+                #if CS_ALLOCAOTR_IMPL
+                    bool removeFreeSpaceRef(void* _ptr, uint32_t _size)
+                    {
+                        uint16_t group = getSlotGroup(_size);
+                        do
+                        {
+                            for (uint32_t ii = 0, end = m_freeSlotsCount[group]; ii < end; ++ii)
+                            {
+                                if (m_freeSlotsPtr[group][ii] == _ptr)
+                                {
+                                    removeFreeSlot(group, ii);
+
+                                    return true;
+                                }
+                            }
+
+                        } while (UINT16_MAX != (group = nextSlotGroup(group)));
+
+                        return false;
+                    }
+
+                    bool removeFreeSpaceSSE(void* _ptr, uint32_t _size)
+                    {
+                        const __m128i ptrsplat = _mm_set1_epi64x(int64_t(_ptr));
+
+                        uint16_t group = getSlotGroup(_size);
+                        do
+                        {
+                            int32_t ii = 0;
+                            const int32_t count = (int32_t)m_freeSlotsCount[group];
+                            for (int32_t end = count-1; ii < end; ii+=2)
+                            {
+                                const __m128i  ptrs = _mm_load_si128((__m128i*)&m_freeSlotsPtr[group][ii]);
+                                const __m128i  cmp  = _mm_cmpeq_epi64(ptrsplat, ptrs);
+                                const uint32_t mask = _mm_movemask_epi8(cmp);
+                                if (mask != 0)
+                                {
+                                    const uint32_t index = ii + (0xff00 == mask); // 'mask' can be either 0xff (0) or 0xff00 (1).
+                                    removeFreeSlot(group, index);
+
+                                    return true;
+                                }
+                            }
+                            for (int32_t end = count; ii < end; ++ii)
+                            {
+                                if (m_freeSlotsPtr[group][ii] == _ptr)
+                                {
+                                    removeFreeSlot(group, ii);
+
+                                    return true;
+                                }
+                            }
+
+                        } while (UINT16_MAX != (group = nextSlotGroup(group)));
+
+                        return false;
+                    }
+
+                    bool removeFreeSpace(void* _ptr, uint32_t _size)
+                    {
+                        return removeFreeSpaceSSE(_ptr, _size);
+                    }
+                #else
+                    bool removeFreeSpace(void* _ptr, uint32_t _size, uint16_t _group, uint16_t _handle)
+                    {
+                        if (_handle != UINT16_MAX)
+                        {
+                            m_freeSlots[_group].remove(_handle);
+                            unregisterSlotGroup(uint16_t(_group));
+                            return true;
+                        }
+
+                        return false;
+                    }
+                #endif //CS_ALLOCAOTR_IMPL
+
+
+                bool removeBigFreeSpaceRef(void* _ptr)
+                {
+                    for (uint32_t ii = 0, end = m_bigFreeSlotsCount; ii < end; ++ii)
+                    {
+                        if (m_bigFreeSlotsPtr[ii] == _ptr)
+                        {
+                            removeBigFreeSlot(ii);
+
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
+                bool removeBigFreeSpaceSSE(void* _ptr)
+                {
+                    const __m128i ptrsplat = _mm_set1_epi64x(int64_t(_ptr));
+
+                    uint32_t ii = 0;
+                    const uint32_t count = m_bigFreeSlotsCount;
+                    for (uint32_t end = count-1; ii <= end; ii+=2)
+                    {
+                        const __m128i  ptrs = _mm_load_si128((__m128i*)&m_bigFreeSlotsPtr[ii]);
+                        const __m128i  cmp  = _mm_cmpeq_epi64(ptrsplat, ptrs);
+                        const uint32_t mask = _mm_movemask_epi8(cmp);
+                        if (mask != 0)
+                        {
+                            const uint32_t index = ii + (0xff00 == mask); // 'mask' can be either 0xff (0) or 0xff00 (1).
+                            removeBigFreeSlot(index);
+
+                            return true;
+                        }
+                    }
+                    for (uint32_t end = count; ii < end; ++ii)
+                    {
+                        if (m_bigFreeSlotsPtr[ii] == _ptr)
+                        {
+                            removeBigFreeSlot(ii);
+
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
+                bool removeBigFreeSpace(void* _ptr)
+                {
+                    return removeBigFreeSpaceSSE(_ptr);
+                }
+
+                #if CS_ALLOCAOTR_IMPL
+                #   define DM_UsedMask  0x8000000000000000UL
+                #   define DM_UsedShift 63UL
+                #   define DM_SizeMask  0x7fffffffffffffffUL
+                #   define DM_SizeShift 0UL
+                #else
+                #   define DM_UsedMask    0x8000000000000000UL
+                #   define DM_UsedShift   63UL
+                #   define DM_HandleMask  0x7fff000000000000UL
+                #   define DM_HandleShift 48UL
+                #   define DM_GroupMask   0x0000fff000000000UL
+                #   define DM_GroupShift  36UL
+                #   define DM_SizeMask    0x0000000fffffffffUL
+                #   define DM_SizeShift   0UL
+                #endif //CS_ALLOCAOTR_IMPL
+
+                uint64_t packHeader(bool _used, uint64_t _size) const
+                {
+                    return ((uint64_t(_size)<<DM_SizeShift)&DM_SizeMask)
+                         | ((uint64_t(_used)<<DM_UsedShift)&DM_UsedMask)
+                         ;
+                }
+
+                #if !CS_ALLOCAOTR_IMPL
+                    uint64_t packHeader(bool _used, uint16_t _group, uint16_t _handle, uint64_t _size) const
+                    {
+                        return ((uint64_t(_size)<<DM_SizeShift)&DM_SizeMask)
+                             | ((uint64_t(_handle)<<DM_HandleShift)&DM_HandleMask)
+                             | ((uint64_t(_group)<<DM_GroupShift)&DM_GroupMask)
+                             | ((uint64_t(_used)<<DM_UsedShift)&DM_UsedMask)
+                             ;
+                    }
+                #endif //CS_ALLOCAOTR_IMPL
+
+                bool unpackUsed(uint64_t _header) const
+                {
+                    return DM_BOOL((_header&DM_UsedMask)>>DM_UsedShift);
+                }
+
+                #if !CS_ALLOCAOTR_IMPL
+                    uint16_t unpackHandle(uint64_t _header) const
+                    {
+                        return uint16_t((_header&DM_HandleMask)>>DM_HandleShift);
+                    }
+
+                    uint16_t unpackGroup(uint64_t _header) const
+                    {
+                        return uint16_t((_header&DM_GroupMask)>>DM_GroupShift);
+                    }
+                #endif //CS_ALLOCAOTR_IMPL
+
+                uint64_t unpackSize(uint64_t _header) const
+                {
+                    return uint64_t((_header&DM_SizeMask)>>DM_SizeShift);
+                }
+
+                void* writeHeaderFooter(const void* _begin, uint64_t _totalSize, bool _used = true)
+                {
+                    uint8_t* end = (uint8_t*)_begin+_totalSize;
+
+                    uint64_t* header = (uint64_t*)_begin;
+                    void*     data   = (uint64_t*)_begin+1;
+                    uint64_t* footer = (uint64_t*)end-1;
+
+                    const uint64_t allocSize = _totalSize - HeaderFooterSize;
+                    const uint64_t headerData = packHeader(_used, allocSize);
+                    *header = headerData;
+                    *footer = headerData;
+
+                    return data;
+                }
+
+                #if !CS_ALLOCAOTR_IMPL
+                    void* writeHeaderFooter(const void* _begin, uint64_t _totalSize, uint16_t _group, uint16_t _handle)
+                    {
+                        uint8_t* end = (uint8_t*)_begin+_totalSize;
+
+                        uint64_t* header = (uint64_t*)_begin;
+                        void*     data   = (uint64_t*)_begin+1;
+                        uint64_t* footer = (uint64_t*)end-1;
+
+                        const uint64_t allocSize = _totalSize - HeaderFooterSize;
+                        const uint64_t headerData = packHeader(true, _group, _handle, allocSize);
+                        *header = headerData;
+                        *footer = headerData;
+
+                        return data;
+                    }
+                #endif //CS_ALLOCAOTR_IMPL
+
+                bool isFree(uint64_t _header)
+                {
+                    return (UINT64_MAX != _header && !unpackUsed(_header));
+                }
+
+                void* ptrToBegin(void* _ptr) const
+                {
+                    const uint64_t* begin = (uint64_t*)_ptr-1;
+                    return (void*)begin;
+                }
+
+                uint64_t readUsedSize(const void* _beg) const
+                {
+                    const uint64_t* usedSize = (const uint64_t*)_beg;
+                    return *usedSize;
+                }
+
+                uint64_t readLeftUsedSize(const void* _beg) const
+                {
+                    const uint64_t* usedSize = (const uint64_t*)_beg-1;
+                    return *usedSize;
+                }
+
+                void* consumeFreeSpace(uint32_t _group, uint32_t _idx, uint32_t _slotSize, uint32_t _consume)
+                {
+                    #if CS_ALLOCAOTR_IMPL
+                        void* beg = m_freeSlotsPtr[_group][_idx];
+                    #else
+                        void* beg = m_freeSlots[_group][_idx].m_ptr;
+                    #endif //CS_ALLOCAOTR_IMPL
+                    void* ptr;
+
+                    const uint32_t remainingSize = _slotSize - _consume;
+                    if (remainingSize > MinimalSlotSize)
+                    {
+                        // Consume.
+                        ptr = writeHeaderFooter(beg, uint64_t(_consume));
+                        removeFreeSlot(_group, _idx);
+
+                        // Leftover.
+                        void* next = (uint8_t*)beg + _consume;
+                        addFreeSpace(next, remainingSize);
+                    }
+                    else
+                    {
+                        // Consume entire slot.
+                        ptr = writeHeaderFooter(beg, uint64_t(_slotSize));
+                        removeFreeSlot(_group, _idx);
+                    }
+
+                    return ptr;
+                }
+
+                void* consumeBigFreeSpace(uint32_t _idx, uint64_t _consume)
+                {
+                    // Consume.
+                    void* beg = m_bigFreeSlotsPtr[_idx];
+                    void* ptr = writeHeaderFooter(beg, _consume);
+
+                    // Leftover.
+                    void* next = (uint8_t*)beg + _consume;
+                    const uint64_t remainingSize = m_bigFreeSlotsSize[_idx] - _consume;
+
+                    if (remainingSize <= BiggestRegion)
+                    {
+                        removeBigFreeSlot(_idx);
+                        addBigFreeSpace(next, remainingSize);
+                    }
+                    else
+                    {
+                        m_bigFreeSlotsSize[_idx] = remainingSize;
+                        m_bigFreeSlotsPtr [_idx] = next;
+                    }
+
+                    return ptr;
+                }
+
+                void* expandHeap(uint64_t _size)
+                {
+                    *m_end -= _size;
+                    uint64_t* terminator = (uint64_t*)*m_end;
+                    *terminator = UINT64_MAX;
+
+                    uint8_t* beg = *m_end+sizeof(uint64_t);
+                    void* ptr = writeHeaderFooter(beg, _size);
+
+                    return ptr;
                 }
 
                 void* alloc(size_t _size)
                 {
-                    const size_t alignedSize = dm::alignSizeNext(_size, CS_NATURAL_ALIGNMENT);
-                    const size_t totalSize = HeaderSize + alignedSize;
-
                     bx::LwMutexScope lock(m_mutex);
 
-                    Pointer* curr = m_ptrs.firstElem();
-                    for (uint16_t ii = m_ptrs.count()-1; ii--; )
-                    {
-                        Pointer* next = m_ptrs.next(curr);
-
-                        const size_t spaceBetween = getSpaceBetween(curr, next);
-                        if (spaceBetween >= totalSize)
-                        {
-                            Pointer* mem = m_ptrs.insertAfter(curr);
-                            mem->m_ptr = (uint8_t*)curr->m_ptr - totalSize;
-                            writeSize(mem, alignedSize);
-                            writeHandle(mem);
-
-                            CS_PRINT_HEAP("Heap alloc: %llu.%lluMB - (0x%p)", dm::U_UMB(totalSize-HeaderSize), mem->m_ptr);
-
-                            return mem->m_ptr;
-                        }
-
-                        curr = next;
-                    }
-
-                    if (getRemainingSpace() >= totalSize)
-                    {
-                        Pointer* mem = m_ptrs.insertAfter(curr);
-                        mem->m_ptr = (uint8_t*)curr->m_ptr - totalSize;
-                        writeSize(mem, size_t(totalSize-HeaderSize));
-                        writeHandle(mem);
-
-                        CS_PRINT_HEAP("Heap alloc: Expand %llu.%lluMB - (0x%p)", dm::U_UMB(totalSize-HeaderSize), mem->m_ptr);
-
-                        // Adjust end pointer.
-                        *m_end = (uint8_t*)mem->m_ptr;
-
-                        return mem->m_ptr;
-                    }
-
-                    CS_PRINT_HEAP("Heap alloc: Failed - %llu.%lluMB", dm::U_UMB(totalSize-HeaderSize));
-
-                    return NULL;
-                }
-
-                void* allocExpand(size_t _size)
-                {
                     const size_t alignedSize = dm::alignSizeNext(_size, CS_NATURAL_ALIGNMENT);
-                    const size_t totalSize = HeaderSize + alignedSize;
+                    const size_t totalSize   = alignedSize + HeaderFooterSize;
 
-                    Pointer* last = m_ptrs.lastElem();
+                    // Search for free space.
+                    if (totalSize <= BiggestRegion)
+                    {
+                        uint16_t group = getSlotGroup(uint32_t(totalSize));
+                        do
+                        {
+                            #if CS_ALLOCAOTR_IMPL
+                                const uint16_t count = m_freeSlotsCount[group];
+                                const __m128i totalSizeSplat = _mm_set1_epi32(uint32_t(totalSize));
 
+                                uint16_t ii = 0;
+                                for (uint16_t end = ((count>>2)<<2); ii < end; ii+=4)
+                                {
+                                    const __m128i  sizes = _mm_load_si128((__m128i*)&m_freeSlotsSize[group][ii]);
+                                    const __m128i  cmp   = _mm_cmpgt_epi32(sizes, totalSizeSplat);
+                                    const uint32_t mask  = _mm_movemask_epi8(cmp);
+                                    if (mask != 0)
+                                    {
+                                        const int32_t idx = ii + (bx::uint32_cnttz(mask)/4);
+                                        const uint32_t slotSize = m_freeSlotsSize[group][idx];
+                                        void* ptr = consumeFreeSpace(group, idx, uint32_t(slotSize), uint32_t(totalSize));
+
+                                        return ptr;
+                                    }
+                                }
+
+                                for (uint16_t end = count; ii < end; ++ii)
+                                {
+                                    const uint32_t slotSize = m_freeSlotsSize[group][ii];
+                                    if (slotSize >= uint32_t(totalSize))
+                                    {
+                                        void* ptr = consumeFreeSpace(group, ii, uint32_t(slotSize), uint32_t(totalSize));
+
+                                        return ptr;
+                                    }
+                                }
+                            #else
+                                FreeSlotList& freeSlotList = m_freeSlots[group];
+                                for (uint16_t ii = 0, end = freeSlotList.count(); ii < end; ++ii)
+                                {
+                                    FreeSlot& slot = freeSlotList[ii];
+                                    if (slot.m_size > uint32_t(totalSize))
+                                    {
+                                        void* ptr = consumeFreeSpace(group, ii, slot.m_size, uint32_t(totalSize));
+                                        return NULL;
+                                    }
+
+                                }
+                            #endif //CS_ALLOCAOTR_IMPL
+
+                        } while (UINT16_MAX != (group = nextSlotGroup(group)));
+                    }
+
+                    // Search for big space.
+                    for (uint8_t ii = m_bigFreeSlotsCount; ii--; )
+                    {
+                        if (m_bigFreeSlotsSize[ii] >= totalSize)
+                        {
+                            void* ptr = consumeBigFreeSpace(ii, totalSize);
+
+                            return ptr;
+                        }
+                    }
+
+                    // Expand heap.
                     if (getRemainingSpace() >= totalSize)
                     {
-                        Pointer* mem = m_ptrs.insertAfter(last);
-                        mem->m_ptr = (uint8_t*)last->m_ptr - totalSize;
-                        writeSize(mem, size_t(totalSize-HeaderSize));
-                        writeHandle(mem);
+                        void* ptr = expandHeap(totalSize);
 
-                        CS_PRINT_HEAP("Heap alloc: Expand %llu.%lluMB - (0x%p)", dm::U_UMB(totalSize-HeaderSize), mem->m_ptr);
-
-                        // Adjust end pointer.
-                        *m_end = (uint8_t*)mem->m_ptr;
-
-                        return mem->m_ptr;
+                        return ptr;
                     }
 
                     return NULL;
@@ -846,58 +1500,92 @@ namespace cs
                 {
                     bx::LwMutexScope lock(m_mutex);
 
-                    const uint16_t handle = readHandle(_ptr);
-                    Pointer* curr = m_ptrs.getObj(handle);
+                    void* beg = ptrToBegin(_ptr);
 
-                    const size_t currSize = getSize(_ptr);
-                    const size_t sizeAligned = dm::alignSizeNext(_size, CS_NATURAL_ALIGNMENT);
+                    // Current size.
+                    const uint64_t currUsedSize  = readUsedSize(beg);
+                    const uint64_t currSize      = unpackSize(currUsedSize);
+                    const uint64_t currTotalSize = currSize + HeaderFooterSize;
 
-                    if (sizeAligned <= currSize)
+                    // Requested size.
+                    const size_t reqSize      = dm::alignSizeNext(_size, CS_NATURAL_ALIGNMENT);
+                    const size_t reqTotalSize = reqSize + HeaderFooterSize;
+
+                    if (reqTotalSize == currTotalSize)
+                    {
+                        return _ptr;
+                    }
+
+                    if (reqTotalSize <= currTotalSize)
                     {
                         // Shrink.
 
-                        const size_t remaining = currSize - sizeAligned;
-                        if (remaining <= DM_KILOBYTES(1))
+                        const size_t remainingSize = currTotalSize - reqTotalSize;
+                        if (remainingSize > MinimalSlotSize)
                         {
-                            CS_PRINT_HEAP("Heap realloc: Shrink. Left as is. (0x%p)", curr->m_ptr);
-                            return curr->m_ptr;
+                            // Consume and add leftover.
+                            writeHeaderFooter(beg, reqTotalSize);
+
+                            const uint64_t leftoverSize = currTotalSize - reqTotalSize;
+                            void*          leftoverBeg  = (uint8_t*)beg + reqTotalSize;
+                            addSpace(leftoverBeg, leftoverSize);
+                        }
+                        else
+                        {
+                            // Consume entire slot.
+                            writeHeaderFooter(beg, currTotalSize);
                         }
 
-                        writeSize(curr, sizeAligned);
-
-                        Pointer* prev = m_ptrs.prev(curr);
-                        Pointer* mem  = m_ptrs.insertAfter(prev);
-                        mem->m_ptr = (uint8_t*)curr->m_ptr + sizeAligned + HeaderSize;
-                        writeSize(mem, size_t(remaining-HeaderSize));
-                        writeHandle(mem);
-
-                        CS_PRINT_HEAP("Heap realloc: Shrink %llu.%lluMB -> %llu.%lluMB (0x%p)"
-                                     , dm::U_UMB(currSize)
-                                     , dm::U_UMB(sizeAligned)
-                                     , curr->m_ptr
-                                     );
-
-                        return curr->m_ptr;
+                        return _ptr;
                     }
-                    else
+                    else /*(reqTotalSize > currTotalSize).*/
                     {
                         // Try to expand.
 
-                        const size_t expand = _size - currSize;
-                        const size_t expandAligned = dm::alignSizeNext(expand, CS_NATURAL_ALIGNMENT);
-
-                        Pointer* next = m_ptrs.next(curr);
-                        const size_t spaceBetween = getSpaceBetween(curr, next);
-                        if (spaceBetween >= expandAligned)
+                        void*    rightBeg = (uint8_t*)beg + currTotalSize;
+                        uint64_t rightUsedSize = readUsedSize(rightBeg);
+                        if (isFree(rightUsedSize))
                         {
-                            writeSize(curr, expandAligned);
+                            const uint64_t rightSize      = unpackSize(rightUsedSize);
+                            const uint64_t rightTotalSize = rightSize + HeaderFooterSize;
 
-                            CS_PRINT_HEAP("Heap realloc: Expand %llu.%lluMB -> %llu.%lluMB (0x%p)"
-                                         , dm::U_UMB(currSize)
-                                         , dm::U_UMB(expandAligned)
-                                         , curr->m_ptr);
+                            const uint64_t expandSize = reqTotalSize - currTotalSize;
 
-                            return curr->m_ptr;
+                            if (rightTotalSize >= expandSize)
+                            {
+                                if (rightTotalSize <= BiggestRegion)
+                                {
+                                    #if CS_ALLOCAOTR_IMPL
+                                        removeFreeSpace(rightBeg, uint32_t(rightTotalSize));
+                                    #else
+                                        const uint16_t group  = unpackGroup(rightUsedSize);
+                                        const uint16_t handle = unpackHandle(rightUsedSize);
+                                        removeFreeSpace(rightBeg, uint32_t(rightTotalSize), group, handle);
+                                    #endif //CS_ALLOCAOTR_IMPL
+                                }
+                                else
+                                {
+                                    removeBigFreeSpace(rightBeg);
+                                }
+
+                                const size_t remainingSize = rightTotalSize - expandSize;
+                                if (remainingSize > MinimalSlotSize)
+                                {
+                                    // Consume and add leftover.
+                                    writeHeaderFooter(beg, reqTotalSize);
+
+                                    const uint64_t leftoverSize = rightTotalSize     - expandSize;
+                                    void*          leftoverBeg  = (uint8_t*)rightBeg + expandSize;
+                                    addSpace(leftoverBeg, leftoverSize);
+                                }
+                                else
+                                {
+                                    // Consume entire slot.
+                                    writeHeaderFooter(beg, rightTotalSize);
+                                }
+
+                                return _ptr;
+                            }
                         }
                     }
 
@@ -906,162 +1594,163 @@ namespace cs
 
                 void free(void* _ptr)
                 {
-                    CS_PRINT_HEAP("~Heap free: %llu.%lluMB - (0x%p)", dm::U_UMB(getSize(_ptr)), _ptr);
-
                     bx::LwMutexScope lock(m_mutex);
 
-                    const uint16_t handle = readHandle(_ptr);
+                    void* beg = ptrToBegin(_ptr);
 
-                    // Adjust end pointer if it's the last allocation.
-                    if (_ptr == *m_end)
+                    const uint64_t usedSize = readUsedSize(beg);
+                    const uint64_t size = unpackSize(usedSize);
+                    const uint64_t totalSize = size + HeaderFooterSize;
+
+                    uint64_t freeSize = totalSize;
+                    uint8_t* freePtr  = (uint8_t*)beg;
+
+                    // Right.
+                    void*    rightBeg = (uint8_t*)beg + totalSize;
+                    uint64_t rightUsedSize = readUsedSize(rightBeg);
+                    if (isFree(rightUsedSize))
                     {
-                        Pointer* curr = m_ptrs.getObj(handle);
-                        Pointer* prev = m_ptrs.prev(curr);
-                        *m_end = (uint8_t*)prev->m_ptr;
+                        const uint64_t rightSize      = unpackSize(rightUsedSize);
+                        const uint64_t rightTotalSize = rightSize + HeaderFooterSize;
+
+                        if (rightTotalSize <= BiggestRegion)
+                        {
+                            #if CS_ALLOCAOTR_IMPL
+                                removeFreeSpace(rightBeg, uint32_t(rightTotalSize));
+                            #else
+                                const uint16_t group  = unpackGroup(rightUsedSize);
+                                const uint16_t handle = unpackHandle(rightUsedSize);
+                                removeFreeSpace(rightBeg, uint32_t(rightTotalSize), group, handle);
+                            #endif //CS_ALLOCAOTR_IMPL
+                        }
+                        else
+                        {
+                            removeBigFreeSpace(rightBeg);
+                        }
+
+                        freeSize += rightTotalSize;
                     }
 
-                    m_ptrs.remove(handle);
-                }
-
-                bool contains(void* _ptr) const
-                {
-                    if (*m_end <= _ptr && _ptr < m_begin)
+                    // Left.
+                    const uint64_t leftUsedSize = readLeftUsedSize(beg);
+                    if (UINT64_MAX == leftUsedSize)
                     {
-                        return true;
+                        *m_end += freeSize;
+
+                        uint64_t* terminator = (uint64_t*)*m_end;
+                        *terminator = UINT64_MAX;
+
+                        return;
                     }
                     else
                     {
-                        return false;
+                        const bool leftUsed = unpackUsed(leftUsedSize);
+                        if (!leftUsed)
+                        {
+                            const uint64_t leftSize      = unpackSize(leftUsedSize);
+                            const uint64_t leftTotalSize = leftSize + HeaderFooterSize;
+
+                            void* leftBeg = (uint8_t*)beg - leftTotalSize;
+                            if (leftTotalSize <= BiggestRegion)
+                            {
+                                #if CS_ALLOCAOTR_IMPL
+                                    removeFreeSpace(leftBeg, uint32_t(leftTotalSize));
+                                #else
+                                    const uint16_t group  = unpackGroup(leftUsedSize);
+                                    const uint16_t handle = unpackHandle(leftUsedSize);
+                                    removeFreeSpace(leftBeg, uint32_t(leftTotalSize), group, handle);
+                                #endif //CS_ALLOCAOTR_IMPL
+                            }
+                            else
+                            {
+                                removeBigFreeSpace(leftBeg);
+                            }
+
+                            freeSize += leftTotalSize;
+                            freePtr  -= leftTotalSize;
+                        }
                     }
+
+                    addSpace(freePtr, freeSize);
                 }
 
                 size_t getSize(void* _ptr) const
                 {
-                    size_t* size = (size_t*)_ptr-1;
+                    const void* beg = ptrToBegin(_ptr);
+                    const uint64_t size = readUsedSize(beg);
 
-                    return *size;
+                    return size_t(size);
                 }
 
                 size_t getRemainingSpace() const
                 {
-                    return size_t(*m_end - *m_stackPtr - HeaderSize); //Between stack and heap.
+                    return size_t((uint8_t*)*m_end - *m_stackPtr - sizeof(uint64_t)); //Between stack and heap.
                 }
 
                 size_t total() const
                 {
-                    return (uint8_t*)m_begin - *m_end;
+                    return (uint8_t*)m_begin - *m_end - 2*sizeof(uint64_t);
                 }
 
-                #if CS_ALLOC_PRINT_USAGE
-                size_t getUsage()
+                bool contains(void* _ptr) const
                 {
-                    size_t total = 0;
-                    Pointer* iter = m_ptrs.firstElem();
-                    for (uint16_t ii = m_ptrs.count(); ii--; )
-                    {
-                        total += readSize(iter);
-
-                        iter = m_ptrs.next(iter);
-                    }
-
-                    return total;
-                }
-                #endif //CS_ALLOC_PRINT_USAGE
-
-                #if CS_ALLOC_PRINT_STATS
-                void printStats()
-                {
-                    printf("Heap:\n");
-
-                    Pointer* curr = m_ptrs.firstElem();
-
-                    int64_t used = (int32_t)readSize(curr);
-                    int64_t free = 0;
-
-                    for (uint16_t ii = m_ptrs.count()-1; ii--; )
-                    {
-                        Pointer* next = m_ptrs.next(curr);
-
-                        const int64_t nextSize = (int64_t)readSize(next);
-                        const int64_t spaceBetween = (uint8_t*)curr->m_ptr - (uint8_t*)next->m_ptr - nextSize;
-
-                        used += nextSize;
-                        free += spaceBetween;
-
-                        curr = next;
-                    }
-
-                    const size_t remaining = getRemainingSpace();
-
-                    printf("\tAllocations:  %3d\n\tUsed: %11llu.%03lluMB\n\tFragmented: %5llu.%03lluMB\n\tRemaining: %6llu.%03lluMB\n\n"
-                          , m_ptrs.count()
-                          , dm::U_UMB(used)
-                          , dm::U_UMB(free)
-                          , dm::U_UMB(remaining)
-                          );
-                }
-                #endif //CS_ALLOC_PRINT_STATS
-
-            private:
-                struct Pointer
-                {
-                    void* m_ptr;
-                };
-
-                void writeSize(Pointer* _pointer, size_t _size)
-                {
-                    void*   mem  = _pointer->m_ptr;
-                    size_t* size = (size_t*)mem-1;
-
-                    *size = _size;
+                    return (*m_end <= _ptr && _ptr < m_begin);
                 }
 
-                void writeHandle(Pointer* _pointer)
-                {
-                    void*     mem    = _pointer->m_ptr;
-                    size_t*   size   = (size_t*)mem-1;
-                    uint16_t* handle = (uint16_t*)size-1;
-
-                    *handle = m_ptrs.getHandle(_pointer);
-                }
-
-                size_t readSize(Pointer* _pointer) const
-                {
-                    void*   mem  = _pointer->m_ptr;
-                    size_t* size = (size_t*)mem-1;
-
-                    return *size;
-                }
-
-                uint16_t readHandle(void* _ptr) const
-                {
-                    size_t*   size   = (size_t*)_ptr-1;
-                    uint16_t* handle = (uint16_t*)size-1;
-
-                    return *handle;
-                }
-
-                // Notice: _a should be the pointer closer the to beginning of the heap.
-                inline size_t getSpaceBetween(Pointer* _a, Pointer* _b)
-                {
-                    return size_t((uint8_t*)_a->m_ptr - (uint8_t*)_b->m_ptr - readSize(_b));
-                }
-
-                enum
-                {
-                    Handle = sizeof(uint16_t),
-                    SizeTy = sizeof(size_t),
-                    Header = Handle+SizeTy,
-                    HeaderSize = ((Header/CS_NATURAL_ALIGNMENT)+1)*CS_NATURAL_ALIGNMENT,
-                };
-
-                void*       m_begin;
-                uint8_t**   m_end;
-                uint8_t**   m_stackPtr;
                 bx::LwMutex m_mutex;
+                void*     m_begin;
+                uint8_t** m_end;
+                uint8_t** m_stackPtr;
 
-                dm::LinkedList<Pointer> m_ptrs;
-                uint8_t m_ptrsData[dm::LinkedList<Pointer>::SizePerElement*MaxAllocations];
+                uint8_t  m_bigFreeSlotsCount;
+                uint64_t m_bigFreeSlotsSize[MaxBigFreeSlots];
+                void*    m_bigFreeSlotsPtr [MaxBigFreeSlots];
+
+                struct RegionInfo
+                {
+                    uint16_t m_first;
+                    uint16_t m_next;
+                };
+                RegionInfo m_regionInfo[NumRegions];
+
+                uint16_t m_freeSlotsMax[NumRegions];
+                uint16_t m_freeSlotsCount[NumRegions*NumSubRegions];
+
+                #if CS_ALLOCAOTR_IMPL
+                    BX_ALIGN_DECL_16(uint32_t* m_freeSlotsSize[NumRegions*NumSubRegions]);
+                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize0[NumSubRegions][NumSlots0]);
+                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize1[NumSubRegions][NumSlots1]);
+                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize2[NumSubRegions][NumSlots2]);
+                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize3[NumSubRegions][NumSlots3]);
+                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize4[NumSubRegions][NumSlots4]);
+                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize5[NumSubRegions][NumSlots5]);
+                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize6[NumSubRegions][NumSlots6]);
+                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize7[NumSubRegions][NumSlots7]);
+                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize8[NumSubRegions][NumSlots8]);
+                    BX_ALIGN_DECL_16(uint32_t m_freeSlotsSize9[NumSubRegions][NumSlots9]);
+
+                    BX_ALIGN_DECL_16(void** m_freeSlotsPtr[NumRegions*NumSubRegions]);
+                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr0[NumSubRegions][NumSlots0]);
+                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr1[NumSubRegions][NumSlots1]);
+                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr2[NumSubRegions][NumSlots2]);
+                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr3[NumSubRegions][NumSlots3]);
+                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr4[NumSubRegions][NumSlots4]);
+                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr5[NumSubRegions][NumSlots5]);
+                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr6[NumSubRegions][NumSlots6]);
+                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr7[NumSubRegions][NumSlots7]);
+                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr8[NumSubRegions][NumSlots8]);
+                    BX_ALIGN_DECL_16(void* m_freeSlotsPtr9[NumSubRegions][NumSlots9]);
+                #else
+                    struct FreeSlot
+                    {
+                        uint32_t m_size;
+                        void*    m_ptr;
+                    };
+                    typedef dm::List<FreeSlot> FreeSlotList;
+
+                    FreeSlotList m_freeSlots[NumRegions*NumSubRegions];
+                    uint8_t m_freeSlotsData[TotalSlotCount*FreeSlotList::SizePerElement];
+                #endif //CS_ALLOCAOTR_IMPL
             };
 
             StaticStorage   m_staticStorage;
@@ -1083,9 +1772,9 @@ namespace cs
         static Memory s_memory;
 
         template <typename StackTy>
-        struct StackAllocator : public cs::StackAllocatorI
+        struct StackAllocatorImpl : public cs::StackAllocatorI
         {
-            virtual ~StackAllocator()
+            virtual ~StackAllocatorImpl()
             {
             }
 
@@ -1138,7 +1827,7 @@ namespace cs
             StackTy m_stack;
         };
 
-        struct FixedStackAllocator : public StackAllocator<FixedStack>
+        struct FixedStackAllocator : public StackAllocatorImpl<FixedStack>
         {
             virtual ~FixedStackAllocator()
             {
@@ -1155,7 +1844,7 @@ namespace cs
             }
         };
 
-        struct DynamicStackAllocator : public StackAllocator<DynamicStack>
+        struct DynamicStackAllocator : public StackAllocatorImpl<DynamicStack>
         {
             virtual ~DynamicStackAllocator()
             {
@@ -1264,16 +1953,16 @@ namespace cs
         };
         static StackList s_stackList;
 
-        struct CsStaticAllocator : public bx::ReallocatorI
+        struct StaticAllocator : public bx::ReallocatorI
         {
-            CsStaticAllocator()
+            StaticAllocator()
             {
                 #if CS_ALLOC_PRINT_STATS
                 m_allocCount = 0;
                 #endif //CS_ALLOC_PRINT_STATS
             }
 
-            virtual ~CsStaticAllocator()
+            virtual ~StaticAllocator()
             {
             }
 
@@ -1313,11 +2002,11 @@ namespace cs
             uint32_t m_allocCount;
             #endif //CS_ALLOC_PRINT_STATS
         };
-        static CsStaticAllocator s_staticAllocator;
+        static StaticAllocator s_staticAllocator;
 
-        struct CsStackAllocator : public StackAllocatorI
+        struct StackAllocator : public cs::StackAllocatorI
         {
-            CsStackAllocator()
+            StackAllocator()
             {
                 #if CS_ALLOC_PRINT_STATS
                 m_alloc   = 0;
@@ -1325,7 +2014,7 @@ namespace cs
                 #endif //CS_ALLOC_PRINT_STATS
             }
 
-            virtual ~CsStackAllocator()
+            virtual ~StackAllocator()
             {
             }
 
@@ -1390,11 +2079,11 @@ namespace cs
             uint32_t m_realloc;
             #endif //CS_ALLOC_PRINT_STATS
         };
-        static CsStackAllocator s_stackAllocator;
+        static StackAllocator s_stackAllocator;
 
-        struct CsMainAllocator : public bx::ReallocatorI
+        struct MainAllocator : public bx::ReallocatorI
         {
-            virtual ~CsMainAllocator()
+            virtual ~MainAllocator()
             {
             }
 
@@ -1419,11 +2108,11 @@ namespace cs
                 return s_memory.realloc(_ptr, _size);
             }
         };
-        static CsMainAllocator s_mainAllocator;
+        static MainAllocator s_mainAllocator;
 
-        struct CsDelayedFreeAllocator : public bx::AllocatorI
+        struct DelayedFreeAllocator : public bx::AllocatorI
         {
-            virtual ~CsDelayedFreeAllocator()
+            virtual ~DelayedFreeAllocator()
             {
             }
 
@@ -1466,11 +2155,11 @@ namespace cs
 
             dm::ListT<PostponedFree, 512> m_free;
         };
-        static CsDelayedFreeAllocator s_delayedFreeAllocator;
+        static DelayedFreeAllocator s_delayedFreeAllocator;
 
-        struct CsBgfxAllocator : public bx::ReallocatorI
+        struct BgfxAllocator : public bx::ReallocatorI
         {
-            CsBgfxAllocator()
+            BgfxAllocator()
             {
                 #if CS_ALLOC_PRINT_STATS
                 m_alloc   = 0;
@@ -1479,7 +2168,7 @@ namespace cs
                 #endif //CS_ALLOC_PRINT_STATS
             }
 
-            virtual ~CsBgfxAllocator()
+            virtual ~BgfxAllocator()
             {
             }
 
@@ -1547,8 +2236,8 @@ namespace cs
             bx::LwMutex m_mutex;
             #endif //CS_ALLOC_PRINT_STATS
         };
-        static CsBgfxAllocator s_bgfxAllocator;
-    #endif // CS_USE_INTERNAL_ALLOCATOR
+        static BgfxAllocator s_bgfxAllocator;
+    #endif // !CS_USE_INTERNAL_ALLOCATOR
 
     struct CrtAllocator : public bx::ReallocatorI
     {
@@ -1713,9 +2402,9 @@ namespace cs
     };
     static CrtStackAllocator s_crtStackAllocator;
 
-    struct DelayedFreeCrtAllocator : public bx::AllocatorI
+    struct CrtDelayedFreeAllocator : public bx::AllocatorI
     {
-        virtual ~DelayedFreeCrtAllocator()
+        virtual ~CrtDelayedFreeAllocator()
         {
         }
 
@@ -1758,7 +2447,121 @@ namespace cs
 
         dm::ListT<PostponedFree, 512> m_free;
     };
-    static DelayedFreeCrtAllocator s_delayedFreeCrtAllocator;
+    static CrtDelayedFreeAllocator s_crtDelayedFreeAllocator;
+
+#if 0 // Debug only.
+    struct StackAllocatorEmul : public StackAllocatorI
+    {
+        StackAllocatorEmul()
+        {
+            #if CS_ALLOC_PRINT_STATS
+            m_alloc   = 0;
+            m_realloc = 0;
+            #endif //CS_ALLOC_PRINT_STATS
+
+            m_stackFrame = 0;
+            m_pointers.init(MaxStackFramesEstimate, &s_crtAllocator);
+            for (uint32_t ii = MaxStackFramesEstimate; ii--; )
+            {
+                m_pointers[ii].init(MaxPointersPerFrameEstiamte, &s_crtAllocator);
+            }
+        }
+
+        virtual ~StackAllocatorEmul()
+        {
+            for (uint32_t ii = m_pointers.count(); ii--; )
+            {
+                m_pointers[ii].destroy();
+            }
+
+            m_pointers.destroy();
+        }
+
+        virtual void* alloc(size_t _size, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
+        {
+            BX_UNUSED(_align, _file, _line);
+
+            #if CS_ALLOC_PRINT_STATS
+            m_alloc++;
+            #endif //CS_ALLOC_PRINT_STATS
+
+            void* ptr = s_memory.alloc(_size);
+            m_pointers[m_stackFrame].add(ptr);
+
+            return ptr;
+        }
+
+        virtual void free(void* _ptr, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
+        {
+            BX_UNUSED(_ptr, _align, _file, _line);
+
+            // do nothing.
+        }
+
+        virtual void* realloc(void* _ptr, size_t _size, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
+        {
+            BX_UNUSED(_align, _file, _line);
+
+            #if CS_ALLOC_PRINT_STATS
+            m_realloc++;
+            #endif //CS_ALLOC_PRINT_STATS
+
+            //TODO: in debug mode, check that the pointer is present in m_pointers[m_stackFrame].
+
+            return s_memory.realloc(_ptr, _size);
+        }
+
+        virtual void push() BX_OVERRIDE
+        {
+            //TODO: debug print/count.
+
+            m_stackFrame++;
+        }
+
+        virtual void pop() BX_OVERRIDE
+        {
+            PtrArray& ptrArray = m_pointers[m_stackFrame];
+            for (uint32_t ii = ptrArray.count(); ii--; )
+            {
+                s_memory.free(ptrArray[ii]);
+            }
+            ptrArray.reset();
+
+            m_stackFrame--;
+        }
+
+        #if CS_ALLOC_PRINT_STATS
+        void printStats()
+        {
+            fprintf(stderr
+                  , "Crt stack allocator:\n"
+                    "\t%4d (alloc)\n"
+                    "\t%4d (realloc)\n\n"
+                  , m_alloc
+                  , m_realloc
+                  );
+        }
+        #endif //CS_ALLOC_PRINT_STATS
+
+    private:
+        enum
+        {
+            MaxStackFramesEstimate      = 16,
+            MaxPointersPerFrameEstiamte = 128,
+        };
+
+        typedef dm::Array<void*> PtrArray;
+
+        #if CS_ALLOC_PRINT_STATS
+        uint32_t m_alloc;
+        uint32_t m_realloc;
+        #endif //CS_ALLOC_PRINT_STATS
+
+        uint32_t m_stackFrame;
+        dm::ObjArray<PtrArray> m_pointers;
+    };
+    static StackAllocatorEmul s_stackAllocatorEmul;
+#endif // 0
 
     bx::ReallocatorI* g_crtAlloc      = &s_crtAllocator;
     StackAllocatorI*  g_crtStackAlloc = &s_crtStackAllocator;
@@ -1773,7 +2576,7 @@ namespace cs
         bx::ReallocatorI* g_staticAlloc = &s_crtAllocator;
         StackAllocatorI*  g_stackAlloc  = &s_crtStackAllocator;
         bx::ReallocatorI* g_mainAlloc   = &s_crtAllocator;
-        bx::AllocatorI*   g_delayedFree = &s_delayedFreeCrtAllocator;
+        bx::AllocatorI*   g_delayedFree = &s_crtDelayedFreeAllocator;
         bx::ReallocatorI* g_bgfxAlloc   = &s_crtAllocator;
     #endif // CS_USE_INTERNAL_ALLOCATOR
 
@@ -1843,7 +2646,7 @@ namespace cs
 
         void allocGc()
         {
-            s_delayedFreeCrtAllocator.cleanup();
+            s_crtDelayedFreeAllocator.cleanup();
         }
 
         void allocDestroy()
