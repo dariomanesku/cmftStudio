@@ -1170,7 +1170,7 @@ namespace cs
                         return removeFreeSpaceSSE(_ptr, _size);
                     }
                 #else
-                    bool removeFreeSpace(void* _ptr, uint32_t _size, uint16_t _group, uint16_t _handle)
+                    bool removeFreeSpace(void* /*_ptr*/, uint32_t /*_size*/, uint16_t _group, uint16_t _handle)
                     {
                         if (_handle != UINT16_MAX)
                         {
@@ -1466,7 +1466,7 @@ namespace cs
                                     if (slot.m_size > uint32_t(totalSize))
                                     {
                                         void* ptr = consumeFreeSpace(group, ii, slot.m_size, uint32_t(totalSize));
-                                        return NULL;
+                                        return ptr;
                                     }
 
                                 }
