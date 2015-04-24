@@ -3,6 +3,8 @@
  * License: http://www.opensource.org/licenses/BSD-2-Clause
  */
 
+#include "allocator_p.h"
+
 void* alloc(size_t _size)
 {
     uint8_t* curr = getStackPtr();

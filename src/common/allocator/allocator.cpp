@@ -6,6 +6,7 @@
 #include "../appconfig.h"
 #include "allocator_config.h"
 #include "allocator.h"
+#include "allocator_p.h"
 
 #include <stdio.h>                       // fprintf
 #include <emmintrin.h>                   // __m128i
@@ -23,56 +24,6 @@
 
 #include <bx/thread.h>                   // bx::Mutex
 #include <bx/uint32_t.h>                 // bx::uint32_cntlz
-
-#if CS_ALLOC_PRINT_FILELINE
-    #define CS_ALLOC_FILE_LINE BX_FILE_LINE_LITERAL
-#else
-    #define CS_ALLOC_FILE_LINE
-#endif //CS_ALLOC_PRINT_FILELINE
-
-#define CS_ALLOC_PRINT(_format, ...) do { fprintf(stderr, "CS MEM " CS_ALLOC_FILE_LINE "" _format "\n", ##__VA_ARGS__); } while(0)
-
-#if CS_ALLOC_PRINT_STATS
-    #define CS_PRINT_MEM_STATS(_format, ...) CS_ALLOC_PRINT(_format, __VA_ARGS__)
-#else
-    #define CS_PRINT_MEM_STATS(...)
-#endif //CS_ALLOC_PRINT_STATS
-
-#if CS_ALLOC_PRINT_STATIC
-    #define CS_PRINT_STATIC(_format, ...) CS_ALLOC_PRINT(_format, __VA_ARGS__)
-#else
-    #define CS_PRINT_STATIC(...)
-#endif //CS_ALLOC_PRINT_STATIC
-
-#if CS_ALLOC_PRINT_SMALL
-    #define CS_PRINT_SMALL(_format, ...) CS_ALLOC_PRINT(_format, __VA_ARGS__)
-#else
-    #define CS_PRINT_SMALL(...)
-#endif //CS_ALLOC_PRINT_SMALL
-
-#if CS_ALLOC_PRINT_STACK
-    #define CS_PRINT_STACK(_format, ...) CS_ALLOC_PRINT(_format, __VA_ARGS__)
-#else
-    #define CS_PRINT_STACK(...)
-#endif //CS_ALLOC_PRINT_STACK
-
-#if CS_ALLOC_PRINT_HEAP
-    #define CS_PRINT_HEAP(_format, ...) CS_ALLOC_PRINT(_format, __VA_ARGS__)
-#else
-    #define CS_PRINT_HEAP(...)
-#endif //CS_ALLOC_PRINT_HEAP
-
-#if CS_ALLOC_PRINT_EXT
-    #define CS_PRINT_EXT(_format, ...) CS_ALLOC_PRINT(_format, __VA_ARGS__)
-#else
-    #define CS_PRINT_EXT(...)
-#endif //CS_ALLOC_PRINT_EXT
-
-#if CS_ALLOC_PRINT_BGFX
-    #define CS_PRINT_BGFX(_format, ...) CS_ALLOC_PRINT(_format, __VA_ARGS__)
-#else
-    #define CS_PRINT_BGFX(...)
-#endif //CS_ALLOC_PRINT_BGFX
 
 namespace cs
 {
