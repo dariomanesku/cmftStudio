@@ -2642,7 +2642,7 @@ namespace cs
 
         size_t allocRemainingStaticMemory()
         {
-            return cs::StaticStorageSize;
+            return DM_STATIC_STORAGE_SIZE;
         }
 
         void allocGc()
