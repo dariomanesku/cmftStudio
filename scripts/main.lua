@@ -76,7 +76,7 @@ defines
     "BGFX_CONFIG_RENDERER_OPENGL=21",
 }
 
-configuration { "vs or mingw-*" }
+configuration { "vs* or mingw-*" }
     defines
     {
         "BGFX_CONFIG_RENDERER_DIRECT3D9=1",
