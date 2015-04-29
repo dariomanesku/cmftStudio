@@ -2597,6 +2597,7 @@ public:
         bgfx::shutdown();
 
         dm::allocPrintStats();
+        cs::allocDestroy();
     }
 
 private:

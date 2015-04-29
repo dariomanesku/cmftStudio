@@ -64,6 +64,8 @@ DM_ALLOC_DEF(9,   32) // for region: 1024MB
 #ifndef DM_ALLOCATOR_CONFIG
 #define DM_ALLOCATOR_CONFIG
 
+    // Use #define DM_ALLOCATOR 0 to fallback to default c-runtime allocator.
+
     #define DM_MEM_MIN_SIZE            DM_MEGABYTES(512)
     #define DM_MEM_DEFAULT_SIZE        DM_MEGABYTES(1536)
     #define DM_MEM_STATIC_STORAGE_SIZE DM_MEGABYTES(32)
@@ -83,41 +85,42 @@ DM_ALLOC_DEF(9,   32) // for region: 1024MB
         #define CS_NATURAL_ALIGNMENT 16
     #endif //CS_NATURAL_ALIGNMENT
 
-    #ifndef CS_ALLOC_PRINT_STATS
-        #define CS_ALLOC_PRINT_STATS 0
-    #endif //CS_ALLOC_PRINT_STATS
+    #ifndef DM_ALLOC_PRINT_STATS
+        #define DM_ALLOC_PRINT_STATS 0
+    #endif //DM_ALLOC_PRINT_STATS
 
-    #ifndef CS_ALLOC_PRINT_USAGE
-        #define CS_ALLOC_PRINT_USAGE 0
-    #endif //CS_ALLOC_PRINT_USAGE
+    #ifndef DM_ALLOC_PRINT_USAGE
+        #define DM_ALLOC_PRINT_USAGE 0
+    #endif //DM_ALLOC_PRINT_USAGE
 
-    #ifndef CS_ALLOC_PRINT_FILELINE
-        #define CS_ALLOC_PRINT_FILELINE 0
-    #endif //CS_ALLOC_PRINT_FILELINE
+    #ifndef DM_ALLOC_PRINT_FILELINE
+        #define DM_ALLOC_PRINT_FILELINE 0
+    #endif //DM_ALLOC_PRINT_FILELINE
 
-    #ifndef CS_ALLOC_PRINT_STATIC
-        #define CS_ALLOC_PRINT_STATIC 0
-    #endif //CS_ALLOC_PRINT_STATIC
+    #ifndef DM_ALLOC_PRINT_STATIC
+        #define DM_ALLOC_PRINT_STATIC 0
+    #endif //DM_ALLOC_PRINT_STATIC
 
-    #ifndef CS_ALLOC_PRINT_SMALL
-        #define CS_ALLOC_PRINT_SMALL 0
-    #endif //CS_ALLOC_PRINT_SMALL
+    #ifndef DM_ALLOC_PRINT_SMALL
+        #define DM_ALLOC_PRINT_SMALL 0
+    #endif //DM_ALLOC_PRINT_SMALL
 
-    #ifndef CS_ALLOC_PRINT_STACK
-        #define CS_ALLOC_PRINT_STACK 0
-    #endif //CS_ALLOC_PRINT_STACK
+    #ifndef DM_ALLOC_PRINT_STACK
+        #define DM_ALLOC_PRINT_STACK 0
+    #endif //DM_ALLOC_PRINT_STACK
 
-    #ifndef CS_ALLOC_PRINT_HEAP
-        #define CS_ALLOC_PRINT_HEAP 0
-    #endif //CS_ALLOC_PRINT_HEAP
+    #ifndef DM_ALLOC_PRINT_HEAP
+        #define DM_ALLOC_PRINT_HEAP 0
+    #endif //DM_ALLOC_PRINT_HEAP
 
-    #ifndef CS_ALLOC_PRINT_EXT
-        #define CS_ALLOC_PRINT_EXT 0
-    #endif //CS_ALLOC_PRINT_EXT
+    #ifndef DM_ALLOC_PRINT_EXT
+        #define DM_ALLOC_PRINT_EXT 0
+    #endif //DM_ALLOC_PRINT_EXT
 
-    #ifndef CS_ALLOC_PRINT_BGFX
-        #define CS_ALLOC_PRINT_BGFX 0
-    #endif //CS_ALLOC_PRINT_BGFX
+    #ifndef DM_ALLOC_PRINT_BGFX
+        #define DM_ALLOC_PRINT_BGFX 0
+    #endif //DM_ALLOC_PRINT_BGFX
+
 #endif // DM_ALLOCATOR_CONFIG
 
 /* vim: set sw=4 ts=4 expandtab: */

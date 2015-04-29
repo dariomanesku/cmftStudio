@@ -20,7 +20,7 @@
 // Allocator.
 //-----
 
-#define CS_USE_INTERNAL_ALLOCATOR 1
+#define DM_ALLOCATOR 1
 #define CS_NATURAL_ALIGNMENT 16
 
 #define CS_OVERRIDE_NEWDELETE         1
