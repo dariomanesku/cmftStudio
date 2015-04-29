@@ -105,7 +105,7 @@ namespace cs
                 m_mutex.unlock();
                 #endif //CS_ALLOC_PRINT_STATS
 
-                CS_PRINT_BGFX("Bgfx alloc: %zuB", _size);
+                DM_PRINT_BGFX("Bgfx alloc: %zuB", _size);
 
                 return DM_ALLOC(dm::mainAlloc, _size);
             }
@@ -120,7 +120,7 @@ namespace cs
                 m_mutex.unlock();
                 #endif //CS_ALLOC_PRINT_STATS
 
-                CS_PRINT_BGFX("Bgfx free: %llu.%lluKB - (0x%p)", dm::U_UKB(allocSizeOf(_ptr)), _ptr);
+                DM_PRINT_BGFX("Bgfx free: %llu.%lluKB - (0x%p)", dm::U_UKB(allocSizeOf(_ptr)), _ptr);
 
                 return DM_FREE(dm::mainAlloc, _ptr);
             }
@@ -135,7 +135,7 @@ namespace cs
                 m_mutex.unlock();
                 #endif //CS_ALLOC_PRINT_STATS
 
-                CS_PRINT_BGFX("Bgfx realloc: %llu.%lluKB - (0x%p)", dm::U_UKB(allocSizeOf(_ptr)), _ptr);
+                DM_PRINT_BGFX("Bgfx realloc: %llu.%lluKB - (0x%p)", dm::U_UKB(allocSizeOf(_ptr)), _ptr);
 
                 return DM_REALLOC(dm::mainAlloc, _ptr, _size);
             }
