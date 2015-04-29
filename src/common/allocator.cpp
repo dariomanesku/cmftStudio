@@ -15,10 +15,13 @@
 
 #include "config.h" // g_config.m_memorySize
 #define DM_MEM_SIZE_FUNC cs::memSize
-static inline size_t memSize()
+namespace cs
 {
-    configFromDefaultPaths(g_config);
-    return size_t(g_config.m_memorySize);
+    static inline size_t memSize()
+    {
+        configFromDefaultPaths(g_config);
+        return size_t(g_config.m_memorySize);
+    }
 }
 #define DM_ALLOCATOR_IMPL
 #   include <dm/allocator/allocator.h>
