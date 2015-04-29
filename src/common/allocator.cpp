@@ -6,17 +6,8 @@
 #include "appconfig.h"
 
 #include <stdio.h>                      // fprintf
-#include <emmintrin.h>                  // __m128i
-
 #include "globals.h"                    // g_frameNum
 #include "tinystl.h"                    // cs::TinyStlAllocator
-
-#include <dm/misc.h>                    // DM_MEGABYTES
-#include <dm/datastructures/array.h>    // dm::Array
-#include <dm/datastructures/objarray.h> // dm::ObjArray
-
-#include <bx/thread.h>                  // bx::Mutex
-#include <bx/uint32_t.h>                // bx::uint32_cntlz
 
 #undef DM_ALLOCATOR_IMPL
 #define DM_ALLOCATOR_IMPL 1
