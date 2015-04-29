@@ -5,13 +5,12 @@
 
 #include "appconfig.h"
 
-#include <stdio.h>                      // fprintf
-#include "globals.h"                    // g_frameNum
-#include "tinystl.h"                    // cs::TinyStlAllocator
+#include <stdio.h>   // fprintf
+#include "globals.h" // g_frameNum
+#include "tinystl.h" // cs::TinyStlAllocator
 
-#undef DM_ALLOCATOR_IMPL
 #define DM_ALLOCATOR_IMPL 1
-#include <dm/allocator/allocator.h>
+#   include <dm/allocator/allocator.h>
 #undef DM_ALLOCATOR_IMPL
 
 namespace cs
@@ -216,7 +215,6 @@ namespace cs
         s_allocatorDestroyed = true;
     }
 }
-
 
 // Alloc redirection.
 //-----
