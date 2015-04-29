@@ -20,25 +20,28 @@
 // Allocator.
 //-----
 
-#define DM_ALLOCATOR 1
-#define CS_NATURAL_ALIGNMENT 16
+#define DM_ALLOCATOR 1 // Using 0 here makes implementation fallback to C-runtime allocator functions.
+#define DM_NATURAL_ALIGNMENT 16
+
+#define DM_ALLOC_PRINT_STATS  0
+#define DM_ALLOC_PRINT_USAGE  0
+#define DM_ALLOC_PRINT_STATIC 0
+#define DM_ALLOC_PRINT_SMALL  0
+#define DM_ALLOC_PRINT_STACK  0
+#define DM_ALLOC_PRINT_HEAP   0
+#define DM_ALLOC_PRINT_EXT    0
+#define DM_ALLOC_PRINT_BGFX   0
+
+#define DM_ALLOC_PRINT_FILELINE 0
+
+// Allocator overrides.
+//-----
 
 #define CS_OVERRIDE_NEWDELETE         1
 #define CS_OVERRIDE_TINYSTL_ALLOCATOR 1
 #define CS_OVERRIDE_STBI_ALLOCATOR    1
 #define CS_OBJTOBIN_USES_TINYSTL      1 // 1 == tinystl, 0 == std containers.
 #define IMGUI_CONFIG_CUSTOM_ALLOCATOR 1
-
-#define CS_ALLOC_PRINT_STATS  0
-#define CS_ALLOC_PRINT_USAGE  0
-#define CS_ALLOC_PRINT_STATIC 0
-#define CS_ALLOC_PRINT_SMALL  0
-#define CS_ALLOC_PRINT_STACK  0
-#define CS_ALLOC_PRINT_HEAP   0
-#define CS_ALLOC_PRINT_EXT    0
-#define CS_ALLOC_PRINT_BGFX   0
-
-#define CS_ALLOC_PRINT_FILELINE 0
 
 // Resources.
 //-----
