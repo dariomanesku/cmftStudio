@@ -290,34 +290,6 @@ namespace cs
     }
 #endif // CS_OVERRIDE_NEWDELETE && CS_OVERRIDE_TINYSTL_ALLOCATOR
 
-#if IMGUI_CONFIG_CUSTOM_ALLOCATOR && DM_ALLOCATOR
-    void* imguiMalloc(size_t _size, void* /*_userptr*/)
-    {
-        static const bool assertInitialized = dm::allocInit();
-        BX_UNUSED(assertInitialized);
-
-        return DM_ALLOC(dm::mainAlloc, _size);
-    }
-
-    void imguiFree(void* _ptr, void* /*_userptr*/)
-    {
-        static const bool assertInitialized = dm::allocInit();
-        BX_UNUSED(assertInitialized);
-
-        return DM_FREE(dm::mainAlloc, _ptr);
-    }
-#elif IMGUI_CONFIG_CUSTOM_ALLOCATOR
-    void* imguiMalloc(size_t _size, void* /*_userptr*/)
-    {
-        return ::malloc(_size);
-    }
-
-    void imguiFree(void* _ptr, void* /*_userptr*/)
-    {
-        return ::free(_ptr);
-    }
-#endif // IMGUI_CONFIG_CUSTOM_ALLOCATOR && DM_ALLOCATOR
-
 #if !ENTRY_CONFIG_IMPLEMENT_DEFAULT_ALLOCATOR
     namespace entry
     {

@@ -345,7 +345,7 @@ void guiInit()
     #include "gui_res.h"
 
     // Init imgui.
-    s_res.m_fonts[Fonts::Default] = imguiCreate(fontData, fontDataSize, fontSize);
+    s_res.m_fonts[Fonts::Default] = imguiCreate(fontData, fontDataSize, fontSize, dm::mainAlloc);
 
     // Init fonts.
     initFonts();

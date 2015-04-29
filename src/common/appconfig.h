@@ -41,7 +41,6 @@
 #define CS_OVERRIDE_TINYSTL_ALLOCATOR 1
 #define CS_OVERRIDE_STBI_ALLOCATOR    1
 #define CS_OBJTOBIN_USES_TINYSTL      1 // 1 == tinystl, 0 == std containers.
-#define IMGUI_CONFIG_CUSTOM_ALLOCATOR 1
 
 // Resources.
 //-----
