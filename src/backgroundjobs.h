@@ -54,7 +54,7 @@ struct ProjectSaveThreadParams
         const uint32_t size = cs::MaterialList::sizeFor(CS_MAX_MATERIALS)
                             + cs::EnvList::sizeFor(CS_MAX_ENVIRONMENTS)
                             + cs::MeshInstanceList::sizeFor(CS_MAX_MESHINSTANCES);
-        m_memBlock = BX_ALLOC(dm::staticAlloc, size);
+        m_memBlock = DM_ALLOC(dm::staticAlloc, size);
 
         void* ptr = m_memBlock;
         ptr = m_materialList.init(CS_MAX_MATERIALS,     ptr, dm::staticAlloc);
@@ -74,7 +74,7 @@ struct ProjectSaveThreadParams
         m_materialList.destroy();
         m_envList.destroy();
         m_meshInstList.destroy();
-        BX_FREE(dm::staticAlloc, m_memBlock);
+        DM_FREE(dm::staticAlloc, m_memBlock);
     }
 
     Settings m_settings;
@@ -106,7 +106,7 @@ struct ProjectLoadThreadParams
                             + cs::MaterialList::sizeFor(CS_MAX_MATERIALS)
                             + cs::EnvList::sizeFor(CS_MAX_ENVIRONMENTS)
                             + cs::MeshInstanceList::sizeFor(CS_MAX_MESHINSTANCES);
-        m_memBlock = BX_ALLOC(dm::staticAlloc, size);
+        m_memBlock = DM_ALLOC(dm::staticAlloc, size);
 
         void* ptr = m_memBlock;
         ptr = m_textureList.init(CS_MAX_TEXTURES,       ptr, dm::staticAlloc);
@@ -129,7 +129,7 @@ struct ProjectLoadThreadParams
         m_materialList.destroy();
         m_envList.destroy();
         m_meshInstList.destroy();
-        BX_FREE(dm::staticAlloc, m_memBlock);
+        DM_FREE(dm::staticAlloc, m_memBlock);
     }
 
     Settings m_settings;

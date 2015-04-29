@@ -40,7 +40,7 @@ namespace cs
                         , int _compressionLevel          = MZ_BEST_SPEED
                         )
         {
-            uint8_t* writeCacheBuffer = (uint8_t*)BX_ALLOC(_allocator, _writeCacheBufferSize+_deflateBufferSize);
+            uint8_t* writeCacheBuffer = (uint8_t*)DM_ALLOC(_allocator, _writeCacheBufferSize+_deflateBufferSize);
             uint8_t* deflateBuffer = writeCacheBuffer + _writeCacheBufferSize;
 
             init(_file, writeCacheBuffer, deflateBuffer, _writeCacheBufferSize, _deflateBufferSize, _compressionLevel, _allocator);
@@ -79,7 +79,7 @@ namespace cs
         {
             if (NULL != m_cleanupAlloc)
             {
-                BX_FREE(m_cleanupAlloc, m_inBuf);
+                DM_FREE(m_cleanupAlloc, m_inBuf);
             }
         }
 
@@ -261,14 +261,14 @@ namespace cs
                                  )
     {
         // Alloc temporary read/write buffers.
-        uint8_t* readBuf  = (uint8_t*)BX_ALLOC(_tempAlloc, _readBufferSize+_writeBufferSize);
+        uint8_t* readBuf  = (uint8_t*)DM_ALLOC(_tempAlloc, _readBufferSize+_writeBufferSize);
         uint8_t* writeBuf = readBuf + _readBufferSize;
 
         // Execute.
         const bool result = readInflate(_out, _in, _inSize, readBuf, writeBuf, _readBufferSize, _writeBufferSize);
 
         // Cleanup.
-        BX_FREE(_tempAlloc, readBuf);
+        DM_FREE(_tempAlloc, readBuf);
 
         return result;
     }
@@ -282,7 +282,7 @@ namespace cs
                                  )
     {
         // Alloc read/write buffers.
-        uint8_t* inBuf = (uint8_t*)BX_ALLOC(_tempAlloc, _readBufferSize+_writeBufferSize);
+        uint8_t* inBuf = (uint8_t*)DM_ALLOC(_tempAlloc, _readBufferSize+_writeBufferSize);
         uint8_t* outBuf = inBuf + _readBufferSize;
 
         // Create stream.
@@ -344,7 +344,7 @@ namespace cs
 
         // Cleanup.
         inflateEnd(&stream);
-        BX_FREE(_tempAlloc, inBuf);
+        DM_FREE(_tempAlloc, inBuf);
 
         // Out.
         _outData = memory.getData();

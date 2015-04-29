@@ -6,9 +6,9 @@
 #include "common/common.h"
 
 // Include minz implementation.
-#define MZ_MALLOC(x)     BX_ALLOC(dm::stackAlloc, x)
-#define MZ_FREE(x)       BX_FREE(dm::stackAlloc, x)
-#define MZ_REALLOC(p, x) BX_REALLOC(dm::stackAlloc, p, x)
+#define MZ_MALLOC(x)     DM_ALLOC(dm::stackAlloc, x)
+#define MZ_FREE(x)       DM_FREE(dm::stackAlloc, x)
+#define MZ_REALLOC(p, x) DM_REALLOC(dm::stackAlloc, p, x)
 #define MINIZ_NO_MALLOC
 #include "common/miniz.h"
 

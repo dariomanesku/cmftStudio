@@ -315,7 +315,7 @@ bool projectLoad(const char* _path
 
                 uint32_t end;
                 bx::read(&reader, end);
-                BX_CHECK(CMFTSTUDIO_CHUNK_MAGIC_MSH_END == end, "Error reading file!");
+                DM_CHECK(CMFTSTUDIO_CHUNK_MAGIC_MSH_END == end, "Error reading file!");
 
                 const uint64_t size = after-before;
                 outputWindowPrint("[Mesh]     %79s - %4u.%03u MB", cs::getName(mesh), dm::U_UMB(size), size);
@@ -329,7 +329,7 @@ bool projectLoad(const char* _path
 
                 uint32_t end;
                 bx::read(&reader, end);
-                BX_CHECK(CMFTSTUDIO_CHUNK_MAGIC_MIN_END == end, "Error reading file!");
+                DM_CHECK(CMFTSTUDIO_CHUNK_MAGIC_MIN_END == end, "Error reading file!");
             }
         break;
 
@@ -342,7 +342,7 @@ bool projectLoad(const char* _path
 
                 uint32_t end;
                 bx::read(&reader, end);
-                BX_CHECK(CMFTSTUDIO_CHUNK_MAGIC_ENV_END == end, "Error reading file!");
+                DM_CHECK(CMFTSTUDIO_CHUNK_MAGIC_ENV_END == end, "Error reading file!");
 
                 const uint64_t size = after-before;
                 outputWindowPrint("[Env]      %79s - %4u.%03u MB", cs::getName(env), dm::U_UMB(size), size);
@@ -358,7 +358,7 @@ bool projectLoad(const char* _path
 
                 uint32_t end;
                 bx::read(&reader, end);
-                BX_CHECK(CMFTSTUDIO_CHUNK_MAGIC_MAT_END == end, "Error reading file!");
+                DM_CHECK(CMFTSTUDIO_CHUNK_MAGIC_MAT_END == end, "Error reading file!");
 
                 const uint64_t size = after-before;
                 outputWindowPrint("[Material] %79s - %4u.%03u MB", cs::getName(material), dm::U_UMB(size), size);
@@ -374,7 +374,7 @@ bool projectLoad(const char* _path
 
                 uint32_t end;
                 bx::read(&reader, end);
-                BX_CHECK(CMFTSTUDIO_CHUNK_MAGIC_TEX_END == end, "Error reading file!");
+                DM_CHECK(CMFTSTUDIO_CHUNK_MAGIC_TEX_END == end, "Error reading file!");
 
                 const uint64_t size = after-before;
                 outputWindowPrint("[Texture]  %79s - %4u.%03u MB", cs::getName(texture), dm::U_UMB(size), size);
@@ -387,7 +387,7 @@ bool projectLoad(const char* _path
 
                 uint32_t end;
                 bx::read(&reader, end);
-                BX_CHECK(CMFTSTUDIO_CHUNK_MAGIC_SET_END == end, "Error reading file!");
+                DM_CHECK(CMFTSTUDIO_CHUNK_MAGIC_SET_END == end, "Error reading file!");
             }
         break;
 
@@ -423,7 +423,7 @@ bool projectLoad(const char* _path
         cs::release(meshList[ii]);
     }
 
-    BX_FREE(_stackAlloc, data);
+    DM_FREE(_stackAlloc, data);
 
     return true;
 }

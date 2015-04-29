@@ -28,7 +28,7 @@ static inline void readCompressedData(void*& _out, uint32_t& _outSize, const voi
 {
     // Take all available static memory.
     const uint32_t available = (uint32_t)dm::allocRemainingStaticMemory();
-    void* mem = BX_ALLOC(dm::staticAlloc, available);
+    void* mem = DM_ALLOC(dm::staticAlloc, available);
     bx::StaticMemoryBlockWriter memBlock(mem, available);
 
     // Read and decompress data.
@@ -39,7 +39,7 @@ static inline void readCompressedData(void*& _out, uint32_t& _outSize, const voi
 
     // Return back unused memory.
     const uint32_t size = (uint32_t)memBlock.seek(0, bx::Whence::Current);
-    void* data = BX_REALLOC(dm::staticAlloc, mem, size);
+    void* data = DM_REALLOC(dm::staticAlloc, mem, size);
 
     _out     = data;
     _outSize = size;

@@ -26,8 +26,8 @@
 #include "geometry/loadermanager.h" // cs::geometryLoaderCount(), cs::geometryLoaderGetExtensions()
 
 /// Notice: Always call tinydir functions between push/pop(_stackAlloc);
-#define _TINYDIR_MALLOC(_size) BX_ALLOC(dm::stackAlloc, _size)
-#define _TINYDIR_FREE(_ptr)    BX_FREE(dm::stackAlloc, _ptr)
+#define _TINYDIR_MALLOC(_size) DM_ALLOC(dm::stackAlloc, _size)
+#define _TINYDIR_FREE(_ptr)    DM_FREE(dm::stackAlloc, _ptr)
 #include <tinydir/tinydir.h>
 
 // Constants.
