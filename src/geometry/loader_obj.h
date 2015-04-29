@@ -31,7 +31,7 @@ struct ObjOutData : public cs::OutDataHeader
 
 static bool loaderObj(Geometry& _geometry
                     , dm::ReaderSeekerI* _reader
-                    , cs::StackAllocatorI* _stack
+                    , dm::StackAllocatorI* _stack
                     , void* _inData
                     , cs::OutDataHeader** _outData
                     , bx::ReallocatorI* _allocator
@@ -57,7 +57,7 @@ static bool loaderObj(Geometry& _geometry
         inputParams = &defaultValues;
     }
 
-    cs::StackAllocScope scope(_stack);
+    dm::StackAllocScope scope(_stack);
 
     uint8_t* objData = NULL;
     if (_reader->getType() == dm::ReaderWriterTypes::MemoryReader)

@@ -221,7 +221,7 @@ namespace cs
             return handle;
         }
 
-        TyHandle read(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack = g_stackAlloc)
+        TyHandle read(dm::ReaderSeekerI* _reader, dm::StackAllocatorI* _stack = dm::stackAlloc)
         {
             TyImpl* impl = this->createObj();
 
@@ -491,7 +491,7 @@ namespace cs
     template <typename TyHandle>
     struct ReadWriteI
     {
-        void read(dm::ReaderSeekerI* /*_reader*/, cs::StackAllocatorI* /*_stack*/,  TyHandle /*_handle*/)
+        void read(dm::ReaderSeekerI* /*_reader*/, dm::StackAllocatorI* /*_stack*/,  TyHandle /*_handle*/)
         {
             CS_CHECK(false, "Should be overridden!");
         }
@@ -587,7 +587,7 @@ namespace cs
 
         void loadRaw(const void* _data, uint32_t _size)
         {
-            m_data = BX_ALLOC(g_mainAlloc, _size);
+            m_data = BX_ALLOC(dm::mainAlloc, _size);
             memcpy(m_data, _data, _size);
             m_size = _size;
             m_type = Type::Unknown;
@@ -674,7 +674,7 @@ namespace cs
                 if (NULL != file)
                 {
                     m_size = (uint32_t)dm::fsize(file);
-                    m_data = BX_ALLOC(g_mainAlloc, m_size);
+                    m_data = BX_ALLOC(dm::mainAlloc, m_size);
                     m_type = Type::Unknown;
 
                     size_t read = fread(m_data, 1, m_size, file);
@@ -700,7 +700,7 @@ namespace cs
             return load((void*)_path, UINT32_MAX);
         }
 
-        void read(dm::ReaderSeekerI* _reader, TextureHandle _handle = TextureHandle::invalid(), cs::StackAllocatorI* _stack = g_stackAlloc)
+        void read(dm::ReaderSeekerI* _reader, TextureHandle _handle = TextureHandle::invalid(), dm::StackAllocatorI* _stack = dm::stackAlloc)
         {
             BX_UNUSED(_stack);
 
@@ -711,7 +711,7 @@ namespace cs
             resourceMap(id, _handle);
 
             bx::read(_reader, m_size);
-            m_data = (uint8_t*)BX_ALLOC(g_mainAlloc, m_size);
+            m_data = (uint8_t*)BX_ALLOC(dm::mainAlloc, m_size);
             bx::read(_reader, m_data, m_size);
         }
 
@@ -761,7 +761,7 @@ namespace cs
         {
             if (m_freeData && NULL != m_data)
             {
-                BX_FREE(_delayed ? g_delayedFree : g_mainAlloc, m_data);
+                BX_FREE(_delayed ? cs::delayedFree : dm::mainAlloc, m_data);
                 m_data = NULL;
             }
 
@@ -944,7 +944,7 @@ namespace cs
             m_tex[Emissive]     = _emmisive;
         }
 
-        void read(dm::ReaderSeekerI* _reader, MaterialHandle _handle = MaterialHandle::invalid(), cs::StackAllocatorI* _stack = g_stackAlloc)
+        void read(dm::ReaderSeekerI* _reader, MaterialHandle _handle = MaterialHandle::invalid(), dm::StackAllocatorI* _stack = dm::stackAlloc)
         {
             BX_UNUSED(_stack);
 
@@ -1190,7 +1190,7 @@ namespace cs
             destroy();
         }
 
-        void read(dm::ReaderSeekerI* _reader, MeshHandle _handle = MeshHandle::invalid(), cs::StackAllocatorI* _stack = g_stackAlloc)
+        void read(dm::ReaderSeekerI* _reader, MeshHandle _handle = MeshHandle::invalid(), dm::StackAllocatorI* _stack = dm::stackAlloc)
         {
             load(_reader, "bin", NULL, _stack, _handle);
         }
@@ -1198,11 +1198,11 @@ namespace cs
         bool load(dm::ReaderSeekerI* _reader
                 , const char* _ext
                 , void* _userData = NULL
-                , cs::StackAllocatorI* _stack = g_stackAlloc
+                , dm::StackAllocatorI* _stack = dm::stackAlloc
                 , MeshHandle _handle = MeshHandle::invalid()
                 )
         {
-            cs::push(_stack);
+            dm::push(_stack);
 
             cs::OutDataHeader* header = NULL;
             geometryLoad(*this, _reader, _ext, _stack, _userData, &header, _stack);
@@ -1222,7 +1222,7 @@ namespace cs
                 };
             }
 
-            cs::pop(_stack);
+            dm::pop(_stack);
 
             // Get normalized scale.
             if (FLT_MAX == m_normScale)
@@ -1256,7 +1256,7 @@ namespace cs
 
         void createGpuBuffers()
         {
-            m_bufferHandles.init(m_groups.count(), cs::g_mainAlloc);
+            m_bufferHandles.init(m_groups.count(), dm::mainAlloc);
 
             for (uint32_t ii = 0, end = m_groups.count(); ii < end; ++ii)
             {
@@ -1453,13 +1453,13 @@ namespace cs
 
                 if (NULL != group.m_vertexData)
                 {
-                    BX_FREE(_delayed ? g_delayedFree : g_mainAlloc, group.m_vertexData);
+                    BX_FREE(_delayed ? cs::delayedFree : dm::mainAlloc, group.m_vertexData);
                     group.m_vertexData = NULL;
                 }
 
                 if (NULL != group.m_indexData)
                 {
-                    BX_FREE(_delayed ? g_delayedFree : g_mainAlloc, group.m_indexData);
+                    BX_FREE(_delayed ? cs::delayedFree : dm::mainAlloc, group.m_indexData);
                     group.m_indexData = NULL;
                 }
             }
@@ -1471,8 +1471,8 @@ namespace cs
             {
                 for (uint32_t ii = m_groups.count(); ii--; )
                 {
-                    if (NULL != m_groups[ii].m_vertexData)  { BX_FREE(g_mainAlloc, m_groups[ii].m_vertexData); }
-                    if (NULL != m_groups[ii].m_indexData)   { BX_FREE(g_mainAlloc, m_groups[ii].m_indexData);  }
+                    if (NULL != m_groups[ii].m_vertexData)  { BX_FREE(dm::mainAlloc, m_groups[ii].m_vertexData); }
+                    if (NULL != m_groups[ii].m_indexData)   { BX_FREE(dm::mainAlloc, m_groups[ii].m_indexData);  }
                 }
                 m_groups.reset();
             }
@@ -1510,7 +1510,7 @@ namespace cs
             return this->acquire(handle);
         }
 
-        MeshHandle load(const char* _path, void* _userData, cs::StackAllocatorI* _stack)
+        MeshHandle load(const char* _path, void* _userData, dm::StackAllocatorI* _stack)
         {
             const char* ext = dm::fileExtension(_path);
             const bool isBinary = (0 == strcmp(ext, "bin"));
@@ -1562,12 +1562,12 @@ namespace cs
         return s_meshes->load(_data, _size, _ext);
     }
 
-    MeshHandle meshLoad(const char* _filePath, void* _userData, cs::StackAllocatorI* _stack)
+    MeshHandle meshLoad(const char* _filePath, void* _userData, dm::StackAllocatorI* _stack)
     {
         return s_meshes->load(_filePath, _userData, _stack);
     }
 
-    MeshHandle meshLoad(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack)
+    MeshHandle meshLoad(dm::ReaderSeekerI* _reader, dm::StackAllocatorI* _stack)
     {
         return s_meshes->read(_reader, _stack);
     }
@@ -1624,7 +1624,7 @@ namespace cs
         m_selGroup = _other.m_selGroup;
 
         const uint32_t matCount = _other.m_materials.max();
-        m_materials.reinit(matCount, cs::g_mainAlloc);
+        m_materials.reinit(matCount, dm::mainAlloc);
         for (uint32_t ii = matCount; ii--; )
         {
             m_materials[ii] = _other.m_materials[ii];
@@ -1650,7 +1650,7 @@ namespace cs
 
         if (!m_materials.isInitialized())
         {
-            m_materials.init(groupsCount, cs::g_mainAlloc);
+            m_materials.init(groupsCount, dm::mainAlloc);
             m_materials.fillWith(cs::MaterialHandle::invalid());
         }
         else
@@ -1793,11 +1793,11 @@ namespace cs
 
         void create(uint32_t _rgba = 0x303030ff, uint32_t _size = 128)
         {
-            StackAllocScope scope(g_stackAlloc);
+            dm::StackAllocScope scope(dm::stackAlloc);
 
             // Create cubemap image.
             cmft::Image cubemap;
-            cmft::imageCreate(cubemap, _size, _size, _rgba, 1, 6, cmft::TextureFormat::BGRA8, g_stackAlloc);
+            cmft::imageCreate(cubemap, _size, _size, _rgba, 1, 6, cmft::TextureFormat::BGRA8, dm::stackAlloc);
 
             // Setup cubemaps.
             cmft::imageCopy(m_cubemapImage[Environment::Skybox], cubemap);
@@ -1808,7 +1808,7 @@ namespace cs
             imageToTextureRef(m_cubemap[Environment::Iem],    m_cubemapImage[Environment::Iem]);
 
             // Cleanup.
-            cmft::imageUnload(cubemap, g_stackAlloc);
+            cmft::imageUnload(cubemap, dm::stackAlloc);
         }
 
         // Notice this takes ownership of '_image'.
@@ -1831,21 +1831,21 @@ namespace cs
             const bool isLatlong = cmft::imageIsLatLong(_image);
             const TextureFormatInfo tfi = cmftToBgfx(_image.m_format);
 
-            StackAllocScope scope(g_stackAlloc);
+            dm::StackAllocScope scope(dm::stackAlloc);
 
             cmft::ImageHardRef imageRgba32f;
-            cmft::imageRefOrConvert(imageRgba32f, cmft::TextureFormat::RGBA32F, _image, g_stackAlloc);
+            cmft::imageRefOrConvert(imageRgba32f, cmft::TextureFormat::RGBA32F, _image, dm::stackAlloc);
 
             // Cubemap image.
             // Try to go the shortest path possible.
             if (isLatlong)
             {
-                StackAllocScope scope(g_stackAlloc);
+                dm::StackAllocScope scope(dm::stackAlloc);
 
                 cmft::Image tmp;
-                cmft::imageCubemapFromLatLong(tmp, imageRgba32f, true, g_stackAlloc);
+                cmft::imageCubemapFromLatLong(tmp, imageRgba32f, true, dm::stackAlloc);
                 cmft::imageConvert(m_cubemapImage[_which], tfi.convert() ? tfi.cmftFormat() : _image.m_format, tmp);
-                cmft::imageUnload(tmp, g_stackAlloc);
+                cmft::imageUnload(tmp, dm::stackAlloc);
             }
             else if (tfi.convert())
             {
@@ -1855,12 +1855,12 @@ namespace cs
                 }
                 else
                 {
-                    StackAllocScope scope(g_stackAlloc);
+                    dm::StackAllocScope scope(dm::stackAlloc);
 
                     cmft::Image cubemap;
-                    cmft::imageToCubemap(cubemap, imageRgba32f, g_stackAlloc);
+                    cmft::imageToCubemap(cubemap, imageRgba32f, dm::stackAlloc);
                     cmft::imageConvert(m_cubemapImage[_which], tfi.cmftFormat(), cubemap);
-                    cmft::imageUnload(cubemap, g_stackAlloc);
+                    cmft::imageUnload(cubemap, dm::stackAlloc);
                 }
             }
             else //if (!tfi.convert()).
@@ -1889,7 +1889,7 @@ namespace cs
             imageToTextureRef(m_cubemap[_which], m_cubemapImage[_which]);
 
             // Cleanup.
-            cmft::imageUnload(imageRgba32f, g_stackAlloc);
+            cmft::imageUnload(imageRgba32f, dm::stackAlloc);
             cmft::imageUnload(_image);
 
             return true;
@@ -2046,7 +2046,7 @@ namespace cs
             createGpuBuffers(m_cubemap[Environment::Iem]);
         }
 
-        void read(dm::ReaderSeekerI* _reader, EnvHandle _handle = EnvHandle::invalid(), cs::StackAllocatorI* _stack = g_stackAlloc)
+        void read(dm::ReaderSeekerI* _reader, EnvHandle _handle = EnvHandle::invalid(), dm::StackAllocatorI* _stack = dm::stackAlloc)
         {
             BX_UNUSED(_stack);
 
@@ -2076,7 +2076,7 @@ namespace cs
                 bx::read(_reader, image.m_format);
                 bx::read(_reader, image.m_numMips);
                 bx::read(_reader, image.m_numFaces);
-                image.m_data = BX_ALLOC(g_mainAlloc, image.m_dataSize);
+                image.m_data = BX_ALLOC(dm::mainAlloc, image.m_dataSize);
                 bx::read(_reader, image.m_data, image.m_dataSize);
                 this->load(Environment::Enum(ii), image);
             }
@@ -2341,7 +2341,7 @@ namespace cs
             TotalSize = EnvOffset + sizeof(EnvironmentResourceManager),
         };
 
-        m_contextMemoryBlock = BX_ALLOC(g_staticAlloc, TotalSize);
+        m_contextMemoryBlock = BX_ALLOC(dm::staticAlloc, TotalSize);
 
         uint8_t* mem = (uint8_t*)m_contextMemoryBlock;
         s_textures     = ::new (mem+TexOffset) TextureResourceManager();
@@ -2359,7 +2359,7 @@ namespace cs
         s_meshes->~MeshResourceManager();
         s_materials->~MaterialResourceManager();
         s_textures->~TextureResourceManager();
-        BX_FREE(g_staticAlloc, m_contextMemoryBlock);
+        BX_FREE(dm::staticAlloc, m_contextMemoryBlock);
     }
 
     void freeHostMem(TextureHandle _handle)
@@ -2602,7 +2602,7 @@ namespace cs
         s_environments->release(_handle);
     }
 
-    TextureHandle readTexture(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack)
+    TextureHandle readTexture(dm::ReaderSeekerI* _reader, dm::StackAllocatorI* _stack)
     {
         // Read name.
         char name[32];
@@ -2618,7 +2618,7 @@ namespace cs
         return texture;
     }
 
-    MaterialHandle readMaterial(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack)
+    MaterialHandle readMaterial(dm::ReaderSeekerI* _reader, dm::StackAllocatorI* _stack)
     {
         // Read name.
         char name[32];
@@ -2634,7 +2634,7 @@ namespace cs
         return material;
     }
 
-    MeshHandle readMesh(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack)
+    MeshHandle readMesh(dm::ReaderSeekerI* _reader, dm::StackAllocatorI* _stack)
     {
         // Read name.
         char name[32];
@@ -2650,7 +2650,7 @@ namespace cs
         return mesh;
     }
 
-    EnvHandle readEnv(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack)
+    EnvHandle readEnv(dm::ReaderSeekerI* _reader, dm::StackAllocatorI* _stack)
     {
         // Read name.
         char name[32];
@@ -2679,7 +2679,7 @@ namespace cs
 
         uint16_t materialCount;
         bx::read(_reader, materialCount);
-        _instance->m_materials.reinit(materialCount, cs::g_mainAlloc);
+        _instance->m_materials.reinit(materialCount, dm::mainAlloc);
 
         for (uint16_t ii = 0, end = materialCount; ii < end; ++ii)
         {

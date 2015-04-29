@@ -31,7 +31,6 @@ DM_SMALL_ALLOC_DEF(12,   DM_MEGABYTES(8),        8)
 #endif // DM_SMALL_ALLOC_CONFIG
 #undef DM_SMALL_ALLOC_CONFIG
 
-
 // Alloc config.
 //-----
 
@@ -59,13 +58,19 @@ DM_ALLOC_DEF(9,   32) // for region: 1024MB
 #endif // DM_ALLOC_CONFIG
 #undef DM_ALLOC_CONFIG
 
-
 // Allocator config.
 //-----
 
 #ifndef DM_ALLOCATOR_CONFIG
 #define DM_ALLOCATOR_CONFIG
-    #define DM_STATIC_STORAGE_SIZE DM_MEGABYTES(32)
+
+    #define DM_MEM_MIN_SIZE            DM_MEGABYTES(512)
+    #define DM_MEM_DEFAULT_SIZE        DM_MEGABYTES(1536)
+    #define DM_MEM_STATIC_STORAGE_SIZE DM_MEGABYTES(32)
+
+    // To override default preallocated memory size:
+    //     #define DM_MEM_SIZE_FUNC memSizeFunc
+    //     size_t memSizeFunc() { return DM_GIGABYTES(1); }
 
     #define DM_ALLOCATOR_IMPL_LIST  0 // Slower - left for testing purposes.
     #define DM_ALLOCATOR_IMPL_ARRAY 1 // Faster - recommended!
@@ -114,6 +119,5 @@ DM_ALLOC_DEF(9,   32) // for region: 1024MB
         #define CS_ALLOC_PRINT_BGFX 0
     #endif //CS_ALLOC_PRINT_BGFX
 #endif // DM_ALLOCATOR_CONFIG
-
 
 /* vim: set sw=4 ts=4 expandtab: */

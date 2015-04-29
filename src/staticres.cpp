@@ -27,19 +27,19 @@
 static inline void readCompressedData(void*& _out, uint32_t& _outSize, const void* _inData, uint32_t _inDataSize)
 {
     // Take all available static memory.
-    const uint32_t available = (uint32_t)cs::allocRemainingStaticMemory();
-    void* mem = BX_ALLOC(cs::g_staticAlloc, available);
+    const uint32_t available = (uint32_t)dm::allocRemainingStaticMemory();
+    void* mem = BX_ALLOC(dm::staticAlloc, available);
     bx::StaticMemoryBlockWriter memBlock(mem, available);
 
     // Read and decompress data.
     bx::MemoryReader reader(_inData, _inDataSize);
-    const bool result = cs::readInflate(&memBlock, &reader, _inDataSize, cs::g_stackAlloc);
+    const bool result = cs::readInflate(&memBlock, &reader, _inDataSize, dm::stackAlloc);
     CS_CHECK(result, "cs::readInflate() failed!");
     BX_UNUSED(result);
 
     // Return back unused memory.
     const uint32_t size = (uint32_t)memBlock.seek(0, bx::Whence::Current);
-    void* data = BX_REALLOC(cs::g_staticAlloc, mem, size);
+    void* data = BX_REALLOC(dm::staticAlloc, mem, size);
 
     _out     = data;
     _outSize = size;

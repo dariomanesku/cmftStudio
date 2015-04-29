@@ -1708,7 +1708,7 @@ private:
                         dm::strscpya(m_threadParams.m_modelLoad.m_fileName, m_widgets.m_meshBrowser.m_fileName);
 
                         // Acquire stack allocator for this thread.
-                        m_threadParams.m_modelLoad.m_stackAlloc = cs::allocSplitStack(DM_MEGABYTES(200), DM_MEGABYTES(400));
+                        m_threadParams.m_modelLoad.m_stackAlloc = dm::allocSplitStack(DM_MEGABYTES(200), DM_MEGABYTES(400));
 
                         // Start thread.
                         m_backgroundThread.init(modelLoadFunc, (void*)&m_threadParams.m_modelLoad);
@@ -1805,7 +1805,7 @@ private:
                 m_backgroundThread.shutdown();
             }
             m_threadParams.m_modelLoad.m_threadStatus = ThreadStatus::Idle;
-            cs::allocFreeStack(m_threadParams.m_modelLoad.m_stackAlloc);
+            dm::allocFreeStack(m_threadParams.m_modelLoad.m_stackAlloc);
         }
 
         // ProjectWindow action.
@@ -1821,7 +1821,7 @@ private:
                     dm::strscpya(m_threadParams.m_projectLoad.m_name, m_widgets.m_projectWindow.m_load.m_fileName);
 
                     // Acquire stack allocator for this thread.
-                    m_threadParams.m_projectLoad.m_stackAlloc = cs::allocSplitStack(DM_MEGABYTES(800), DM_MEGABYTES(400));
+                    m_threadParams.m_projectLoad.m_stackAlloc = dm::allocSplitStack(DM_MEGABYTES(800), DM_MEGABYTES(400));
 
                     // Start background thread.
                     m_backgroundThread.init(projectLoadFunc, (void*)&m_threadParams.m_projectLoad);
@@ -2032,8 +2032,8 @@ public:
         configFromDefaultPaths(g_config);
 
         // Setup allocator.
-        cs::allocInit();
-        cmft::setAllocator(cs::g_mainAlloc);
+        dm::allocInit();
+        cmft::setAllocator(dm::mainAlloc);
 
         const double splashScreenDuration = 1.5;
         const float modalWindowAnimDuration = 0.06f;
@@ -2052,7 +2052,7 @@ public:
         configFromCli(g_config, _argc, _argv);
 
         // Init bgfx.
-        bgfx::init(g_config.m_renderer, BGFX_PCI_ID_NONE, 0, NULL, cs::g_bgfxAlloc);
+        bgfx::init(g_config.m_renderer, BGFX_PCI_ID_NONE, 0, NULL, cs::bgfxAlloc);
 
         uint32_t reset = BGFX_RESET_VSYNC;
         bgfx::reset(g_config.m_width, g_config.m_height, reset);
@@ -2308,7 +2308,7 @@ public:
                 // Cleanup.
                 m_threadParams.m_projectLoad.reset();
                 m_threadParams.m_projectLoad.m_threadStatus = ThreadStatus::Idle;
-                cs::allocFreeStack(m_threadParams.m_projectLoad.m_stackAlloc);
+                dm::allocFreeStack(m_threadParams.m_projectLoad.m_stackAlloc);
 
                 stateEnter(State::ProjectLoadTransition);
             }
@@ -2596,7 +2596,7 @@ public:
 
         bgfx::shutdown();
 
-        cs::allocDestroy();
+        dm::allocPrintStats();
     }
 
 private:
@@ -2607,13 +2607,13 @@ private:
                                  + m_envList.sizeFor(CS_MAX_ENVIRONMENTS)
                                  + m_meshInstList.sizeFor(CS_MAX_MESHINSTANCES)
                                  ;
-        m_listMem = BX_ALLOC(cs::g_staticAlloc, totalSize);
+        m_listMem = BX_ALLOC(dm::staticAlloc, totalSize);
 
         void* mem = m_listMem;
-        mem = m_textureList.init(CS_MAX_TEXTURES,       mem, cs::g_staticAlloc);
-        mem = m_materialList.init(CS_MAX_MATERIALS,     mem, cs::g_staticAlloc);
-        mem = m_envList.init(CS_MAX_ENVIRONMENTS,       mem, cs::g_staticAlloc);
-        mem = m_meshInstList.init(CS_MAX_MESHINSTANCES, mem, cs::g_staticAlloc);
+        mem = m_textureList.init(CS_MAX_TEXTURES,       mem, dm::staticAlloc);
+        mem = m_materialList.init(CS_MAX_MATERIALS,     mem, dm::staticAlloc);
+        mem = m_envList.init(CS_MAX_ENVIRONMENTS,       mem, dm::staticAlloc);
+        mem = m_meshInstList.init(CS_MAX_MESHINSTANCES, mem, dm::staticAlloc);
     }
 
     void destroyLists()
@@ -2623,7 +2623,7 @@ private:
         m_envList.destroy();
         m_meshInstList.destroy();
 
-        BX_FREE(cs::g_staticAlloc, m_listMem);
+        BX_FREE(dm::staticAlloc, m_listMem);
     }
 
     // Resources.

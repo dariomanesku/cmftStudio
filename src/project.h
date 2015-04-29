@@ -41,7 +41,7 @@ bool projectLoad(const char* _path
                , Settings& _settings
                , OnValidFile _validFileCallback = NULL
                , OnInvalidFile _invalidFileCallback = NULL
-               , cs::StackAllocatorI* _stackAlloc = cs::g_stackAlloc
+               , dm::StackAllocatorI* _stackAlloc = dm::stackAlloc
                );
 
 #endif // CMFTSTUDIO_PROJECT_H_HEADER_GUARD

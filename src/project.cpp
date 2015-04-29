@@ -85,7 +85,7 @@ bool projectSave(const char* _path
     fwrite(&versionMinor, 1, sizeof(versionMinor), file);
 
     // Write compressed data from now on using DeflateFileWriter.
-    cs::DeflateFileWriter writer(file, cs::g_stackAlloc, DM_MEGABYTES(100), DM_MEGABYTES(100), _compressionLevel);
+    cs::DeflateFileWriter writer(file, dm::stackAlloc, DM_MEGABYTES(100), DM_MEGABYTES(100), _compressionLevel);
 
     const uint64_t totalBefore      = writer.getTotal();
     const uint64_t compressedBefore = writer.getTotalCompressed();
@@ -203,7 +203,7 @@ bool projectLoad(const char* _path
                , Settings& _settings
                , OnValidFile _validFileCallback
                , OnInvalidFile _invalidFileCallback
-               , cs::StackAllocatorI* _stackAlloc
+               , dm::StackAllocatorI* _stackAlloc
                )
 {
     // Open file.
@@ -279,7 +279,7 @@ bool projectLoad(const char* _path
     fileReader.seek(curr, bx::Whence::Begin);
 
     // Read and decompress project data.
-    cs::StackAllocScope scope(_stackAlloc);
+    dm::StackAllocScope scope(_stackAlloc);
     DynamicMemoryBlockWriter memory(_stackAlloc, DM_MEGABYTES(512));
     const bool result = cs::readInflate(&memory, &fileReader, compressedSize, _stackAlloc);
     CS_CHECK(result == true, "cs::readInflate() failed!");

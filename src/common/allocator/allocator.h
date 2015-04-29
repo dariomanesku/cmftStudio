@@ -9,9 +9,13 @@
 #include <bx/allocator.h>
 #include <dm/misc.h>
 
-namespace cs
+#define DM_ALLOC   BX_ALLOC
+#define DM_FREE    BX_FREE
+#define DM_REALLOC BX_REALLOC
+
+namespace dm
 {
-    struct BX_NO_VTABLE StackAllocatorI : bx::ReallocatorI
+    struct BX_NO_VTABLE StackAllocatorI : public bx::ReallocatorI
     {
         virtual void push() = 0;
         virtual void pop() = 0;
@@ -43,23 +47,37 @@ namespace cs
         StackAllocatorI* m_stack;
     };
 
-    extern bx::ReallocatorI* g_crtAlloc;      // C-runtime allocator.
-    extern StackAllocatorI*  g_crtStackAlloc; // C-runtime stack allocator.
+    extern bx::ReallocatorI* crtAlloc;      // C-runtime allocator.
+    extern StackAllocatorI*  crtStackAlloc; // C-runtime stack allocator.
 
-    extern bx::ReallocatorI* g_staticAlloc; // Allocated memory is released on exit.
-    extern StackAllocatorI*  g_stackAlloc;  // Used for temporary allocations.
-    extern bx::ReallocatorI* g_mainAlloc;   // Default allocator.
-    extern bx::AllocatorI*   g_delayedFree; // Used for memory that is referenced and passed to bgfx.
-    extern bx::ReallocatorI* g_bgfxAlloc;   // Bgfx allocator.
+    extern bx::ReallocatorI* staticAlloc; // Allocated memory is released on exit.
+    extern StackAllocatorI*  stackAlloc;  // Used for temporary allocations.
+    extern bx::ReallocatorI* mainAlloc;   // Default allocator.
 
     bool             allocInit();
+    bool             allocContains(void* _ptr);
+    size_t           allocSizeOf(void* _ptr);
     size_t           allocRemainingStaticMemory();
     StackAllocatorI* allocCreateStack(size_t _size);
     StackAllocatorI* allocSplitStack(size_t _awayfromStackPtr, size_t _preferedSize);
     void             allocFreeStack(StackAllocatorI* _stackAlloc);
-    void             allocGc();
-    void             allocDestroy();
+    void             allocPrintStats();
+} //namespace dm
 
+#include "../config.h" // g_config.m_memorySize
+
+namespace cs
+{
+    #define DM_MEM_SIZE_FUNC cs::memSize
+    static inline size_t memSize()
+    {
+        configFromDefaultPaths(g_config);
+        return size_t(g_config.m_memorySize);
+    }
+
+    extern bx::AllocatorI*   delayedFree; // Used for memory that is referenced and passed to bgfx.
+    extern bx::ReallocatorI* bgfxAlloc;   // Bgfx allocator.
+    void allocGc();
 } //namespace cs
 
 #endif // CMFTSTUDIO_ALLOCATOR_H_HEADER_GUARD

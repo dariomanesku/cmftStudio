@@ -14,9 +14,9 @@
 #   undef STBI_MALLOC
 #   undef STBI_REALLOC
 #   undef STBI_FREE
-#   define STBI_MALLOC(sz)    BX_ALLOC(cs::g_mainAlloc,sz)
-#   define STBI_REALLOC(p,sz) BX_REALLOC(cs::g_mainAlloc,p,sz)
-#   define STBI_FREE(p)       BX_FREE(cs::g_mainAlloc,p)
+#   define STBI_MALLOC(sz)    BX_ALLOC(dm::mainAlloc,sz)
+#   define STBI_REALLOC(p,sz) BX_REALLOC(dm::mainAlloc,p,sz)
+#   define STBI_FREE(p)       BX_FREE(dm::mainAlloc,p)
 #endif //CS_OVERRIDE_STBI_ALLOCATOR
 
 namespace stb

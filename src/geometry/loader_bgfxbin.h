@@ -35,7 +35,7 @@ struct BgfxBinOutData : public cs::OutDataHeader
 
 static bool loaderBgfxBin(Geometry& _geometry
                         , dm::ReaderSeekerI* _reader
-                        , cs::StackAllocatorI* _stack
+                        , dm::StackAllocatorI* _stack
                         , void* _inData
                         , cs::OutDataHeader** _outData
                         , bx::ReallocatorI* _allocator
@@ -48,10 +48,10 @@ static bool loaderBgfxBin(Geometry& _geometry
         MaxGroupsEstimate = 64,
         MaxPrimitivesPerGroupEstimate = 32,
     };
-    _geometry.m_groups.init(MaxGroupsEstimate, cs::g_mainAlloc);
+    _geometry.m_groups.init(MaxGroupsEstimate, dm::mainAlloc);
 
     Group* group = _geometry.m_groups.addNew();
-    group->m_prims.init(MaxPrimitivesPerGroupEstimate, cs::g_mainAlloc);
+    group->m_prims.init(MaxPrimitivesPerGroupEstimate, dm::mainAlloc);
 
     bool done = false;
     uint32_t chunk;
@@ -64,7 +64,7 @@ static bool loaderBgfxBin(Geometry& _geometry
                 if (NULL == group)
                 {
                     group = _geometry.m_groups.addNew();
-                    group->m_prims.init(MaxPrimitivesPerGroupEstimate, cs::g_mainAlloc);
+                    group->m_prims.init(MaxPrimitivesPerGroupEstimate, dm::mainAlloc);
                 }
 
                 bx::read(_reader, group->m_sphere);
@@ -79,7 +79,7 @@ static bool loaderBgfxBin(Geometry& _geometry
                 group->m_numVertices = numVertices;
 
                 group->m_vertexSize = group->m_numVertices*stride;
-                group->m_vertexData = BX_ALLOC(cs::g_mainAlloc, group->m_vertexSize);
+                group->m_vertexData = BX_ALLOC(dm::mainAlloc, group->m_vertexSize);
                 bx::read(_reader, group->m_vertexData, group->m_vertexSize);
             }
         break;
@@ -89,14 +89,14 @@ static bool loaderBgfxBin(Geometry& _geometry
                 if (NULL == group)
                 {
                     group = _geometry.m_groups.addNew();
-                    group->m_prims.init(MaxPrimitivesPerGroupEstimate, cs::g_mainAlloc);
+                    group->m_prims.init(MaxPrimitivesPerGroupEstimate, dm::mainAlloc);
                 }
 
                 bx::read(_reader, group->m_numIndices);
 
                 group->m_32bitIndexBuffer = false;
                 group->m_indexSize = group->m_numIndices*sizeof(uint16_t);
-                group->m_indexData = BX_ALLOC(cs::g_mainAlloc, group->m_indexSize);
+                group->m_indexData = BX_ALLOC(dm::mainAlloc, group->m_indexSize);
                 bx::read(_reader, group->m_indexData, group->m_indexSize);
             }
         break;
@@ -106,7 +106,7 @@ static bool loaderBgfxBin(Geometry& _geometry
                 if (NULL == group)
                 {
                     group = _geometry.m_groups.addNew();
-                    group->m_prims.init(MaxPrimitivesPerGroupEstimate, cs::g_mainAlloc);
+                    group->m_prims.init(MaxPrimitivesPerGroupEstimate, dm::mainAlloc);
                 }
 
                 uint16_t len;
@@ -119,7 +119,7 @@ static bool loaderBgfxBin(Geometry& _geometry
                 }
                 else
                 {
-                    cs::StackAllocScope scope(_stack);
+                    dm::StackAllocScope scope(_stack);
 
                     void* matName = BX_ALLOC(_stack, len);
 
@@ -145,7 +145,7 @@ static bool loaderBgfxBin(Geometry& _geometry
                     }
                     else
                     {
-                        cs::StackAllocScope scope(_stack);
+                        dm::StackAllocScope scope(_stack);
 
                         void* matName = BX_ALLOC(_stack, len);
 

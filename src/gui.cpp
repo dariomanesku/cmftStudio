@@ -26,8 +26,8 @@
 #include "geometry/loadermanager.h" // cs::geometryLoaderCount(), cs::geometryLoaderGetExtensions()
 
 /// Notice: Always call tinydir functions between push/pop(_stackAlloc);
-#define _TINYDIR_MALLOC(_size) BX_ALLOC(cs::g_stackAlloc, _size)
-#define _TINYDIR_FREE(_ptr)    BX_FREE(cs::g_stackAlloc, _ptr)
+#define _TINYDIR_MALLOC(_size) BX_ALLOC(dm::stackAlloc, _size)
+#define _TINYDIR_FREE(_ptr)    BX_FREE(dm::stackAlloc, _ptr)
 #include <tinydir/tinydir.h>
 
 // Constants.
@@ -1960,7 +1960,7 @@ bool imguiBrowser(int32_t _height
 
     const char* selectFile = _selectFile ? _selectFile : _state.m_fileNameExt;
 
-    cs::StackAllocScope scope(cs::g_stackAlloc);
+    dm::StackAllocScope scope(dm::stackAlloc);
 
     tinydir_dir dir;
     tinydir_open_sorted(&dir, _state.m_directory);
@@ -2141,7 +2141,7 @@ void imguiBrowser(int32_t _height
         handles[numHandles++] = _state.m_files.getHandleAt(ii);
     }
 
-    cs::StackAllocScope scope(cs::g_stackAlloc);
+    dm::StackAllocScope scope(dm::stackAlloc);
 
     tinydir_dir dir;
     tinydir_open_sorted(&dir, _state.m_directory);

@@ -36,7 +36,7 @@ namespace cs
     };
     typedef bool (*GeometryLoadFn)(Geometry& _geometry
                                  , dm::ReaderSeekerI* _reader
-                                 , cs::StackAllocatorI* _stack
+                                 , dm::StackAllocatorI* _stack
                                  , void* _inData
                                  , OutDataHeader** _outData
                                  , bx::ReallocatorI* _outDataAlloc
@@ -52,24 +52,24 @@ namespace cs
 
     bool geometryLoad(Geometry& _geometry
                     , const char* _path
-                    , cs::StackAllocatorI* _stack     = g_stackAlloc
+                    , dm::StackAllocatorI* _stack     = dm::stackAlloc
                     , void* _inData                   = NULL
                     , OutDataHeader** _outData        = NULL
-                    , bx::ReallocatorI* _outDataAlloc = g_mainAlloc
+                    , bx::ReallocatorI* _outDataAlloc = dm::mainAlloc
                     );
     bool geometryLoad(Geometry& _geometry
                     , const void* _data, size_t _size, const char* _ext
-                    , cs::StackAllocatorI* _stack     = g_stackAlloc
+                    , dm::StackAllocatorI* _stack     = dm::stackAlloc
                     , void* _inData                   = NULL
                     , OutDataHeader** _outData        = NULL
-                    , bx::ReallocatorI* _outDataAlloc = g_mainAlloc
+                    , bx::ReallocatorI* _outDataAlloc = dm::mainAlloc
                     );
     bool geometryLoad(Geometry& _geometry
                     , dm::ReaderSeekerI* _reader, const char* _ext
-                    , cs::StackAllocatorI* _stack     = g_stackAlloc
+                    , dm::StackAllocatorI* _stack     = dm::stackAlloc
                     , void* _inData                   = NULL
                     , OutDataHeader** _outData        = NULL
-                    , bx::ReallocatorI* _outDataAlloc = g_mainAlloc
+                    , bx::ReallocatorI* _outDataAlloc = dm::mainAlloc
                     );
 
 } // namespace cs

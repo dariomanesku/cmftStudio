@@ -79,7 +79,7 @@ namespace cs
             return m_loaders.count();
         }
 
-        bool load(Geometry& _geometry, dm::ReaderSeekerI* _reader, const char* _fileExtension, cs::StackAllocatorI* _stack, void* _inData, OutDataHeader** _outData, bx::ReallocatorI* _outDataAlloc = g_mainAlloc)
+        bool load(Geometry& _geometry, dm::ReaderSeekerI* _reader, const char* _fileExtension, dm::StackAllocatorI* _stack, void* _inData, OutDataHeader** _outData, bx::ReallocatorI* _outDataAlloc = dm::mainAlloc)
         {
             for (uint8_t ii = m_loaders.count(); ii--; )
             {
@@ -91,7 +91,7 @@ namespace cs
             return false;
         }
 
-        bool load(Geometry& _geometry, const char* _path, cs::StackAllocatorI* _stack, void* _inData, OutDataHeader** _outData, bx::ReallocatorI* _outDataAlloc = g_mainAlloc)
+        bool load(Geometry& _geometry, const char* _path, dm::StackAllocatorI* _stack, void* _inData, OutDataHeader** _outData, bx::ReallocatorI* _outDataAlloc = dm::mainAlloc)
         {
             dm::CrtFileReader fileReader;
             if (fileReader.open(_path))
@@ -108,7 +108,7 @@ namespace cs
             return result;
         }
 
-        bool load(Geometry& _geometry, const void* _data, size_t _size, const char* _ext, cs::StackAllocatorI* _stack, void* _inData, OutDataHeader** _outData, bx::ReallocatorI* _outDataAlloc = g_mainAlloc)
+        bool load(Geometry& _geometry, const void* _data, size_t _size, const char* _ext, dm::StackAllocatorI* _stack, void* _inData, OutDataHeader** _outData, bx::ReallocatorI* _outDataAlloc = dm::mainAlloc)
         {
             dm::MemoryReader reader(_data, (uint32_t)_size); // Notice: size is limited to 32bit.
             return load(_geometry, &reader, _ext, _stack, _inData, _outData, _outDataAlloc);
@@ -149,17 +149,17 @@ namespace cs
         return s_geometryLoaders.count();
     }
 
-    bool geometryLoad(Geometry& _geometry, const char* _path, cs::StackAllocatorI* _stack, void* _inData, OutDataHeader** _outData, bx::ReallocatorI* _outDataAlloc)
+    bool geometryLoad(Geometry& _geometry, const char* _path, dm::StackAllocatorI* _stack, void* _inData, OutDataHeader** _outData, bx::ReallocatorI* _outDataAlloc)
     {
         return s_geometryLoaders.load(_geometry, _path, _stack, _inData, _outData, _outDataAlloc);
     }
 
-    bool geometryLoad(Geometry& _geometry, const void* _data, size_t _size, const char* _ext, cs::StackAllocatorI* _stack, void* _inData, OutDataHeader** _outData, bx::ReallocatorI* _outDataAlloc)
+    bool geometryLoad(Geometry& _geometry, const void* _data, size_t _size, const char* _ext, dm::StackAllocatorI* _stack, void* _inData, OutDataHeader** _outData, bx::ReallocatorI* _outDataAlloc)
     {
         return s_geometryLoaders.load(_geometry, _data, _size, _ext, _stack, _inData, _outData, _outDataAlloc);
     }
 
-    bool geometryLoad(Geometry& _geometry, dm::ReaderSeekerI* _reader, const char* _ext, cs::StackAllocatorI* _stack, void* _inData, OutDataHeader** _outData, bx::ReallocatorI* _outDataAlloc)
+    bool geometryLoad(Geometry& _geometry, dm::ReaderSeekerI* _reader, const char* _ext, dm::StackAllocatorI* _stack, void* _inData, OutDataHeader** _outData, bx::ReallocatorI* _outDataAlloc)
     {
         return s_geometryLoaders.load(_geometry, _reader, _ext, _stack, _inData, _outData, _outDataAlloc);
     }

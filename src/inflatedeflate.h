@@ -255,7 +255,7 @@ namespace cs
     static inline bool readInflate(bx::WriterI* _out
                                  , bx::ReaderI* _in
                                  , uint32_t _inSize
-                                 , bx::AllocatorI* _tempAlloc = cs::g_stackAlloc
+                                 , bx::AllocatorI* _tempAlloc = dm::stackAlloc
                                  , uint32_t _readBufferSize   = DM_MEGABYTES(2)
                                  , uint32_t _writeBufferSize  = DM_MEGABYTES(4)
                                  )
@@ -274,8 +274,8 @@ namespace cs
     }
 
     static inline bool readInflate(void*& _outData, uint32_t& _outSize, bx::ReaderI& _reader, uint32_t _size
-                                 , bx::ReallocatorI* _outAlloc  = cs::g_mainAlloc
-                                 , bx::AllocatorI*   _tempAlloc = cs::g_stackAlloc
+                                 , bx::ReallocatorI* _outAlloc  = dm::mainAlloc
+                                 , bx::AllocatorI*   _tempAlloc = dm::stackAlloc
                                  , uint32_t _initialDataSize = DM_MEGABYTES(16)
                                  , uint32_t _readBufferSize  = DM_MEGABYTES(2)
                                  , uint32_t _writeBufferSize = DM_MEGABYTES(4)

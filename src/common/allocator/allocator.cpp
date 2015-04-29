@@ -5,8 +5,8 @@
 
 #include "../appconfig.h"
 #include "allocator_config.h"
-#include "allocator.h"
 #include "allocator_p.h"
+#include "allocator.h"
 
 #include <stdio.h>                      // fprintf
 #include <emmintrin.h>                  // __m128i
@@ -14,7 +14,6 @@
 #include "stack.h"                      // DynamicStack, FreeStack
 
 #include "../globals.h"                 // g_frameNum
-#include "../config.h"                  // g_config.m_memorySize
 #include "../datastructures.h"          // HandleAllocT
 #include "../tinystl.h"                 // cs::TinyStlAllocator
 
@@ -25,33 +24,9 @@
 #include <bx/thread.h>                  // bx::Mutex
 #include <bx/uint32_t.h>                // bx::uint32_cntlz
 
-namespace cs
+namespace dm
 {
-    #if !CS_USE_INTERNAL_ALLOCATOR
-        struct Memory
-        {
-            void* alloc(size_t _size)
-            {
-                return ::malloc(_size);
-            }
-
-            void* realloc(void* _ptr, size_t _size)
-            {
-                return ::realloc(_ptr, _size);
-            }
-
-            void free(void* _ptr)
-            {
-                return ::free(_ptr);
-            }
-
-            bool contains(void* /*_ptr*/)
-            {
-                return true;
-            }
-        };
-        static Memory s_memory;
-    #else // CS_USE_INTERNAL_ALLOCATOR.
+    #if CS_USE_INTERNAL_ALLOCATOR
         struct Memory
         {
             Memory()
@@ -77,6 +52,11 @@ namespace cs
             ///  Heap  - Heap grows backward.
             ///
 
+            #ifndef DM_MEM_SIZE_FUNC
+                #define DM_MEM_SIZE_FUNC memSize
+                static inline size_t memSize() { return DM_MEM_DEFAULT_SIZE; }
+            #endif //DM_MEM_SIZE_FUNC
+
             bool init()
             {
                 // Make sure init() is called only once!
@@ -87,8 +67,8 @@ namespace cs
                 }
                 s_initialized = true;
 
-                configFromDefaultPaths(g_config);
-                const size_t size = DM_MAX(DM_MEGABYTES(512), size_t(g_config.m_memorySize));
+                const size_t customSize = DM_MEM_SIZE_FUNC();
+                const size_t size = DM_MAX(DM_MEM_MIN_SIZE, customSize);
 
                 // Alloc.
                 m_orig = ::malloc(size);
@@ -109,7 +89,7 @@ namespace cs
 
                 // Init memory regions.
                 void* ptr = m_memory;
-                ptr = m_staticStorage.init(ptr, DM_STATIC_STORAGE_SIZE);
+                ptr = m_staticStorage.init(ptr, DM_MEM_STATIC_STORAGE_SIZE);
                 ptr = m_segregatedLists.init(ptr, SegregatedLists::DataSize);
 
                 void* end = (void*)((uint8_t*)m_memory + m_size);
@@ -122,7 +102,7 @@ namespace cs
                 return false; // return value is not important.
             }
 
-            void destroy()
+            void printStats()
             {
                 #if CS_ALLOC_PRINT_STATS
                 m_staticStorage.printStats();
@@ -131,7 +111,10 @@ namespace cs
                 m_heap.printStats();
                 printf("External: alloc/free %u.%u, total %llu.%lluMB\n\n", m_externalAlloc, m_externalFree, dm::U_UMB(m_externalSize));
                 #endif //CS_ALLOC_PRINT_STATS
+            }
 
+            void destroy()
+            {
                 // Do not call free, let it stay until the very end of execution. OS will clean it up.
                 //::free(m_orig)#
             }
@@ -1147,10 +1130,10 @@ namespace cs
                 }
 
                 #if DM_HEAP_ARRAY_IMPL
-                #   define DM_UsedMask  0x8000000000000000UL
-                #   define DM_UsedShift 63UL
-                #   define DM_SizeMask  0x7fffffffffffffffUL
-                #   define DM_SizeShift 0UL
+                #   define DM_UsedMask    0x8000000000000000UL
+                #   define DM_UsedShift   63UL
+                #   define DM_SizeMask    0x7fffffffffffffffUL
+                #   define DM_SizeShift   0UL
                 #else
                 #   define DM_UsedMask    0x8000000000000000UL
                 #   define DM_UsedShift   63UL
@@ -1670,7 +1653,7 @@ namespace cs
         static Memory s_memory;
 
         template <typename StackTy>
-        struct StackAllocatorImpl : public cs::StackAllocatorI
+        struct StackAllocatorImpl : public dm::StackAllocatorI
         {
             virtual ~StackAllocatorImpl()
             {
@@ -1756,7 +1739,7 @@ namespace cs
 
         struct StackList
         {
-            cs::StackAllocatorI* createFixed(size_t _size)
+            dm::StackAllocatorI* createFixed(size_t _size)
             {
                 void* mem = s_memory.alloc(_size);
                 CS_CHECK(mem, "Memory for stack could not be allocated. Requested %llu.%llu", dm::U_UMB(_size));
@@ -1764,10 +1747,10 @@ namespace cs
                 FixedStackAllocator* stackAlloc = m_fixedStacks.addNew();
                 stackAlloc->init(mem, _size);
 
-                return (cs::StackAllocatorI*)stackAlloc;
+                return (dm::StackAllocatorI*)stackAlloc;
             }
 
-            bool freeFixed(cs::StackAllocatorI* _fixedStackAlloc)
+            bool freeFixed(dm::StackAllocatorI* _fixedStackAlloc)
             {
                 for (uint16_t ii = m_fixedStacks.count(); ii--; )
                 {
@@ -1784,7 +1767,7 @@ namespace cs
                 return false;
             }
 
-            cs::StackAllocatorI* createSplit(size_t _awayFromStackPtr, size_t _preferredSize)
+            dm::StackAllocatorI* createSplit(size_t _awayFromStackPtr, size_t _preferredSize)
             {
                 if (s_memory.sizeBetweenStackAndHeap() < _awayFromStackPtr)
                 {
@@ -1806,12 +1789,15 @@ namespace cs
                 DynamicStackAllocator* stack = m_dynamicStacks.addNew();
                 stack->init(&s_memory.m_stackPtr, &s_memory.m_heapEnd);
 
-                CS_PRINT_STACK("Stack split: %llu.%lluMB and %llu.%lluMB.", dm::U_UMB(s_memory.sizeBetweenStackAndHeap()), dm::U_UMB(prev.available()));
+                CS_PRINT_STACK("Stack split: %llu.%lluMB and %llu.%lluMB."
+                             , dm::U_UMB(s_memory.sizeBetweenStackAndHeap())
+                             , dm::U_UMB(prev.available())
+                             );
 
-                return (cs::StackAllocatorI*)stack;
+                return (dm::StackAllocatorI*)stack;
             }
 
-            bool freeDynamic(cs::StackAllocatorI* _dynamicStackAlloc)
+            bool freeDynamic(dm::StackAllocatorI* _dynamicStackAlloc)
             {
                 for (uint16_t ii = m_dynamicStacks.count(); ii--; )
                 {
@@ -1837,7 +1823,7 @@ namespace cs
                 return false;
             }
 
-            void free(cs::StackAllocatorI* _stackAlloc)
+            void free(dm::StackAllocatorI* _stackAlloc)
             {
                 freeFixed(_stackAlloc) || freeDynamic(_stackAlloc);
             }
@@ -1902,7 +1888,7 @@ namespace cs
         };
         static StaticAllocator s_staticAllocator;
 
-        struct StackAllocator : public cs::StackAllocatorI
+        struct StackAllocator : public dm::StackAllocatorI
         {
             StackAllocator()
             {
@@ -2007,134 +1993,6 @@ namespace cs
             }
         };
         static MainAllocator s_mainAllocator;
-
-        struct DelayedFreeAllocator : public bx::AllocatorI
-        {
-            virtual ~DelayedFreeAllocator()
-            {
-            }
-
-            virtual void* alloc(size_t _size, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
-            {
-                BX_UNUSED(_align, _file, _line);
-
-                return s_memory.alloc(_size);
-            }
-
-            virtual void free(void* _ptr, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
-            {
-                BX_UNUSED(_align, _file, _line);
-
-                PostponedFree* free = m_free.addNew();
-                free->m_frame = g_frameNum + 2; // Postpone deallocation for two frames.
-                free->m_ptr = _ptr;
-            }
-
-            void cleanup()
-            {
-                const uint32_t currFrame = g_frameNum;
-
-                for (uint16_t ii = m_free.count(); ii--; )
-                {
-                    if (m_free[ii].m_frame <= currFrame)
-                    {
-                        s_memory.free(m_free[ii].m_ptr);
-                        m_free.removeAt(ii);
-                    }
-                }
-            }
-
-        private:
-            struct PostponedFree
-            {
-                uint32_t m_frame;
-                void*    m_ptr;
-            };
-
-            dm::ListT<PostponedFree, 512> m_free;
-        };
-        static DelayedFreeAllocator s_delayedFreeAllocator;
-
-        struct BgfxAllocator : public bx::ReallocatorI
-        {
-            BgfxAllocator()
-            {
-                #if CS_ALLOC_PRINT_STATS
-                m_alloc   = 0;
-                m_realloc = 0;
-                m_free    = 0;
-                #endif //CS_ALLOC_PRINT_STATS
-            }
-
-            virtual ~BgfxAllocator()
-            {
-            }
-
-            virtual void* alloc(size_t _size, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
-            {
-                BX_UNUSED(_align, _file, _line);
-
-                #if CS_ALLOC_PRINT_STATS
-                m_mutex.lock();
-                m_alloc++;
-                m_mutex.unlock();
-                #endif //CS_ALLOC_PRINT_STATS
-
-                CS_PRINT_BGFX("Bgfx alloc: %zuB", _size);
-
-                return s_memory.alloc(_size);
-            }
-
-            virtual void free(void* _ptr, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
-            {
-                BX_UNUSED(_align, _file, _line);
-
-                #if CS_ALLOC_PRINT_STATS
-                m_mutex.lock();
-                m_free++;
-                m_mutex.unlock();
-                #endif //CS_ALLOC_PRINT_STATS
-
-                CS_PRINT_BGFX("Bgfx free: %llu.%lluKB - (0x%p)", dm::U_UKB(s_memory.getSize(_ptr)), _ptr);
-
-                return s_memory.free(_ptr);
-            }
-
-            virtual void* realloc(void* _ptr, size_t _size, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
-            {
-                BX_UNUSED(_align, _file, _line);
-
-                #if CS_ALLOC_PRINT_STATS
-                m_mutex.lock();
-                m_realloc++;
-                m_mutex.unlock();
-                #endif //CS_ALLOC_PRINT_STATS
-
-                CS_PRINT_BGFX("Bgfx realloc: %llu.%lluKB - (0x%p)", dm::U_UKB(s_memory.getSize(_ptr)), _ptr);
-
-                return s_memory.realloc(_ptr, _size);
-            }
-
-            #if CS_ALLOC_PRINT_STATS
-            void printStats()
-            {
-                fprintf(stderr
-                      , "Bgfx allocator:\n"
-                        "\t%d/%d/%d (alloc/realloc/free)\n\n"
-                      , m_alloc, m_realloc, m_free
-                      );
-            }
-            #endif //CS_ALLOC_PRINT_STATS
-
-        private:
-            #if CS_ALLOC_PRINT_STATS
-            uint32_t m_alloc;
-            uint32_t m_realloc;
-            uint32_t m_free;
-            bx::LwMutex m_mutex;
-            #endif //CS_ALLOC_PRINT_STATS
-        };
-        static BgfxAllocator s_bgfxAllocator;
     #endif // !CS_USE_INTERNAL_ALLOCATOR
 
     struct CrtAllocator : public bx::ReallocatorI
@@ -2300,207 +2158,174 @@ namespace cs
     };
     static CrtStackAllocator s_crtStackAllocator;
 
-    struct CrtDelayedFreeAllocator : public bx::AllocatorI
-    {
-        virtual ~CrtDelayedFreeAllocator()
+    #if 0 // Debug only.
+        struct StackAllocatorEmul : public StackAllocatorI
         {
-        }
-
-        virtual void* alloc(size_t _size, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
-        {
-            BX_UNUSED(_align, _file, _line);
-
-            return ::malloc(_size);
-        }
-
-        virtual void free(void* _ptr, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
-        {
-            BX_UNUSED(_align, _file, _line);
-
-            PostponedFree* free = m_free.addNew();
-            free->m_frame = g_frameNum + 2; // Postpone deallocation for two frames.
-            free->m_ptr = _ptr;
-        }
-
-        void cleanup()
-        {
-            const uint32_t currFrame = g_frameNum;
-
-            for (uint16_t ii = m_free.count(); ii--; )
+            StackAllocatorEmul()
             {
-                if (m_free[ii].m_frame <= currFrame)
+                #if CS_ALLOC_PRINT_STATS
+                m_alloc   = 0;
+                m_realloc = 0;
+                #endif //CS_ALLOC_PRINT_STATS
+
+                m_stackFrame = 0;
+                m_pointers.init(MaxStackFramesEstimate, &s_crtAllocator);
+                for (uint32_t ii = MaxStackFramesEstimate; ii--; )
                 {
-                    ::free(m_free[ii].m_ptr);
-                    m_free.removeAt(ii);
+                    m_pointers[ii].init(MaxPointersPerFrameEstiamte, &s_crtAllocator);
                 }
             }
-        }
 
-    private:
-        struct PostponedFree
-        {
-            uint32_t m_frame;
-            void*    m_ptr;
+            virtual ~StackAllocatorEmul()
+            {
+                for (uint32_t ii = m_pointers.count(); ii--; )
+                {
+                    m_pointers[ii].destroy();
+                }
+
+                m_pointers.destroy();
+            }
+
+            virtual void* alloc(size_t _size, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
+            {
+                BX_UNUSED(_align, _file, _line);
+
+                #if CS_ALLOC_PRINT_STATS
+                m_alloc++;
+                #endif //CS_ALLOC_PRINT_STATS
+
+                void* ptr = s_memory.alloc(_size);
+                m_pointers[m_stackFrame].add(ptr);
+
+                return ptr;
+            }
+
+            virtual void free(void* _ptr, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
+            {
+                BX_UNUSED(_ptr, _align, _file, _line);
+
+                // do nothing.
+            }
+
+            virtual void* realloc(void* _ptr, size_t _size, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
+            {
+                BX_UNUSED(_align, _file, _line);
+
+                #if CS_ALLOC_PRINT_STATS
+                m_realloc++;
+                #endif //CS_ALLOC_PRINT_STATS
+
+                //TODO: in debug mode, check that the pointer is present in m_pointers[m_stackFrame].
+
+                return s_memory.realloc(_ptr, _size);
+            }
+
+            virtual void push() BX_OVERRIDE
+            {
+                //TODO: debug print/count.
+
+                m_stackFrame++;
+            }
+
+            virtual void pop() BX_OVERRIDE
+            {
+                PtrArray& ptrArray = m_pointers[m_stackFrame];
+                for (uint32_t ii = ptrArray.count(); ii--; )
+                {
+                    s_memory.free(ptrArray[ii]);
+                }
+                ptrArray.reset();
+
+                m_stackFrame--;
+            }
+
+            #if CS_ALLOC_PRINT_STATS
+            void printStats()
+            {
+                fprintf(stderr
+                      , "Crt stack allocator:\n"
+                        "\t%4d (alloc)\n"
+                        "\t%4d (realloc)\n\n"
+                      , m_alloc
+                      , m_realloc
+                      );
+            }
+            #endif //CS_ALLOC_PRINT_STATS
+
+        private:
+            enum
+            {
+                MaxStackFramesEstimate      = 16,
+                MaxPointersPerFrameEstiamte = 128,
+            };
+
+            typedef dm::Array<void*> PtrArray;
+
+            #if CS_ALLOC_PRINT_STATS
+            uint32_t m_alloc;
+            uint32_t m_realloc;
+            #endif //CS_ALLOC_PRINT_STATS
+
+            uint32_t m_stackFrame;
+            dm::ObjArray<PtrArray> m_pointers;
         };
+        static StackAllocatorEmul s_stackAllocatorEmul;
+    #endif // 0
 
-        dm::ListT<PostponedFree, 512> m_free;
-    };
-    static CrtDelayedFreeAllocator s_crtDelayedFreeAllocator;
-
-#if 0 // Debug only.
-    struct StackAllocatorEmul : public StackAllocatorI
-    {
-        StackAllocatorEmul()
-        {
-            #if CS_ALLOC_PRINT_STATS
-            m_alloc   = 0;
-            m_realloc = 0;
-            #endif //CS_ALLOC_PRINT_STATS
-
-            m_stackFrame = 0;
-            m_pointers.init(MaxStackFramesEstimate, &s_crtAllocator);
-            for (uint32_t ii = MaxStackFramesEstimate; ii--; )
-            {
-                m_pointers[ii].init(MaxPointersPerFrameEstiamte, &s_crtAllocator);
-            }
-        }
-
-        virtual ~StackAllocatorEmul()
-        {
-            for (uint32_t ii = m_pointers.count(); ii--; )
-            {
-                m_pointers[ii].destroy();
-            }
-
-            m_pointers.destroy();
-        }
-
-        virtual void* alloc(size_t _size, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
-        {
-            BX_UNUSED(_align, _file, _line);
-
-            #if CS_ALLOC_PRINT_STATS
-            m_alloc++;
-            #endif //CS_ALLOC_PRINT_STATS
-
-            void* ptr = s_memory.alloc(_size);
-            m_pointers[m_stackFrame].add(ptr);
-
-            return ptr;
-        }
-
-        virtual void free(void* _ptr, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
-        {
-            BX_UNUSED(_ptr, _align, _file, _line);
-
-            // do nothing.
-        }
-
-        virtual void* realloc(void* _ptr, size_t _size, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
-        {
-            BX_UNUSED(_align, _file, _line);
-
-            #if CS_ALLOC_PRINT_STATS
-            m_realloc++;
-            #endif //CS_ALLOC_PRINT_STATS
-
-            //TODO: in debug mode, check that the pointer is present in m_pointers[m_stackFrame].
-
-            return s_memory.realloc(_ptr, _size);
-        }
-
-        virtual void push() BX_OVERRIDE
-        {
-            //TODO: debug print/count.
-
-            m_stackFrame++;
-        }
-
-        virtual void pop() BX_OVERRIDE
-        {
-            PtrArray& ptrArray = m_pointers[m_stackFrame];
-            for (uint32_t ii = ptrArray.count(); ii--; )
-            {
-                s_memory.free(ptrArray[ii]);
-            }
-            ptrArray.reset();
-
-            m_stackFrame--;
-        }
-
-        #if CS_ALLOC_PRINT_STATS
-        void printStats()
-        {
-            fprintf(stderr
-                  , "Crt stack allocator:\n"
-                    "\t%4d (alloc)\n"
-                    "\t%4d (realloc)\n\n"
-                  , m_alloc
-                  , m_realloc
-                  );
-        }
-        #endif //CS_ALLOC_PRINT_STATS
-
-    private:
-        enum
-        {
-            MaxStackFramesEstimate      = 16,
-            MaxPointersPerFrameEstiamte = 128,
-        };
-
-        typedef dm::Array<void*> PtrArray;
-
-        #if CS_ALLOC_PRINT_STATS
-        uint32_t m_alloc;
-        uint32_t m_realloc;
-        #endif //CS_ALLOC_PRINT_STATS
-
-        uint32_t m_stackFrame;
-        dm::ObjArray<PtrArray> m_pointers;
-    };
-    static StackAllocatorEmul s_stackAllocatorEmul;
-#endif // 0
-
-    bx::ReallocatorI* g_crtAlloc      = &s_crtAllocator;
-    StackAllocatorI*  g_crtStackAlloc = &s_crtStackAllocator;
+    bx::ReallocatorI* crtAlloc      = &s_crtAllocator;
+    StackAllocatorI*  crtStackAlloc = &s_crtStackAllocator;
 
     #if CS_USE_INTERNAL_ALLOCATOR
-        bx::ReallocatorI* g_staticAlloc = &s_staticAllocator;
-        StackAllocatorI*  g_stackAlloc  = &s_stackAllocator;
-        bx::ReallocatorI* g_mainAlloc   = &s_mainAllocator;
-        bx::AllocatorI*   g_delayedFree = &s_delayedFreeAllocator;
-        bx::ReallocatorI* g_bgfxAlloc   = &s_bgfxAllocator;
+        bx::ReallocatorI* staticAlloc = &s_staticAllocator;
+        StackAllocatorI*  stackAlloc  = &s_stackAllocator;
+        bx::ReallocatorI* mainAlloc   = &s_mainAllocator;
     #else
-        bx::ReallocatorI* g_staticAlloc = &s_crtAllocator;
-        StackAllocatorI*  g_stackAlloc  = &s_crtStackAllocator;
-        bx::ReallocatorI* g_mainAlloc   = &s_crtAllocator;
-        bx::AllocatorI*   g_delayedFree = &s_crtDelayedFreeAllocator;
-        bx::ReallocatorI* g_bgfxAlloc   = &s_crtAllocator;
-    #endif // CS_USE_INTERNAL_ALLOCATOR
+        bx::ReallocatorI* staticAlloc = &s_crtAllocator;
+        StackAllocatorI*  stackAlloc  = &s_crtStackAllocator;
+        bx::ReallocatorI* mainAlloc   = &s_crtAllocator;
+    #endif //CS_USE_INTERNAL_ALLOCATOR
 
-
-    #if CS_USE_INTERNAL_ALLOCATOR
-        bool allocInit()
-        {
+    bool allocInit()
+    {
+        #if CS_USE_INTERNAL_ALLOCATOR
             return s_memory.init();
-        }
+        #else
+            return true;
+        #endif //CS_USE_INTERNAL_ALLOCATOR
+    }
 
-        size_t allocRemainingStaticMemory()
-        {
+    bool allocContains(void* _ptr)
+    {
+        #if CS_USE_INTERNAL_ALLOCATOR
+            return s_memory.contains(_ptr);
+        #else
+            BX_UNUSED(_ptr);
+            return true;
+        #endif //CS_USE_INTERNAL_ALLOCATOR
+    }
+
+    size_t allocSizeOf(void* _ptr)
+    {
+        #if CS_USE_INTERNAL_ALLOCATOR
+            return s_memory.getSize(_ptr);
+        #else
+            BX_UNUSED(_ptr);
+            return 0;
+        #endif //CS_USE_INTERNAL_ALLOCATOR
+    }
+
+    size_t allocRemainingStaticMemory()
+    {
+        #if CS_USE_INTERNAL_ALLOCATOR
             return s_memory.remainingStaticMemory();
-        }
+        #else
+            return DM_MEM_STATIC_STORAGE_SIZE;
+        #endif //CS_USE_INTERNAL_ALLOCATOR
+    }
 
-        void allocGc()
-        {
-            s_delayedFreeAllocator.cleanup();
-
-            #if CS_ALLOC_PRINT_USAGE
-                s_memory.printUsage();
-            #endif //CS_ALLOC_PRINT_USAGE
-        }
-
-        void allocDestroy()
-        {
+    void allocPrintStats()
+    {
+        #if CS_USE_INTERNAL_ALLOCATOR
             #if CS_ALLOC_PRINT_STATS
             printf("----------------------------------------------\n");
             printf(" Memory usage:\n");
@@ -2510,63 +2335,241 @@ namespace cs
             s_bgfxAllocator.printStats();
             #endif //CS_ALLOC_PRINT_STATS
 
-            s_memory.destroy();
+            s_memory.printStats();
 
             #if CS_ALLOC_PRINT_STATS
             printf("----------------------------------------------\n");
             #endif //CS_ALLOC_PRINT_STATS
-        }
+        #endif //CS_USE_INTERNAL_ALLOCATOR
+    }
 
-        StackAllocatorI* allocCreateStack(size_t _size)
-        {
+    StackAllocatorI* allocCreateStack(size_t _size)
+    {
+        #if CS_USE_INTERNAL_ALLOCATOR
             return s_stackList.createFixed(_size);
-        }
+        #else
+            BX_UNUSED(_size);
+            return &s_crtStackAllocator;
+        #endif //CS_USE_INTERNAL_ALLOCATOR
+    }
 
-        StackAllocatorI* allocSplitStack(size_t _awayFromStackPtr, size_t _preferedSize)
-        {
+    StackAllocatorI* allocSplitStack(size_t _awayFromStackPtr, size_t _preferedSize)
+    {
+        #if CS_USE_INTERNAL_ALLOCATOR
             return s_stackList.createSplit(_awayFromStackPtr, _preferedSize);
-        }
+        #else
+            BX_UNUSED(_awayFromStackPtr, _preferedSize);
+            return &s_crtStackAllocator;
+        #endif //CS_USE_INTERNAL_ALLOCATOR
+    }
 
-        void allocFreeStack(StackAllocatorI* _stackAlloc)
-        {
+    void allocFreeStack(StackAllocatorI* _stackAlloc)
+    {
+        #if CS_USE_INTERNAL_ALLOCATOR
             s_stackList.free(_stackAlloc);
+        #else
+            BX_UNUSED(_stackAlloc);
+        #endif //CS_USE_INTERNAL_ALLOCATOR
+    }
+
+} // namespace dm
+
+namespace cs
+{
+    #if CS_USE_INTERNAL_ALLOCATOR
+        struct DelayedFreeAllocator : public bx::AllocatorI
+        {
+            virtual ~DelayedFreeAllocator()
+            {
+            }
+
+            virtual void* alloc(size_t _size, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
+            {
+                BX_UNUSED(_align, _file, _line);
+
+                return DM_ALLOC(dm::mainAlloc, _size);
+            }
+
+            virtual void free(void* _ptr, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
+            {
+                BX_UNUSED(_align, _file, _line);
+
+                PostponedFree* free = m_free.addNew();
+                free->m_frame = g_frameNum + 2; // Postpone deallocation for two frames.
+                free->m_ptr = _ptr;
+            }
+
+            void cleanup()
+            {
+                const uint32_t currFrame = g_frameNum;
+
+                for (uint16_t ii = m_free.count(); ii--; )
+                {
+                    if (m_free[ii].m_frame <= currFrame)
+                    {
+                        DM_FREE(dm::mainAlloc, m_free[ii].m_ptr);
+                        m_free.removeAt(ii);
+                    }
+                }
+            }
+
+        private:
+            struct PostponedFree
+            {
+                uint32_t m_frame;
+                void*    m_ptr;
+            };
+
+            dm::ListT<PostponedFree, 512> m_free;
+        };
+        static DelayedFreeAllocator s_delayedFreeAllocator;
+
+        struct BgfxAllocator : public bx::ReallocatorI
+        {
+            BgfxAllocator()
+            {
+                #if CS_ALLOC_PRINT_STATS
+                m_alloc   = 0;
+                m_realloc = 0;
+                m_free    = 0;
+                #endif //CS_ALLOC_PRINT_STATS
+            }
+
+            virtual ~BgfxAllocator()
+            {
+            }
+
+            virtual void* alloc(size_t _size, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
+            {
+                BX_UNUSED(_align, _file, _line);
+
+                #if CS_ALLOC_PRINT_STATS
+                m_mutex.lock();
+                m_alloc++;
+                m_mutex.unlock();
+                #endif //CS_ALLOC_PRINT_STATS
+
+                CS_PRINT_BGFX("Bgfx alloc: %zuB", _size);
+
+                return DM_ALLOC(dm::mainAlloc, _size);
+            }
+
+            virtual void free(void* _ptr, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
+            {
+                BX_UNUSED(_align, _file, _line);
+
+                #if CS_ALLOC_PRINT_STATS
+                m_mutex.lock();
+                m_free++;
+                m_mutex.unlock();
+                #endif //CS_ALLOC_PRINT_STATS
+
+                CS_PRINT_BGFX("Bgfx free: %llu.%lluKB - (0x%p)", dm::U_UKB(allocSizeOf(_ptr)), _ptr);
+
+                return DM_FREE(dm::mainAlloc, _ptr);
+            }
+
+            virtual void* realloc(void* _ptr, size_t _size, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
+            {
+                BX_UNUSED(_align, _file, _line);
+
+                #if CS_ALLOC_PRINT_STATS
+                m_mutex.lock();
+                m_realloc++;
+                m_mutex.unlock();
+                #endif //CS_ALLOC_PRINT_STATS
+
+                CS_PRINT_BGFX("Bgfx realloc: %llu.%lluKB - (0x%p)", dm::U_UKB(allocSizeOf(_ptr)), _ptr);
+
+                return DM_REALLOC(dm::mainAlloc, _ptr, _size);
+            }
+
+            #if CS_ALLOC_PRINT_STATS
+            void printStats()
+            {
+                fprintf(stderr
+                      , "Bgfx allocator:\n"
+                        "\t%d/%d/%d (alloc/realloc/free)\n\n"
+                      , m_alloc, m_realloc, m_free
+                      );
+            }
+            #endif //CS_ALLOC_PRINT_STATS
+
+        private:
+            #if CS_ALLOC_PRINT_STATS
+            uint32_t m_alloc;
+            uint32_t m_realloc;
+            uint32_t m_free;
+            bx::LwMutex m_mutex;
+            #endif //CS_ALLOC_PRINT_STATS
+        };
+        static BgfxAllocator s_bgfxAllocator;
+
+        bx::AllocatorI*   delayedFree = &s_delayedFreeAllocator;
+        bx::ReallocatorI* bgfxAlloc   = &s_bgfxAllocator;
+
+        void allocGc()
+        {
+            s_delayedFreeAllocator.cleanup();
         }
     #else
-        bool allocInit()
+        struct CrtDelayedFreeAllocator : public bx::AllocatorI
         {
-            return true;
-        }
+            virtual ~CrtDelayedFreeAllocator()
+            {
+            }
 
-        size_t allocRemainingStaticMemory()
-        {
-            return DM_STATIC_STORAGE_SIZE;
-        }
+            virtual void* alloc(size_t _size, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
+            {
+                BX_UNUSED(_align, _file, _line);
+
+                return ::malloc(_size);
+            }
+
+            virtual void free(void* _ptr, size_t _align, const char* _file, uint32_t _line) BX_OVERRIDE
+            {
+                BX_UNUSED(_align, _file, _line);
+
+                PostponedFree* free = m_free.addNew();
+                free->m_frame = g_frameNum + 2; // Postpone deallocation for two frames.
+                free->m_ptr = _ptr;
+            }
+
+            void cleanup()
+            {
+                const uint32_t currFrame = g_frameNum;
+
+                for (uint16_t ii = m_free.count(); ii--; )
+                {
+                    if (m_free[ii].m_frame <= currFrame)
+                    {
+                        ::free(m_free[ii].m_ptr);
+                        m_free.removeAt(ii);
+                    }
+                }
+            }
+
+        private:
+            struct PostponedFree
+            {
+                uint32_t m_frame;
+                void*    m_ptr;
+            };
+
+            dm::ListT<PostponedFree, 512> m_free;
+        };
+        static CrtDelayedFreeAllocator s_crtDelayedFreeAllocator;
+
+        bx::AllocatorI*   delayedFree = &s_crtDelayedFreeAllocator;
+        bx::ReallocatorI* bgfxAlloc   = dm::crtAlloc;
 
         void allocGc()
         {
             s_crtDelayedFreeAllocator.cleanup();
         }
+    #endif // CS_USE_INTERNAL_ALLOCATOR
+}
 
-        void allocDestroy()
-        {
-        }
-
-        StackAllocatorI* allocCreateStack(size_t /*_size*/)
-        {
-            return &s_crtStackAllocator;
-        }
-
-        StackAllocatorI* allocSplitStack(size_t /*_awayFromStackPtr*/, size_t /*_preferedSize*/)
-        {
-            return &s_crtStackAllocator;
-        }
-
-        void allocFreeStack(StackAllocatorI* /*_stackAlloc*/)
-        {
-        }
-    #endif //CS_USE_INTERNAL_ALLOCATOR
-
-} // namespace cs
 
 // Alloc redirection.
 //-----
@@ -2575,48 +2578,62 @@ namespace cs
     void* operator new(size_t _size)
     {
         // Make sure memory is initialized.
-        static const bool assertInitialized = cs::s_memory.init();
+        static const bool assertInitialized = dm::allocInit();
         BX_UNUSED(assertInitialized);
-        return cs::s_memory.alloc(_size);
+        return DM_ALLOC(dm::mainAlloc, _size);
     }
 
     void* operator new[](size_t _size)
     {
-        static const bool assertInitialized = cs::s_memory.init();
+        static const bool assertInitialized = dm::allocInit();
         BX_UNUSED(assertInitialized);
-        return cs::s_memory.alloc(_size);
+        return DM_ALLOC(dm::mainAlloc, _size);
     }
 
     void operator delete(void* _ptr)
     {
-        static const bool assertInitialized = cs::s_memory.init();
+        static const bool assertInitialized = dm::allocInit();
         BX_UNUSED(assertInitialized);
-        return cs::s_memory.free(_ptr);
+        if (!dm::s_memory.m_destroyed)
+        {
+            DM_FREE(dm::mainAlloc, _ptr);
+        }
+        else if (!dm::s_memory.contains(_ptr))
+        {
+            ::free(_ptr);
+        }
     }
 
     void operator delete[](void* _ptr)
     {
-        static const bool assertInitialized = cs::s_memory.init();
+        static const bool assertInitialized = dm::allocInit();
         BX_UNUSED(assertInitialized);
-        return cs::s_memory.free(_ptr);
+        if (!dm::s_memory.m_destroyed)
+        {
+            DM_FREE(dm::mainAlloc, _ptr);
+        }
+        else if (!dm::s_memory.contains(_ptr))
+        {
+            ::free(_ptr);
+        }
     }
 #endif // CS_OVERRIDE_NEWDELETE && CS_OVERRIDE_TINYSTL_ALLOCATOR
 
 #if IMGUI_CONFIG_CUSTOM_ALLOCATOR && CS_USE_INTERNAL_ALLOCATOR
     void* imguiMalloc(size_t _size, void* /*_userptr*/)
     {
-        static const bool assertInitialized = cs::s_memory.init();
+        static const bool assertInitialized = dm::allocInit();
         BX_UNUSED(assertInitialized);
 
-        return cs::s_memory.alloc(_size);
+        return DM_ALLOC(dm::mainAlloc, _size);
     }
 
     void imguiFree(void* _ptr, void* /*_userptr*/)
     {
-        static const bool assertInitialized = cs::s_memory.init();
+        static const bool assertInitialized = dm::allocInit();
         BX_UNUSED(assertInitialized);
 
-        return cs::s_memory.free(_ptr);
+        return DM_FREE(dm::mainAlloc, _ptr);
     }
 #elif IMGUI_CONFIG_CUSTOM_ALLOCATOR
     void* imguiMalloc(size_t _size, void* /*_userptr*/)
@@ -2636,12 +2653,12 @@ namespace cs
         bx::ReallocatorI* getDefaultAllocator()
         {
             #if CS_USE_INTERNAL_ALLOCATOR
-                static const bool assertInitialized = cs::s_memory.init();
+            static const bool assertInitialized = dm::allocInit();
                 BX_UNUSED(assertInitialized);
 
-                return &cs::s_mainAllocator;
+                return &dm::s_mainAllocator;
             #else
-                return &cs::s_crtAllocator;
+                return &dm::s_crtAllocator;
             #endif // CS_USE_INTERNAL_ALLOCATOR
         }
     }
@@ -2652,17 +2669,17 @@ namespace cs
     #if CS_OVERRIDE_TINYSTL_ALLOCATOR && CS_USE_INTERNAL_ALLOCATOR
         void* TinyStlAllocator::static_allocate(size_t _bytes)
         {
-            static const bool assertInitialized = cs::s_memory.init();
+            static const bool assertInitialized = dm::allocInit();
             BX_UNUSED(assertInitialized);
-            return cs::s_memory.alloc(_bytes);
+            return DM_ALLOC(dm::mainAlloc, _bytes);
         }
 
         void TinyStlAllocator::static_deallocate(void* _ptr, size_t /*_bytes*/)
         {
-            static const bool assertInitialized = cs::s_memory.init();
+            static const bool assertInitialized = dm::allocInit();
             BX_UNUSED(assertInitialized);
 
-            return cs::s_memory.free(_ptr);
+            return DM_FREE(dm::mainAlloc, _ptr);
         }
     #elif CS_OVERRIDE_TINYSTL_ALLOCATOR
         void* TinyStlAllocator::static_allocate(size_t _bytes)

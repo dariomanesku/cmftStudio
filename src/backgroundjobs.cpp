@@ -212,7 +212,7 @@ int32_t cmftFilterFunc(void* _cmftFilterThreadParams)
 
         // Notice: Nvidia crashes the driver if memory is not from crt allcator.
         // Don't know what seems to be the reason. Could be a driver issue.
-        cmft::setAllocator(cs::g_crtAlloc);
+        cmft::setAllocator(dm::crtAlloc);
 
         // Radiance filter.
         const bool success = cmft::imageRadianceFilter(params->m_output
@@ -227,7 +227,7 @@ int32_t cmftFilterFunc(void* _cmftFilterThreadParams)
                                                      , &clContext
                                                      );
 
-        cmft::setAllocator(cs::g_mainAlloc);
+        cmft::setAllocator(dm::mainAlloc);
 
         // Cleanup.
         clContext.destroy();

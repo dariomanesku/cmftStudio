@@ -226,8 +226,8 @@ namespace cs
     MeshHandle meshSphere();
     uint32_t   meshNumGroups(MeshHandle _mesh);
     MeshHandle meshLoad(const void* _data, uint32_t _size, const char* _ext);
-    MeshHandle meshLoad(const char* _filePath, void* _userData = NULL, cs::StackAllocatorI* _stack = g_stackAlloc);
-    MeshHandle meshLoad(dm::ReaderSeekerI& _reader, cs::StackAllocatorI* _stack = g_stackAlloc);
+    MeshHandle meshLoad(const char* _filePath, void* _userData = NULL, dm::StackAllocatorI* _stack = dm::stackAlloc);
+    MeshHandle meshLoad(dm::ReaderSeekerI& _reader, dm::StackAllocatorI* _stack = dm::stackAlloc);
     bool       meshSave(MeshHandle _mesh, const char* _filePath);
 
 
@@ -421,10 +421,10 @@ namespace cs
     void release(MeshHandle _handle);
     void release(EnvHandle _handle);
 
-    TextureHandle  readTexture(dm::ReaderSeekerI* _reader,cs::StackAllocatorI* _stack = g_stackAlloc);
-    MaterialHandle readMaterial(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack = g_stackAlloc);
-    MeshHandle     readMesh(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack = g_stackAlloc);
-    EnvHandle      readEnv(dm::ReaderSeekerI* _reader, cs::StackAllocatorI* _stack = g_stackAlloc);
+    TextureHandle  readTexture(dm::ReaderSeekerI* _reader,dm::StackAllocatorI* _stack = dm::stackAlloc);
+    MaterialHandle readMaterial(dm::ReaderSeekerI* _reader, dm::StackAllocatorI* _stack = dm::stackAlloc);
+    MeshHandle     readMesh(dm::ReaderSeekerI* _reader, dm::StackAllocatorI* _stack = dm::stackAlloc);
+    EnvHandle      readEnv(dm::ReaderSeekerI* _reader, dm::StackAllocatorI* _stack = dm::stackAlloc);
     void           readMeshInstance(dm::ReaderSeekerI* _reader, MeshInstance* _instance);
 
     /// Notice: after read*(), createGpuBuffers*() need to be called from the main thread.
