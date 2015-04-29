@@ -9,7 +9,7 @@
 #include "globals.h" // g_frameNum
 #include "tinystl.h" // cs::TinyStlAllocator
 
-#define DM_ALLOCATOR_IMPL 1
+#define DM_ALLOCATOR_IMPL
 #   include <dm/allocator/allocator.h>
 #undef DM_ALLOCATOR_IMPL
 
