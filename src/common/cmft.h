@@ -6,7 +6,7 @@
 #ifndef CMFTSTUDIO_CMFT_H_HEADER_GUARD
 #define CMFTSTUDIO_CMFT_H_HEADER_GUARD
 
-#include "allocator/allocator.h"
+#include "allocator.h"
 
 // These must be defined before including cmft/allocator.h
 #define CMFT_STACK_PUSH() cs::allocStackPush()

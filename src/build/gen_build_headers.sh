@@ -4,7 +4,7 @@
 #  License: http://www.opensource.org/licenses/BSD-2-Clause
 #
 
-SRC=(../*.cpp ../geometry/*.cpp ../common/*.cpp ../common/allocator/*.cpp)
+SRC=(../*.cpp ../geometry/*.cpp ../common/*.cpp)
 APP=cmftStudioApp.cpp
 RES=cmftStudioApp_static_resources.cpp
 

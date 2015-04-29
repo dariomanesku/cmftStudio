@@ -3,13 +3,13 @@
  * License: http://www.opensource.org/licenses/BSD-2-Clause
  */
 
-#include "../appconfig.h"
+#include "appconfig.h"
 
 #include <stdio.h>                      // fprintf
 #include <emmintrin.h>                  // __m128i
 
-#include "../globals.h"                 // g_frameNum
-#include "../tinystl.h"                 // cs::TinyStlAllocator
+#include "globals.h"                    // g_frameNum
+#include "tinystl.h"                    // cs::TinyStlAllocator
 
 #include <dm/misc.h>                    // DM_MEGABYTES
 #include <dm/datastructures/array.h>    // dm::Array

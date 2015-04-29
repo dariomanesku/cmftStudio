@@ -11,7 +11,7 @@
 #include "../geometry/geometry.cpp"
 #include "../geometry/loadermanager.cpp"
 #include "../geometry/objtobin.cpp"
+#include "../common/allocator.cpp"
 #include "../common/config.cpp"
 #include "../common/globals.cpp"
 #include "../common/timer.cpp"
-#include "../common/allocator/allocator.cpp"

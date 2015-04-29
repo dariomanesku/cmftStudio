@@ -7,7 +7,7 @@
 #define CMFTSTUDIO_COMMON_H_HEADER_GUARD
 
 #include "appconfig.h"
-#include "allocator/allocator.h"
+#include "allocator.h"
 #include "globals.h"
 
 #endif // CMFTSTUDIO_COMMON_H_HEADER_GUARD

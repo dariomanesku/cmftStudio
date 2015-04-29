@@ -7,7 +7,7 @@
 #define CMFTSTUDIO_ALLOCATOR_H_HEADER_GUARD
 
 #include <dm/allocator/allocator.h>
-#include "../config.h" // g_config.m_memorySize
+#include "config.h" // g_config.m_memorySize
 
 namespace cs
 {
