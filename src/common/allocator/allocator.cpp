@@ -4,14 +4,9 @@
  */
 
 #include "../appconfig.h"
-#include "allocator_config.h"
-#include "allocator_p.h"
-//#include "allocator.h"
 
 #include <stdio.h>                      // fprintf
 #include <emmintrin.h>                  // __m128i
-
-#include "stack.h"                      // DynamicStack, FreeStack
 
 #include "../globals.h"                 // g_frameNum
 #include "../tinystl.h"                 // cs::TinyStlAllocator
@@ -25,7 +20,8 @@
 
 #undef DM_ALLOCATOR_IMPL
 #define DM_ALLOCATOR_IMPL 1
-#include "allocator.h"
+#include <dm/allocator/allocator.h>
+#undef DM_ALLOCATOR_IMPL
 
 namespace cs
 {
@@ -353,7 +349,5 @@ namespace cs
         }
     #endif // CS_OVERRIDE_TINYSTL_ALLOCATOR && DM_ALLOCATOR
 } // namespace cs
-
-#undef DM_ALLOCATOR_IMPL
 
 /* vim: set sw=4 ts=4 expandtab: */
