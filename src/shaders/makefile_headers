@@ -28,7 +28,7 @@ SHADER_TMP = $(TEMP)/tmp_cmftStudio_shaders
 
 vs_%.bin.h : vs_%.sc
 	@echo [$(<)]
-	$(SILENT) $(SHADERC) $(VS_FLAGS) --platform linux                  -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_glsl
+	$(SILENT) $(SHADERC) $(VS_FLAGS)  --platform linux                  -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_glsl
 	@cat $(SHADER_TMP) > $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
 	-$(SILENT) $(SHADERC) $(VS_FLAGS) --platform windows -p vs_3_0 -O 3 -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_dx9
 	-@cat $(SHADER_TMP) >> $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
@@ -37,7 +37,7 @@ vs_%.bin.h : vs_%.sc
 
 fs_%.bin.h : fs_%.sc
 	@echo [$(<)]
-	$(SILENT) $(SHADERC) $(FS_FLAGS) --platform linux                  -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_glsl
+	$(SILENT) $(SHADERC) $(FS_FLAGS)  --platform linux                  -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_glsl
 	@cat $(SHADER_TMP) > $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
 	-$(SILENT) $(SHADERC) $(FS_FLAGS) --platform windows -p ps_3_0 -O 3 -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_dx9
 	-@cat $(SHADER_TMP) >> $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
@@ -45,7 +45,7 @@ fs_%.bin.h : fs_%.sc
 	-@cat $(SHADER_TMP) >> $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
 
 .PHONY: all
-all: $(BIN) generate
+all: $(BIN)
 
 .PHONY: generate
 generate:
