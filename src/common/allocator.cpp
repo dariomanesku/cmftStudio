@@ -5,13 +5,27 @@
 
 #include "appconfig.h"
 
-#include <stdio.h>   // fprintf
-#include "globals.h" // g_frameNum
-#include "tinystl.h" // cs::TinyStlAllocator
+#include <stdio.h>                   // fprintf
+#include "globals.h"                 // g_frameNum
+#include "tinystl.h"                 // cs::TinyStlAllocator
+#include <dm/datastructures/list.h>  // dm::ListT
 
+// Dm allocator impl.
+//-----
+
+#include "config.h" // g_config.m_memorySize
+#define DM_MEM_SIZE_FUNC cs::memSize
+static inline size_t memSize()
+{
+    configFromDefaultPaths(g_config);
+    return size_t(g_config.m_memorySize);
+}
 #define DM_ALLOCATOR_IMPL
 #   include <dm/allocator/allocator.h>
 #undef DM_ALLOCATOR_IMPL
+
+// DelayedFree and bgfxAlloc impl.
+//-----
 
 namespace cs
 {
@@ -144,14 +158,8 @@ namespace cs
         };
         static BgfxAllocator s_bgfxAllocator;
 
-        bx::AllocatorI*   delayedFree = &s_delayedFreeAllocator;
-        bx::ReallocatorI* bgfxAlloc   = &s_bgfxAllocator;
+    #else //!DM_ALLOCATOR
 
-        void allocGc()
-        {
-            s_delayedFreeAllocator.cleanup();
-        }
-    #else
         struct CrtDelayedFreeAllocator : public bx::AllocatorI
         {
             virtual ~CrtDelayedFreeAllocator()
@@ -198,7 +206,23 @@ namespace cs
             dm::ListT<PostponedFree, 512> m_free;
         };
         static CrtDelayedFreeAllocator s_crtDelayedFreeAllocator;
+    #endif // DM_ALLOCATOR
+} // namespace cs
 
+// Interface impl.
+//-----
+
+namespace cs
+{
+    #if DM_ALLOCATOR
+        bx::AllocatorI*   delayedFree = &s_delayedFreeAllocator;
+        bx::ReallocatorI* bgfxAlloc   = &s_bgfxAllocator;
+
+        void allocGc()
+        {
+            s_delayedFreeAllocator.cleanup();
+        }
+    #else //!DM_ALLOCATOR.
         bx::AllocatorI*   delayedFree = &s_crtDelayedFreeAllocator;
         bx::ReallocatorI* bgfxAlloc   = dm::crtAlloc;
 
@@ -206,15 +230,14 @@ namespace cs
         {
             s_crtDelayedFreeAllocator.cleanup();
         }
-    #endif // DM_ALLOCATOR
+    #endif //DM_ALLOCATOR
 
-    //TODO
     static bool s_allocatorDestroyed = false;
     void allocDestroy()
     {
         s_allocatorDestroyed = true;
     }
-}
+} // namespace cs
 
 // Alloc redirection.
 //-----

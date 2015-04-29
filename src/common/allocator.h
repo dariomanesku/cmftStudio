@@ -7,17 +7,9 @@
 #define CMFTSTUDIO_ALLOCATOR_H_HEADER_GUARD
 
 #include <dm/allocator/allocator.h>
-#include "config.h" // g_config.m_memorySize
 
 namespace cs
 {
-    #define DM_MEM_SIZE_FUNC cs::memSize
-    static inline size_t memSize()
-    {
-        configFromDefaultPaths(g_config);
-        return size_t(g_config.m_memorySize);
-    }
-
     extern bx::AllocatorI*   delayedFree; // Used for memory that is referenced and passed to bgfx.
     extern bx::ReallocatorI* bgfxAlloc;   // Bgfx allocator.
     void allocGc();
