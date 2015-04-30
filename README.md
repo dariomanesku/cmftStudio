@@ -18,6 +18,7 @@ Download
 
 
 - Latest changes:
+    - Major allocator changes. (30. Apr 2015)
     - Material textures can now be loaded from: dds, ktx, tga, hdr, bmp, gif, jpg, png, pvr, tiff. (8. Apr 2015)
     - Gui now scales down on lower resolution screens! Even if you are on a laptop with screen resolution as low as 1366x768, you should be fine. (24. Mar 2015)
     - Added full screen support.
