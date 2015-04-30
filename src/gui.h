@@ -363,7 +363,7 @@ static const char* sc_textureExtStr[TextureExt::Count] =
     "tiff",
 };
 
-static const char* getTextureExtensionStr(uint8_t _ext)
+static inline const char* getTextureExtensionStr(uint8_t _ext)
 {
     CS_CHECK(_ext < TextureExt::Count, "Accessing array out of bounds.");
     return sc_textureExtStr[_ext];
