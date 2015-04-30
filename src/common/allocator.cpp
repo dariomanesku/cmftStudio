@@ -251,14 +251,16 @@ namespace cs
         // Make sure memory is initialized.
         static const bool assertInitialized = dm::allocInit();
         BX_UNUSED(assertInitialized);
-        return DM_ALLOC(dm::mainAlloc, _size);
+        //return DM_ALLOC(dm::mainAlloc, _size);
+        return dm::s_memory.alloc(_size); // Apple llvm compiler prefers it this way.
     }
 
     void* operator new[](size_t _size)
     {
         static const bool assertInitialized = dm::allocInit();
         BX_UNUSED(assertInitialized);
-        return DM_ALLOC(dm::mainAlloc, _size);
+        //return DM_ALLOC(dm::mainAlloc, _size);
+        return dm::s_memory.alloc(_size); // Apple llvm compiler prefers it this way.
     }
 
     void operator delete(void* _ptr)
@@ -267,7 +269,8 @@ namespace cs
         BX_UNUSED(assertInitialized);
         if (!cs::s_allocatorDestroyed)
         {
-            DM_FREE(dm::mainAlloc, _ptr);
+            //DM_FREE(dm::mainAlloc, _ptr);
+            dm::s_memory.free(_ptr); // Apple llvm compiler prefers it this way.
         }
         else if (!dm::allocContains(_ptr))
         {
@@ -281,7 +284,8 @@ namespace cs
         BX_UNUSED(assertInitialized);
         if (!cs::s_allocatorDestroyed)
         {
-            DM_FREE(dm::mainAlloc, _ptr);
+            //DM_FREE(dm::mainAlloc, _ptr);
+            dm::s_memory.free(_ptr); // Apple llvm compiler prefers it this way.
         }
         else if (!dm::allocContains(_ptr))
         {
