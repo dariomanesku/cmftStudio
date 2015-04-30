@@ -84,11 +84,11 @@ namespace cs
         {
             BgfxAllocator()
             {
-                #if CS_ALLOC_PRINT_STATS
+                #if DM_ALLOC_PRINT_STATS
                 m_alloc   = 0;
                 m_realloc = 0;
                 m_free    = 0;
-                #endif //CS_ALLOC_PRINT_STATS
+                #endif //DM_ALLOC_PRINT_STATS
             }
 
             virtual ~BgfxAllocator()
@@ -99,11 +99,11 @@ namespace cs
             {
                 BX_UNUSED(_align, _file, _line);
 
-                #if CS_ALLOC_PRINT_STATS
+                #if DM_ALLOC_PRINT_STATS
                 m_mutex.lock();
                 m_alloc++;
                 m_mutex.unlock();
-                #endif //CS_ALLOC_PRINT_STATS
+                #endif //DM_ALLOC_PRINT_STATS
 
                 DM_PRINT_BGFX("Bgfx alloc: %zuB", _size);
 
@@ -114,11 +114,11 @@ namespace cs
             {
                 BX_UNUSED(_align, _file, _line);
 
-                #if CS_ALLOC_PRINT_STATS
+                #if DM_ALLOC_PRINT_STATS
                 m_mutex.lock();
                 m_free++;
                 m_mutex.unlock();
-                #endif //CS_ALLOC_PRINT_STATS
+                #endif //DM_ALLOC_PRINT_STATS
 
                 DM_PRINT_BGFX("Bgfx free: %llu.%lluKB - (0x%p)", dm::U_UKB(allocSizeOf(_ptr)), _ptr);
 
@@ -129,18 +129,18 @@ namespace cs
             {
                 BX_UNUSED(_align, _file, _line);
 
-                #if CS_ALLOC_PRINT_STATS
+                #if DM_ALLOC_PRINT_STATS
                 m_mutex.lock();
                 m_realloc++;
                 m_mutex.unlock();
-                #endif //CS_ALLOC_PRINT_STATS
+                #endif //DM_ALLOC_PRINT_STATS
 
                 DM_PRINT_BGFX("Bgfx realloc: %llu.%lluKB - (0x%p)", dm::U_UKB(allocSizeOf(_ptr)), _ptr);
 
                 return DM_REALLOC(dm::mainAlloc, _ptr, _size);
             }
 
-            #if CS_ALLOC_PRINT_STATS
+            #if DM_ALLOC_PRINT_STATS
             void printStats()
             {
                 fprintf(stderr
@@ -149,15 +149,15 @@ namespace cs
                       , m_alloc, m_realloc, m_free
                       );
             }
-            #endif //CS_ALLOC_PRINT_STATS
+            #endif //DM_ALLOC_PRINT_STATS
 
         private:
-            #if CS_ALLOC_PRINT_STATS
+            #if DM_ALLOC_PRINT_STATS
             uint32_t m_alloc;
             uint32_t m_realloc;
             uint32_t m_free;
             bx::LwMutex m_mutex;
-            #endif //CS_ALLOC_PRINT_STATS
+            #endif //DM_ALLOC_PRINT_STATS
         };
         static BgfxAllocator s_bgfxAllocator;
 
