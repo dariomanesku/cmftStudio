@@ -196,7 +196,7 @@ static bool loaderBgfxBin(Geometry& _geometry
         break;
 
         default:
-            CS_CHECK(false, "%08x at %d", chunk, _reader->seek());
+            CS_CHECK(false, "%08x at %lld", chunk, _reader->seek());
         break;
         }
     }

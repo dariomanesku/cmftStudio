@@ -399,7 +399,7 @@ bool projectLoad(const char* _path
 
         default:
             {
-                CS_CHECK(0, "Error reading project file! %08x at %ld", chunk, reader.seek(0, bx::Whence::Current));
+                CS_CHECK(0, "Error reading project file! %08x at %lld", chunk, reader.seek(0, bx::Whence::Current));
                 done = true;
             }
         break;
