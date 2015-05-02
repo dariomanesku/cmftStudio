@@ -971,7 +971,7 @@ void imguiCmftSaveWidget(int32_t _x
         HeightFormat     = 192,
         HeightBrowser    = 517,
         HeightBrowserTab = 672,
-        Height           = 774,
+        Height           = 773,
     };
 
     _state.m_events = GuiEvent::None;
@@ -1518,7 +1518,7 @@ void imguiTonemapWidget(cs::EnvHandle _env
                       , bool _enabled
                       )
 {
-    const int32_t height = 647;
+    const int32_t height = 648;
     const uint8_t latlongPreviewHeight = 120;
     const cs::Environment& env = cs::getObj(_env);
 
@@ -1657,7 +1657,7 @@ void imguiEnvMapBrowserWidget(const char* _name
                             )
 {
     const int32_t browserHeight = 400;
-    const int32_t height = browserHeight + 447;
+    const int32_t height = browserHeight + 457;
 
     _state.m_events = GuiEvent::None;
 
