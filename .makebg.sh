@@ -12,7 +12,7 @@ logfile="${3:-make.log}"
 tempfile="${4:-.make.tmp}"
 
 {
-  echo -n > $logfile
+  touch "$logfile";
   echo '-----------------------------------------' >> "$tempfile"
   date >> "$tempfile"
   echo '-----------------------------------------' >> "$tempfile"
