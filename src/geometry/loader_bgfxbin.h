@@ -9,6 +9,8 @@
 #include "../common/common.h"
 #include "loadermanager.h"
 
+#include <inttypes.h>  // PRId64
+
 namespace bgfx
 {
     int32_t read(bx::ReaderI* _reader, bgfx::VertexDecl& _decl);
@@ -196,7 +198,7 @@ static bool loaderBgfxBin(Geometry& _geometry
         break;
 
         default:
-            CS_CHECK(false, "%08x at %lld", chunk, _reader->seek());
+            CS_CHECK(false, "%08x at %" PRId64 "", chunk, _reader->seek());
         break;
         }
     }
