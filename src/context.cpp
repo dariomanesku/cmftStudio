@@ -727,14 +727,11 @@ namespace cs
                     bgfx::TextureInfo info;
                     m_bgfxHandle = bgfx::createTexture(mem, _flags, 0, &info);
 
-                    m_data     = NULL;
-                    m_size     = 0;
                     m_numMips  = info.numMips;
                     m_width    = info.width;
                     m_height   = info.height;
                     m_format   = info.format;
                     m_type     = info.cubeMap ? Type::TexCube : Type::Tex2D;
-                    m_freeData = false;
                 }
             break;
             case Type::Tex2D:
