@@ -8,7 +8,7 @@ It reaches very fast processing speeds by utilizing both multi-core CPU and Open
 Download
 --------
 
-<img src="https://github.com/dariomanesku/cmftStudio-bin/raw/master/res/windows.png" height="16px">  [cmftStudio - Windows 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_win64.zip) (updated: 8. Apr 2015)<br />
+<img src="https://github.com/dariomanesku/cmftStudio-bin/raw/master/res/windows.png" height="16px">  [cmftStudio - Windows 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_win64.zip) (updated: 02. May 2015)<br />
 <img src="https://github.com/dariomanesku/cmftStudio-bin/raw/master/res/linux.png"   height="16px">  [cmftStudio - Linux 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_lin64.zip) (updated: 24. Mar 2015)<br />
 <img src="https://github.com/dariomanesku/cmftStudio-bin/raw/master/res/apple.png"   height="16px">  [cmftStudio - OSX 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_osx64.zip) (updated: 30. Apr 2015)<br />
 *In case you need 32bit binaries, compile from source.*
