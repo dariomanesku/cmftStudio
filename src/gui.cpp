@@ -263,7 +263,7 @@ static bool imguiConfirmButton(const char* _btn
     return false;
 }
 
-bool imguiDirectoryLabel(const char* _directory, uint16_t _width = 42)
+bool imguiDirectoryLabel(const char* _directory, uint16_t _width = 32)
 {
     const uint16_t end = (uint16_t)strlen(_directory);
     const uint16_t pos = (uint16_t)dm::max(0, end-_width);
@@ -275,7 +275,7 @@ bool imguiDirectoryLabel(const char* _directory, uint16_t _width = 42)
     }
     else
     {
-        char label[256];
+        char label[64];
         bx::snprintf(label, sizeof(label), "...%s", &_directory[pos]);
 
         return imguiButton(label, true, ImguiAlign::CenterIndented);
