@@ -256,6 +256,7 @@ namespace cs
     };
 
     MeshInstance* acquire(const MeshInstance* _inst);
+    MeshInstance& acquire(const MeshInstance& _inst);
     void          release(const MeshInstance* _inst);
 
 

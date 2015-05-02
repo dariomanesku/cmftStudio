@@ -1848,7 +1848,7 @@ private:
                     }
                     for (uint16_t ii = 0, end = m_meshInstList.count(); ii < end; ++ii)
                     {
-                        m_threadParams.m_projectSave.m_meshInstList.add(m_meshInstList[ii]);
+                        m_threadParams.m_projectSave.m_meshInstList.add(cs::acquire(m_meshInstList[ii]));
                     }
                     m_threadParams.m_projectSave.m_compressionLevel = int32_t(m_widgets.m_projectWindow.m_compressionLevel);
                     memcpy(&m_threadParams.m_projectSave.m_settings, &m_settings, sizeof(Settings));

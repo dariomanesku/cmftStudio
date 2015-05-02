@@ -1729,6 +1729,11 @@ namespace cs
         return const_cast<MeshInstance*>(_inst);
     }
 
+    MeshInstance& acquire(const MeshInstance& _inst)
+    {
+        return *acquire(&_inst);
+    }
+
     void release(const MeshInstance* _inst)
     {
         if (isValid(_inst->m_mesh))
