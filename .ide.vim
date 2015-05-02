@@ -3,6 +3,8 @@
 " License: http://www.opensource.org/licenses/BSD-2-Clause
 "
 
+" Run vim as 'vim --servername VIM'.
+
 if has("unix")
     set makeprg=make
 
