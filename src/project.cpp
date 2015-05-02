@@ -37,6 +37,7 @@ bool projectSave(const char* _path
                , int32_t _compressionLevel
                , OnValidFile _validFileCallback
                , OnInvalidFile _invalidFileCallback
+               , dm::StackAllocatorI* _stackAlloc
                )
 {
     // Open file for writing.
@@ -85,7 +86,7 @@ bool projectSave(const char* _path
     fwrite(&versionMinor, 1, sizeof(versionMinor), file);
 
     // Write compressed data from now on using DeflateFileWriter.
-    cs::DeflateFileWriter writer(file, dm::stackAlloc, DM_MEGABYTES(100), DM_MEGABYTES(100), _compressionLevel);
+    cs::DeflateFileWriter writer(file, _stackAlloc, DM_MEGABYTES(100), DM_MEGABYTES(100), _compressionLevel);
 
     const uint64_t totalBefore      = writer.getTotal();
     const uint64_t compressedBefore = writer.getTotalCompressed();

@@ -1860,6 +1860,9 @@ private:
                                );
                     dm::strscpya(m_threadParams.m_projectSave.m_name, m_widgets.m_projectWindow.m_save.m_fileName);
 
+                    // Acquire stack allocator for this thread.
+                    m_threadParams.m_projectSave.m_stackAlloc = dm::allocSplitStack(DM_MEGABYTES(200), DM_MEGABYTES(400));
+
                     // Start background thread.
                     m_backgroundThread.init(projectSaveFunc, (void*)&m_threadParams.m_projectSave);
                 }
@@ -1895,6 +1898,7 @@ private:
             }
             m_threadParams.m_projectSave.m_threadStatus = ThreadStatus::Idle;
             m_threadParams.m_projectSave.releaseAll();
+            dm::allocFreeStack(m_threadParams.m_projectSave.m_stackAlloc);
         }
 
         // ProjectLoad thread result.

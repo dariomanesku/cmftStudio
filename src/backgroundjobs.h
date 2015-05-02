@@ -46,6 +46,7 @@ struct ProjectSaveThreadParams
 {
     void init()
     {
+        m_stackAlloc       = NULL;
         m_compressionLevel = 6;
         m_threadStatus     = ThreadStatus::Idle;
         m_path[0]          = '\0';
@@ -78,6 +79,7 @@ struct ProjectSaveThreadParams
     }
 
     Settings m_settings;
+    dm::StackAllocatorI* m_stackAlloc;
     int32_t m_compressionLevel;
     uint8_t m_threadStatus;
     char m_path[DM_PATH_LEN];

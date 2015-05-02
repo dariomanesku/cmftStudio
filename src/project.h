@@ -31,6 +31,7 @@ bool projectSave(const char* _path
                , int32_t _compressionLevel = 6 /*from 0 to 10*/
                , OnValidFile _validFileCallback = NULL
                , OnInvalidFile _invalidFileCallback = NULL
+               , dm::StackAllocatorI* _stackAlloc = dm::stackAlloc
                );
 
 bool projectLoad(const char* _path
