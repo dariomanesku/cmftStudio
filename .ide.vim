@@ -8,10 +8,14 @@
 if has("unix")
     set makeprg=make
 
-    let s:proj_root   = expand("<sfile>:p:h")
-    let s:log_file    = s:proj_root."/make.log"
-    let s:make_action = "linux-debug64"
-    let s:exec_action = "!../_build/linux64_gcc/bin/cmftStudioDebug"
+    let s:proj_root    = expand("<sfile>:p:h")
+    let s:makebg_file  = s:proj_root."/.makebg.sh"
+    let s:log_file     = s:proj_root."/make.log"
+
+    let s:exec_action  = "!../_build/linux64_gcc/bin/cmftStudioDebug"
+    let s:gdb_action   = "!gdb -x ".s:proj_root."/.gdbinit"." --args ../_build/linux64_gcc/bin/cmftStudioDebug"
+
+    let s:make_action  = "linux-debug64"
 
     function! SetDebug()
         let s:make_action = "linux-debug64"
@@ -27,7 +31,7 @@ if has("unix")
 
     function! Build()
         let s:make_command = "make ".s:proj_root." ".s:make_action
-        let s:build_action = "!".s:proj_root."/.makebg.sh ".v:servername." \"".s:make_command."\" ".s:log_file
+        let s:build_action = "!".s:makebg_file." ".v:servername." \"".s:make_command."\" ".s:log_file
         let curr_dir = getcwd()
         exec 'cd' s:proj_root
         exec s:build_action
@@ -42,7 +46,16 @@ if has("unix")
         exec 'cd' curr_dir
     endfunc
 
-    nmap ,rr :call Build()<cr><cr>
-    nmap ,ee :call Execute()<cr>
+    function! DebugGdb()
+        let s:runtime_dir = s:proj_root."/runtime"
+        let curr_dir = getcwd()
+        exec 'cd' s:runtime_dir
+        exec s:gdb_action
+        exec 'cd' curr_dir
+    endfunc
+
+    nmap ,rr  :call Build()<cr><cr>
+    nmap ,ee  :call Execute()<cr>
+    nmap ,gdb :call DebugGdb()<cr>
 
 endif
