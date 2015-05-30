@@ -24,28 +24,29 @@ DEST_DIR = /headers/
 
 BIN = $(VS_BIN) $(FS_BIN)
 
-SHADER_TMP = $(TEMP)/tmp_cmftStudio_shaders
+SHADER_TMP = .tmp_shader
 
 vs_%.bin.h : vs_%.sc
-	@echo [$(<)]
+	$(SILENT) echo [$(<)]
 	$(SILENT) $(SHADERC) $(VS_FLAGS)  --platform linux   -p 120         -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_glsl
-	@cat $(SHADER_TMP) > $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
+	$(SILENT) cat $(SHADER_TMP) > $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
 	-$(SILENT) $(SHADERC) $(VS_FLAGS) --platform windows -p vs_3_0 -O 3 -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_dx9
-	-@cat $(SHADER_TMP) >> $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
+	-$(SILENT) cat $(SHADER_TMP) >> $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
 	-$(SILENT) $(SHADERC) $(VS_FLAGS) --platform windows -p vs_4_0 -O 3 -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_dx11
-	-@cat $(SHADER_TMP) >> $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
+	-$(SILENT) cat $(SHADER_TMP) >> $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
 
 fs_%.bin.h : fs_%.sc
-	@echo [$(<)]
+	$(SILENT) echo [$(<)]
 	$(SILENT) $(SHADERC) $(FS_FLAGS)  --platform linux   -p 120         -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_glsl
-	@cat $(SHADER_TMP) > $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
+	$(SILENT) cat $(SHADER_TMP) > $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
 	-$(SILENT) $(SHADERC) $(FS_FLAGS) --platform windows -p ps_3_0 -O 3 -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_dx9
-	-@cat $(SHADER_TMP) >> $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
+	-$(SILENT) cat $(SHADER_TMP) >> $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
 	-$(SILENT) $(SHADERC) $(FS_FLAGS) --platform windows -p ps_4_0 -O 3 -f $(<) -o $(SHADER_TMP) --bin2c $(basename $(<F))_dx11
-	-@cat $(SHADER_TMP) >> $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
+	-$(SILENT) cat $(SHADER_TMP) >> $(addsuffix $(@F), $(addsuffix $(DEST_DIR), $(@D)))
 
 .PHONY: all
 all: $(BIN)
+	$(SILENT) rm $(SHADER_TMP)
 
 .PHONY: generate
 generate:
@@ -57,7 +58,7 @@ clean:
 	@-rm -vf $(BIN)
 
 .PHONY: rebuild
-rebuild: clean all
+rebuild: all clean
 
 rebuild:
 	@make -s --no-print-directory clean all
