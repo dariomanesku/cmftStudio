@@ -154,10 +154,10 @@ namespace cs
     {
         void init()
         {
-            u_uniforms = bgfx::createUniform("u_uniforms", bgfx::UniformType::Uniform4fv, Uniforms::Num);
+            u_uniforms = bgfx::createUniform("u_uniforms", bgfx::UniformType::Vec4, Uniforms::Num);
 
             #define TEXUNI_DESC(_enum, _stage, _name) \
-                u_tex[TextureUniform::_enum] = bgfx::createUniform(_name, bgfx::UniformType::Uniform1i);
+                u_tex[TextureUniform::_enum] = bgfx::createUniform(_name, bgfx::UniformType::Int1);
             #include "context_res.h"
         }
 
@@ -1263,7 +1263,7 @@ namespace cs
                 mem = bgfx::makeRef(group.m_vertexData, group.m_vertexSize);
                 m_bufferHandles[ii].m_vbh = bgfx::createVertexBuffer(mem, m_decl);
 
-                const uint8_t flags = (group.m_32bitIndexBuffer ? BGFX_BUFFER_INDEX32 : 0);
+                const uint16_t flags = (group.m_32bitIndexBuffer ? BGFX_BUFFER_INDEX32 : 0);
                 mem = bgfx::makeRef(group.m_indexData, group.m_indexSize);
                 m_bufferHandles[ii].m_ibh = bgfx::createIndexBuffer(mem, flags);
             }
