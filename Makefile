@@ -55,47 +55,47 @@ _projects/xcode4:
 _projects/vs2008:
 	$(GENIE) --file=scripts/main.lua vs2008
 vs2008-debug32:
-	"$(subst /,\\,$(VS2008_DEVENV_DIR))\devenv" _projects/vs2008/cmft.sln /Build "Debug|Win32"
+	"$(subst /,\\,$(VS2008_DEVENV_DIR))\devenv" _projects/vs2008/cmftStudio.sln /Build "Debug|Win32"
 vs2008-release32:
-	"$(subst /,\\,$(VS2008_DEVENV_DIR))\devenv" _projects/vs2008/cmft.sln /Build "Release|Win32"
+	"$(subst /,\\,$(VS2008_DEVENV_DIR))\devenv" _projects/vs2008/cmftStudio.sln /Build "Release|Win32"
 vs2008-debug64:
-	"$(subst /,\\,$(VS2008_DEVENV_DIR))\devenv" _projects/vs2008/cmft.sln /Build "Debug|x64"
+	"$(subst /,\\,$(VS2008_DEVENV_DIR))\devenv" _projects/vs2008/cmftStudio.sln /Build "Debug|x64"
 vs2008-release64:
-	"$(subst /,\\,$(VS2008_DEVENV_DIR))\devenv" _projects/vs2008/cmft.sln /Build "Release|x64"
+	"$(subst /,\\,$(VS2008_DEVENV_DIR))\devenv" _projects/vs2008/cmftStudio.sln /Build "Release|x64"
 vs2008: vs2008-debug32 vs2008-release32 vs2008-debug64 vs2008-release64
 
 _projects/vs2010:
 	$(GENIE) --file=scripts/main.lua vs2010
 vs2010-debug32:
-	"$(subst /,\\,$(VS2010_DEVENV_DIR))\devenv" _projects/vs2010/cmft.sln /Build "Debug|Win32"
+	"$(subst /,\\,$(VS2010_DEVENV_DIR))\devenv" _projects/vs2010/cmftStudio.sln /Build "Debug|Win32"
 vs2010-release32:
-	"$(subst /,\\,$(VS2010_DEVENV_DIR))\devenv" _projects/vs2010/cmft.sln /Build "Release|Win32"
+	"$(subst /,\\,$(VS2010_DEVENV_DIR))\devenv" _projects/vs2010/cmftStudio.sln /Build "Release|Win32"
 vs2010-debug64:
-	"$(subst /,\\,$(VS2010_DEVENV_DIR))\devenv" _projects/vs2010/cmft.sln /Build "Debug|x64"
+	"$(subst /,\\,$(VS2010_DEVENV_DIR))\devenv" _projects/vs2010/cmftStudio.sln /Build "Debug|x64"
 vs2010-release64:
-	"$(subst /,\\,$(VS2010_DEVENV_DIR))\devenv" _projects/vs2010/cmft.sln /Build "Release|x64"
+	"$(subst /,\\,$(VS2010_DEVENV_DIR))\devenv" _projects/vs2010/cmftStudio.sln /Build "Release|x64"
 
 _projects/vs2012:
 	$(GENIE) --file=scripts/main.lua vs2012
 vs2012-debug32:
-	"$(subst /,\\,$(VS2012_DEVENV_DIR))\devenv" _projects/vs2012/cmft.sln /Build "Debug|Win32"
+	"$(subst /,\\,$(VS2012_DEVENV_DIR))\devenv" _projects/vs2012/cmftStudio.sln /Build "Debug|Win32"
 vs2012-release32:
-	"$(subst /,\\,$(VS2012_DEVENV_DIR))\devenv" _projects/vs2012/cmft.sln /Build "Release|Win32"
+	"$(subst /,\\,$(VS2012_DEVENV_DIR))\devenv" _projects/vs2012/cmftStudio.sln /Build "Release|Win32"
 vs2012-debug64:
-	"$(subst /,\\,$(VS2012_DEVENV_DIR))\devenv" _projects/vs2012/cmft.sln /Build "Debug|x64"
+	"$(subst /,\\,$(VS2012_DEVENV_DIR))\devenv" _projects/vs2012/cmftStudio.sln /Build "Debug|x64"
 vs2012-release64:
-	"$(subst /,\\,$(VS2012_DEVENV_DIR))\devenv" _projects/vs2012/cmft.sln /Build "Release|x64"
+	"$(subst /,\\,$(VS2012_DEVENV_DIR))\devenv" _projects/vs2012/cmftStudio.sln /Build "Release|x64"
 
 _projects/vs2013:
 	$(GENIE) --file=scripts/main.lua vs2013
 vs2013-debug32:
-	"$(subst /,\\,$(VS2013_DEVENV_DIR))\devenv" _projects/vs2013/cmft.sln /Build "Debug|Win32"
+	"$(subst /,\\,$(VS2013_DEVENV_DIR))\devenv" _projects/vs2013/cmftStudio.sln /Build "Debug|Win32"
 vs2013-release32:
-	"$(subst /,\\,$(VS2013_DEVENV_DIR))\devenv" _projects/vs2013/cmft.sln /Build "Release|Win32"
+	"$(subst /,\\,$(VS2013_DEVENV_DIR))\devenv" _projects/vs2013/cmftStudio.sln /Build "Release|Win32"
 vs2013-debug64:
-	"$(subst /,\\,$(VS2013_DEVENV_DIR))\devenv" _projects/vs2013/cmft.sln /Build "Debug|x64"
+	"$(subst /,\\,$(VS2013_DEVENV_DIR))\devenv" _projects/vs2013/cmftStudio.sln /Build "Debug|x64"
 vs2013-release64:
-	"$(subst /,\\,$(VS2013_DEVENV_DIR))\devenv" _projects/vs2013/cmft.sln /Build "Release|x64"
+	"$(subst /,\\,$(VS2013_DEVENV_DIR))\devenv" _projects/vs2013/cmftStudio.sln /Build "Release|x64"
 
 _projects/gmake-linux:
 	$(GENIE) --file=scripts/main.lua --gcc=linux-gcc gmake
