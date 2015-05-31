@@ -1253,9 +1253,11 @@ namespace cs
 
         void createGpuBuffers()
         {
-            m_bufferHandles.init(m_groups.count(), dm::mainAlloc);
+            const uint32_t numGroups = m_groups.count();
+            m_bufferHandles.init(numGroups, dm::mainAlloc);
+            m_bufferHandles.reserve(numGroups);
 
-            for (uint32_t ii = 0, end = m_groups.count(); ii < end; ++ii)
+            for (uint32_t ii = 0; ii < numGroups; ++ii)
             {
                 Group& group = m_groups[ii];
                 const bgfx::Memory* mem;
@@ -1622,6 +1624,8 @@ namespace cs
 
         const uint32_t matCount = _other.m_materials.max();
         m_materials.reinit(matCount, dm::mainAlloc);
+
+        m_materials.reserve(matCount);
         for (uint32_t ii = matCount; ii--; )
         {
             m_materials[ii] = _other.m_materials[ii];
@@ -2683,6 +2687,7 @@ namespace cs
         bx::read(_reader, materialCount);
         _instance->m_materials.reinit(materialCount, dm::mainAlloc);
 
+        _instance->m_materials.reserve(materialCount);
         for (uint16_t ii = 0, end = materialCount; ii < end; ++ii)
         {
             bx::read(_reader, id);
