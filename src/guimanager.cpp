@@ -51,7 +51,7 @@ struct StatusManager
 
             if (!m_animators[handle].m_visible)
             {
-                m_messageList.remove(idx);
+                m_messageList.removeAt(idx);
                 last--;
             }
             else
@@ -116,7 +116,7 @@ struct StatusManager
         {
             for (uint16_t ii = m_messageList.count(); ii--; )
             {
-                const Message* msg = m_messageList.get(ii);
+                const Message* msg = m_messageList.getAt(ii);
                 if (msg->m_id == _id)
                 {
                     return;
@@ -151,7 +151,7 @@ struct StatusManager
     {
         for (uint16_t ii = m_messageList.count(); ii--; )
         {
-            const Message* msg = m_messageList.get(ii);
+            const Message* msg = m_messageList.getAt(ii);
             if (msg->m_id == _id)
             {
                 const uint16_t handle = m_messageList.getHandleOf(msg);
