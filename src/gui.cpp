@@ -1635,7 +1635,7 @@ void imguiTonemapWidget(cs::EnvHandle _env
     if (imguiButton((TonemapWidgetState::Original == _state.m_selection)?"Restore":"Apply", true, ImguiAlign::CenterIndented))
     {
         _state.m_env = _env;
-        _state.m_events = GuiEvent::HandleAction;
+        _state.m_events = GuiEvent::HandleAction | GuiEvent::DismissWindow;
     }
 
     if (imguiButton("Close", true, ImguiAlign::CenterIndented))

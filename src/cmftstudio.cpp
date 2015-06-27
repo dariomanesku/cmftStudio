@@ -1612,6 +1612,7 @@ private:
                          , m_widgets.m_tonemapWidget.m_minLum
                          , m_widgets.m_tonemapWidget.m_lumRange
                          );
+                imguiStatusMessage("Tonemap operator applied!", 3.0f, false);
             }
         }
 
