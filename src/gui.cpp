@@ -2236,7 +2236,7 @@ void imguiBrowser(int32_t _height
                     uint16_t selected = UINT16_MAX;
                     for (uint16_t ii = numHandles; ii--; )
                     {
-                        const char* selectFile = _state.m_files.getObjFromHandle(handles[ii])->m_nameExt;
+                        const char* selectFile = _state.m_files.get(handles[ii])->m_nameExt;
                         if (0 == strcmp(file.name, selectFile))
                         {
                             selected = handles[ii];

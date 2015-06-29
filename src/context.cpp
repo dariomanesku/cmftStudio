@@ -253,7 +253,7 @@ namespace cs
 
         TyImpl* getImpl(TyHandle _handle)
         {
-            return m_elements.getObjFromHandle(_handle.m_idx);
+            return m_elements.get(_handle.m_idx);
         }
 
         Ty* getObj(TyHandle _handle)
