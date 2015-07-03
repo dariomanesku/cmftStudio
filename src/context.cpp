@@ -1179,7 +1179,7 @@ namespace cs
     {
         MeshImpl()
         {
-            m_normScale = FLT_MAX;
+            m_normScale = 1.0f;
         }
 
         ~MeshImpl()
@@ -1222,7 +1222,7 @@ namespace cs
             dm::pop(_stack);
 
             // Get normalized scale.
-            if (FLT_MAX == m_normScale)
+            if (1.0f == m_normScale)
             {
                 float min = FLT_MAX;
                 float max = -FLT_MAX;
