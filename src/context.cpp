@@ -1511,7 +1511,7 @@ namespace cs
 
         MeshHandle load(const char* _path, void* _userData, dm::StackAllocatorI* _stack)
         {
-            const char* ext = dm::fileExtension(_path);
+            const char* ext = dm::fileExt(_path);
             const bool isBinary = (0 == strcmp(ext, "bin"));
 
             dm::CrtFileReader reader;

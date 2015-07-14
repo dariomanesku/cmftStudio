@@ -100,7 +100,7 @@ namespace cs
                 return false;
             }
 
-            const char* ext = dm::fileExtension(_path);
+            const char* ext = dm::fileExt(_path);
             const bool result = load(_geometry, &fileReader, ext, _stack, _inData, _outData, _outDataAlloc);
 
             fileReader.close();
