@@ -2043,7 +2043,7 @@ bool imguiBrowser(int32_t _height
                     for(uint8_t jj = 0; jj < _extCount; ++jj)
                     {
                         if (('.' != file.name[0])
-                            &&  (0 == bx::stricmp(_ext[jj], file.extension)))
+                        &&  (0 == bx::stricmp(_ext[jj], file.extension)))
                         {
                             show = true;
                             break;
