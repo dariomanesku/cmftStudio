@@ -115,11 +115,6 @@ namespace cs
         #include "context_res.h"
     }
 
-    void setProgram(Program::Enum _prog)
-    {
-        bgfx::setProgram(s_programs[_prog]);
-    }
-
     bgfx::ProgramHandle getProgram(Program::Enum _prog)
     {
         return s_programs[_prog];
@@ -1294,9 +1289,6 @@ namespace cs
                     _prog = programNormal(_prog);
                 }
 
-                // Program.
-                bgfx::setProgram(getProgram(_prog));
-
                 // Environment.
                 if (cs::isValid(_env))
                 {
@@ -1313,8 +1305,7 @@ namespace cs
                 // State.
                 bgfx::setState(_state);
 
-                submitUniforms();
-                bgfx::submit(_view);
+                bgfx_submit(_view, _prog);
             }
         }
 
@@ -1360,7 +1351,6 @@ namespace cs
 
                 //Program.
                 _prog = programTrans(_prog); // Use transition program.
-                bgfx::setProgram(getProgram(_prog));
 
                 // Uniforms.
                 cs::Uniforms& uniforms = cs::getUniforms();
@@ -1380,8 +1370,7 @@ namespace cs
                 // State.
                 bgfx::setState(_state);
 
-                submitUniforms();
-                bgfx::submit(_view);
+                bgfx_submit(_view, _prog);
             }
         }
 

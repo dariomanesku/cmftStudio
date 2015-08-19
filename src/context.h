@@ -36,7 +36,6 @@ namespace cs
         };
     };
 
-    void                setProgram(Program::Enum _prog);
     bgfx::ProgramHandle getProgram(Program::Enum _prog);
 
     // Material.
@@ -188,10 +187,10 @@ namespace cs
     Uniforms& getUniforms();
     void      submitUniforms();
 
-    static inline uint32_t bgfx_submit(uint8_t _id, int32_t _depth = 0)
+    static inline uint32_t bgfx_submit(uint8_t _viewId, Program::Enum _prog, int32_t _depth = 0)
     {
         submitUniforms();
-        return bgfx::submit(_id, _depth);
+        return bgfx::submit(_viewId, getProgram(_prog), _depth);
     }
 
 

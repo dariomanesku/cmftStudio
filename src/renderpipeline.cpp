@@ -213,9 +213,8 @@ void drawSplashScreen(cs::TextureHandle _texture, uint32_t _width, uint32_t _hei
     bgfx::setViewRect(RenderPipeline::ViewIdSplashScreen, 0, 0, (uint16_t)_width, (uint16_t)_height);
     bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
     screenSpaceQuad(dm::utof(_width), dm::utof(_height));
-    cs::setProgram(cs::Program::Image);
     cs::setTexture(cs::TextureUniform::Color, _texture);
-    cs::bgfx_submit(RenderPipeline::ViewIdSplashScreen);
+    cs::bgfx_submit(RenderPipeline::ViewIdSplashScreen, cs::Program::Image);
     g_frameNum = bgfx::frame();
 }
 
@@ -259,8 +258,8 @@ struct RenderPipelineImpl : public RenderPipeline
         bgfx::setViewClear(1, BGFX_CLEAR_COLOR, 0x00000000, 0.0f, 0);
         bgfx::setViewFrameBuffer(0, m_fbLumLast);
         bgfx::setViewFrameBuffer(1, m_fbLumCur);
-        bgfx::submit(0);
-        bgfx::submit(1);
+        bgfx::submit(0, cs::getProgram(cs::Program::Color));
+        bgfx::submit(1, cs::getProgram(cs::Program::Color));
         bgfx::frame();
         const bgfx::FrameBufferHandle invalidHandle = BGFX_INVALID_HANDLE;
         bgfx::setViewFrameBuffer(0, invalidHandle);
@@ -419,9 +418,6 @@ struct RenderPipelineImpl : public RenderPipeline
             uniforms.m_edgeFixup = 0.0f;
         }
 
-        // Program.
-        cs::setProgram(cs::Program::Sky);
-
         // Texture.
         const cs::TextureHandle envTex = env.m_cubemap[_which];
         cs::setTexture(cs::TextureUniform::Skybox, envTex, EnvTexFlags);
@@ -430,7 +426,7 @@ struct RenderPipelineImpl : public RenderPipeline
         screenSpaceQuad(dm::utof(m_width), dm::utof(m_height), true);
 
         bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-        cs::bgfx_submit(ViewIdSkybox);
+        cs::bgfx_submit(ViewIdSkybox, cs::Program::Sky);
     }
 
     void submitSkybox(cs::EnvHandle _nextEnv
@@ -481,7 +477,6 @@ struct RenderPipelineImpl : public RenderPipeline
         uniforms.m_prevMipSize = dm::utof(envPrev.m_cubemapImage[cs::Environment::Pmrem].m_width);
 
         // Program and textures.
-        cs::setProgram(cs::Program::SkyTrans);
         cs::setTexture(cs::TextureUniform::Skybox, env.m_cubemap[_nextWhich],     EnvTexFlags);
         cs::setTexture(cs::TextureUniform::Iem,    envPrev.m_cubemap[_currWhich], EnvTexFlags); //use Iem sampler for sampling prev env.
 
@@ -489,7 +484,7 @@ struct RenderPipelineImpl : public RenderPipeline
         screenSpaceQuad(dm::utof(m_width), dm::utof(m_height), true);
 
         bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-        cs::bgfx_submit(ViewIdSkybox);
+        cs::bgfx_submit(ViewIdSkybox, cs::Program::SkyTrans);
     }
 
     void submitFrame(float _bloomStdDev = 0.8f)
@@ -506,62 +501,55 @@ struct RenderPipelineImpl : public RenderPipeline
         {
             // Calculate luminance.
             calcOffsets4x4(uniforms.m_offsets, 256, 256);
-            cs::setProgram(cs::Program::Lum);
             cs::setTexture(cs::TextureUniform::Color, m_fbMainTextures[0], LumTexFlags);
             screenSpaceQuad(256.0f, 256.0f, g_originBottomLeft);
             bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE|BGFX_TEXTURE_U_CLAMP|BGFX_TEXTURE_V_CLAMP);
-            cs::bgfx_submit(ViewIdLum0);
+            cs::bgfx_submit(ViewIdLum0, cs::Program::Lum);
 
             // Downscale luminance 0.
             calcOffsets4x4(uniforms.m_offsets, 64, 64);
-            cs::setProgram(cs::Program::LumDownscale);
             cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[0], LumTexFlags);
             screenSpaceQuad(64.0f, 64.0f, g_originBottomLeft);
             bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-            cs::bgfx_submit(ViewIdLum1);
+            cs::bgfx_submit(ViewIdLum1, cs::Program::LumDownscale);
 
             // Downscale luminance 1.
             calcOffsets4x4(uniforms.m_offsets, 16, 16);
-            cs::setProgram(cs::Program::LumDownscale);
             cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[1], LumTexFlags);
             screenSpaceQuad(16.0f, 16.0f, g_originBottomLeft);
             bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-            cs::bgfx_submit(ViewIdLum2);
+            cs::bgfx_submit(ViewIdLum2, cs::Program::LumDownscale);
 
             // Downscale luminance 2.
             calcOffsets4x4(uniforms.m_offsets, 4, 4);
-            cs::setProgram(cs::Program::LumDownscale);
             cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[2], LumTexFlags);
             screenSpaceQuad(4.0f, 4.0f, g_originBottomLeft);
             bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-            cs::bgfx_submit(ViewIdLum3);
+            cs::bgfx_submit(ViewIdLum3, cs::Program::LumDownscale);
 
             // Compute average luminance tex.
             calcOffsets4x4(uniforms.m_offsets, 1, 1);
-            cs::setProgram(cs::Program::LumAvg);
             cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[3], LumTexFlags);
             cs::setTexture(cs::TextureUniform::Lum,   m_fbLumLast,    LumTexFlags);
             screenSpaceQuad(1.0f, 1.0f, g_originBottomLeft);
             bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-            cs::bgfx_submit(ViewIdLum4);
+            cs::bgfx_submit(ViewIdLum4, cs::Program::LumAvg);
 
             // Update last lum.
-            cs::setProgram(cs::Program::Equals);
             cs::setTexture(cs::TextureUniform::Color, m_fbLumCur);
             screenSpaceQuad(1.0f, 1.0f, g_originBottomLeft);
             bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-            cs::bgfx_submit(ViewIdUpdateLastLum);
+            cs::bgfx_submit(ViewIdUpdateLastLum, cs::Program::Equals);
         }
 
         if (m_doBloom)
         {
             calcOffsets4x4(uniforms.m_offsets, m_brightWidth, m_brightHeight);
-            cs::setProgram(cs::Program::Bright);
             cs::setTexture(cs::TextureUniform::Color, m_fbMainTextures[0]);
             cs::setTexture(cs::TextureUniform::Lum, m_fbLumCur);
             screenSpaceQuad(float(m_brightWidth), float(m_brightHeight), g_originBottomLeft);
             bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-            cs::bgfx_submit(ViewIdBright);
+            cs::bgfx_submit(ViewIdBright, cs::Program::Bright);
 
             const float blur0 = gaussian(0.0f     , 0.0f, _bloomStdDev);
             const float blur1 = gaussian(1.0f/4.0f, 0.0f, _bloomStdDev);
@@ -576,71 +564,62 @@ struct RenderPipelineImpl : public RenderPipeline
             uniforms.m_weights[4] = blur4/blurn;
 
             // Blur pass vertically.
-            cs::setProgram(cs::Program::Blur);
             cs::setTexture(cs::TextureUniform::Color, m_fbBright);
             screenSpaceQuad(float(m_blurWidth), float(m_blurHeight), g_originBottomLeft);
             bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-            cs::bgfx_submit(ViewIdBloom);
+            cs::bgfx_submit(ViewIdBloom, cs::Program::Blur);
 
             // Set texture for the next (tonemapping) pass.
             cs::setTexture(cs::TextureUniform::Blur, m_fbBlur);
         }
 
         // Tone mapping.
-        cs::setProgram(cs::Program::Tonemap);
         cs::setTexture(cs::TextureUniform::Color, m_fbMainTextures[0]);
         cs::setTexture(cs::TextureUniform::Lum, m_fbLumCur);
         screenSpaceQuad(float(m_width), float(m_height), g_originBottomLeft);
         bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-        cs::bgfx_submit(ViewIdTonemap);
+        cs::bgfx_submit(ViewIdTonemap, cs::Program::Tonemap);
 
         if (m_doFxaa)
         {
-            cs::setProgram(cs::Program::Fxaa);
             cs::setTexture(cs::TextureUniform::Color, m_fbPostTextures[0], FxaaTexFlags);
             screenSpaceQuad(float(m_width), float(m_height), g_originBottomLeft);
             bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-            cs::bgfx_submit(ViewIdFxaa);
+            cs::bgfx_submit(ViewIdFxaa, cs::Program::Fxaa);
         }
 
 #if CS_DEBUG_LUMAVG
-        cs::setProgram(cs::Program::Color);
         screenSpaceQuad(float(int32_t(m_width)), float(int32_t(m_height)), g_originBottomLeft);
         uniforms.m_rgba[0] = 0.3f;
         uniforms.m_rgba[1] = 0.3f;
         uniforms.m_rgba[2] = 0.3f;
         bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-        cs::bgfx_submit(ViewIdDebug0);
+        cs::bgfx_submit(ViewIdDebug0, cs::Program::Color);
 
-        cs::setProgram(cs::Program::ImageRe8);
         cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[0], LumTexFlags);
         screenSpaceQuad(512.0f, 512.0f, g_originBottomLeft);
         bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-        cs::bgfx_submit(ViewIdDebug1);
+        cs::bgfx_submit(ViewIdDebug1, cs::Program::ImageRe8);
 
-        cs::setProgram(cs::Program::ImageRe8);
         cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[1], LumTexFlags);
         screenSpaceQuad(512.0f, 512.0f, g_originBottomLeft);
         bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-        cs::bgfx_submit(ViewIdDebug2);
+        cs::bgfx_submit(ViewIdDebug2, cs::Program::ImageRe8);
 
-        cs::setProgram(cs::Program::ImageRe8);
         cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[2], LumTexFlags);
         screenSpaceQuad(512.0f, 512.0f, g_originBottomLeft);
         bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-        cs::bgfx_submit(ViewIdDebug3);
+        cs::bgfx_submit(ViewIdDebug3, cs::Program::ImageRe8);
 
-        cs::setProgram(cs::Program::ImageRe8);
         cs::setTexture(cs::TextureUniform::Color, m_fbLumCalc[3], LumTexFlags);
         screenSpaceQuad(512.0f, 512.0f, g_originBottomLeft);
         bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-        cs::bgfx_submit(ViewIdDebug4);
+        cs::bgfx_submit(ViewIdDebug4, cs::Program::ImageRe8);
 
-        cs::setProgram(cs::Program::ImageRe8);
         cs::setTexture(cs::TextureUniform::Color, m_fbLumCur, LumTexFlags);
         screenSpaceQuad(512.0f, 512.0f, g_originBottomLeft);
         bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-        cs::bgfx_submit(ViewIdDebug5);
+        cs::bgfx_submit(ViewIdDebug5, cs::Program::ImageRe8);
 #endif //CS_DEBUG_LUMAVG
     }
 
@@ -718,11 +697,10 @@ struct RenderPipelineImpl : public RenderPipeline
         uniforms.m_tonemapMinLum   = _minLum;
         uniforms.m_tonemapLumRange = _lumRange;
 
-        cs::setProgram(cs::Program::CubemapTonemap);
         cs::setTexture(cs::TextureUniform::Skybox, _image);
         screenSpaceQuad(240.0f, 120.0f, g_originBottomLeft);
         bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-        cs::bgfx_submit(RenderPipeline::ViewIdTonemapImage);
+        cs::bgfx_submit(RenderPipeline::ViewIdTonemapImage, cs::Program::CubemapTonemap);
     }
 
     bgfx::TextureHandle getMaterialTexture() const

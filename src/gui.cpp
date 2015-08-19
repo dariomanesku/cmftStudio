@@ -357,13 +357,12 @@ void guiInit()
 
 void guiDrawOverlay()
 {
-    cs::setProgram(cs::Program::Overlay);
     screenQuad(0, 0, g_guiWidth, g_guiHeight);
     bgfx::setState(BGFX_STATE_RGB_WRITE
                   |BGFX_STATE_ALPHA_WRITE
                   |BGFX_STATE_BLEND_ALPHA
                   );
-    bgfx::submit(RenderPipeline::ViewIdGui);
+    bgfx_submit(RenderPipeline::ViewIdGui, cs::Program::Overlay);
 }
 
 void guiDestroy()
@@ -2497,12 +2496,11 @@ bool imguiEnvPreview(uint32_t _screenX
 
     for (uint8_t ii = 0; ii < 3; ++ii)
     {
-        cs::setProgram(cs::Program::Latlong);
         cs::setTexture(cs::TextureUniform::Skybox, env.m_cubemap[ii]);
         screenQuad(pos[ii*2], pos[ii*2+1], llWidth, llHeight);
         imguiSetCurrentScissor();
         bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-        cs::bgfx_submit(_viewId);
+        cs::bgfx_submit(_viewId, cs::Program::Latlong);
     }
 
     const bool click = _enabled
@@ -2539,12 +2537,11 @@ void imguiLatlongWidget(int32_t _screenX
     cs::Environment& env = cs::getObj(_env);
 
     // Draw latlong image.
-    cs::setProgram(cs::Program::Latlong);
     cs::setTexture(cs::TextureUniform::Skybox, env.m_cubemap[cs::Environment::Skybox]);
     screenQuad(_screenX, _screenY, llWidth, llHeight);
     imguiSetCurrentScissor();
     bgfx::setState(BGFX_STATE_RGB_WRITE|BGFX_STATE_ALPHA_WRITE);
-    cs::bgfx_submit(_viewId);
+    cs::bgfx_submit(_viewId, cs::Program::Latlong);
 
     const bool insideLatlong = _enabled && dm::inside(_click.m_curr.m_mx, _click.m_curr.m_my, _screenX, _screenY, llWidth, llHeight);
     uint8_t mouseOverLight = UINT8_MAX;
@@ -2591,7 +2588,6 @@ void imguiLatlongWidget(int32_t _screenX
             uniforms.m_selectedLight = float(ii == _selectedLight);
 
             // Draw sun icon.
-            cs::setProgram(cs::Program::SunIcon);
             cs::setTexture(cs::TextureUniform::Color, s_res.m_texSunIcon);
             screenQuad(_screenX + lx - (QuadSize/2)
                      , _screenY + ly - (QuadSize/2)
@@ -2602,7 +2598,7 @@ void imguiLatlongWidget(int32_t _screenX
                           |BGFX_STATE_ALPHA_WRITE
                           |BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA)
                           );
-            cs::bgfx_submit(_viewId);
+            cs::bgfx_submit(_viewId, cs::Program::SunIcon);
         }
     }
 
