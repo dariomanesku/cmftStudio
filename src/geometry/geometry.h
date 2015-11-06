@@ -8,8 +8,8 @@
 
 #include "../common/common.h"
 
-#include <bgfx.h>   // bgfx::VertexDecl
-#include <bounds.h> // Sphere, Aabb, Obb
+#include <bgfx/bgfx.h> // bgfx::VertexDecl
+#include <bounds.h>    // Sphere, Aabb, Obb
 
 #include <dm/readerwriter.h> //bx::WriterI
 #include <dm/datastructures/objarray.h>

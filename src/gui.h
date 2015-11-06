@@ -7,7 +7,7 @@
 #define CMFTSTUDIO_GUI_H_HEADER_GUARD
 
 #include <stdint.h>
-#include <bgfx.h>               // bgfx::TextureHandle
+#include <bgfx/bgfx.h>          // bgfx::TextureHandle
 #include <cmft/cubemapfilter.h> // cmft::LightingModel
 #include <dm/misc.h>            // dm::realpath, dm::strscpya
 #include "mouse.h"              // Mouse

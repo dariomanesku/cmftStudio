@@ -6,7 +6,7 @@
 #ifndef CMFTSTUDIO_CONFIG_H_HEADER_GUARD
 #define CMFTSTUDIO_CONFIG_H_HEADER_GUARD
 
-#include <bgfx.h>    // bgfx::RendererType
+#include <bgfx/bgfx.h>    // bgfx::RendererType
 #include <dm/misc.h> // DM_GIGABYTES, DM_PATH_LEN
 
 struct Config

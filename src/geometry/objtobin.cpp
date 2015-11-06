@@ -20,7 +20,7 @@
  * License: http://www.opensource.org/licenses/BSD-2-Clause
  */
 
-#include <bgfx.h>
+#include <bgfx/bgfx.h>
 #include <bounds.h> //Aabb, Obb, Sphere
 #include <../../src/vertexdecl.h>
 

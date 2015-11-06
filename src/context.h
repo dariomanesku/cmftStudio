@@ -12,7 +12,7 @@
 #include "common/cmft.h"            // cmft::Image
 #include "common/datastructures.h"
 
-#include <bgfx.h>                   // bgfx::TextureHandle
+#include <bgfx/bgfx.h>              // bgfx::TextureHandle
 #include <dm/readerwriter.h>        // bx::WriterI, bx::ReaderSeekerI
 
 namespace cs
