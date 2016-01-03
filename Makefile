@@ -20,7 +20,7 @@ else
 	OS=windows
 endif
 
-GENIE=./../bx/tools/bin/$(OS)/genie --unity-build --with-amalgamated
+GENIE=./dependency/bx/tools/bin/$(OS)/genie --unity-build --with-amalgamated
 
 export CMFTVIEWER_WIN_CLANG_DIR_=$(subst \,\\,$(subst /,\,$(WIN_CLANG_DIR)))
 export CMFTVIEWER_WIN_MINGW_DIR_=$(subst \,\\,$(subst /,\,$(WIN_MINGW_DIR)))

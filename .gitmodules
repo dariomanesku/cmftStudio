@@ -1,0 +1,12 @@
+[submodule "dependency/bx"]
+	path = dependency/bx
+	url = https://github.com/dariomanesku/bx
+[submodule "dependency/bgfx"]
+	path = dependency/bgfx
+	url = https://github.com/dariomanesku/bgfx
+[submodule "dependency/cmft"]
+	path = dependency/cmft
+	url = https://github.com/dariomanesku/cmft
+[submodule "dependency/dm"]
+	path = dependency/dm
+	url = https://github.com/dariomanesku/dm

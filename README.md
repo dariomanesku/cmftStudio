@@ -65,11 +65,7 @@ Installing
 Building
 --------
 
-	git clone http://github.com/dariomanesku/cmftStudio.git
-	git clone http://github.com/dariomanesku/cmft.git
-	git clone http://github.com/dariomanesku/dm.git
-	git clone http://github.com/dariomanesku/bgfx.git
-	git clone http://github.com/dariomanesku/bx.git
+	git clone --recurse-submodules http://github.com/dariomanesku/cmftStudio.git
 	cd cmftStudio
 	make
 
