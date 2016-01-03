@@ -3,7 +3,7 @@
 # License: http://www.opensource.org/licenses/BSD-2-Clause
 #
 
-BGFX_DIR=../../../bgfx
+BGFX_DIR=../../dependency/bgfx
 RUNTIME_DIR=../../runtime
 BUILD_DIR=../../_build
 
