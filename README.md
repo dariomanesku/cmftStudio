@@ -81,7 +81,7 @@ Building
 - From root directory call `make linux-debug64` to build the application. Application should be run from the `runtime` directory where the config file is:<br \>
 	`cd runtime`<br \>
 	`./../_build/linux64_gcc/bin/cmftStudioDebug` <br \>
-- Application can be installed or removed from the system by calling `make linux-install` and `make linux-uninstall`.`
+- Application can be installed or removed from the system by calling `sudo make linux-install` and `sudo make linux-uninstall`.`
 
 ### OS X
 
