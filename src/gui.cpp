@@ -28,6 +28,8 @@
 /// Notice: Always call tinydir functions between push/pop(_stackAlloc);
 #define _TINYDIR_MALLOC(_size) DM_ALLOC(dm::stackAlloc, _size)
 #define _TINYDIR_FREE(_ptr)    DM_FREE(dm::stackAlloc, _ptr)
+#define _UNICODE
+#define UNICODE
 #include <tinydir/tinydir.h>
 
 // Constants.
