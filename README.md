@@ -12,8 +12,8 @@ Download
 <img src="https://github.com/dariomanesku/cmftStudio-bin/raw/master/res/linux.png"   height="16px">  [cmftStudio - Linux 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_lin64.zip) (updated: 02. May 2015)<br />
 <img src="https://github.com/dariomanesku/cmftStudio-bin/raw/master/res/apple.png"   height="16px">  [cmftStudio - OSX 64bit](https://github.com/dariomanesku/cmftStudio-bin/raw/master/cmftStudio_osx64.zip) (updated: 02. May 2015)<br />
 *In case you need 32bit binaries, compile from source.*
- - [cmftStudio - Sample project 0](https://www.dropbox.com/s/qoy4h6bbp0bcdh4/SampleProject0.csp?dl=1)
- - [cmftStudio - Sample project 1](https://www.dropbox.com/s/ojzyufs4ooh76g5/SampleProject1.csp?dl=1)
+ - [cmftStudio - Sample project 0](https://www.dropbox.com/s/cax2gks604fxnyz/SampleProject0.csp?dl=1)
+ - [cmftStudio - Sample project 1](https://www.dropbox.com/s/g4ib0c72d8yeg7f/SampleProject1.csp?dl=1)
  <br />
 
 
