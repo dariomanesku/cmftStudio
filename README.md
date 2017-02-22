@@ -157,7 +157,7 @@ Resources
 ------------
  - Grenade model - **[Kurt Kupser](http://kurtkupser.squarespace.com/)** \[[link](http://kurtkupser.squarespace.com/#/thermite-grenade/)\].
  - Flintlock model - **[Ben Cooney](http://ben3d.co.uk/)** \[[link](http://ben3d.co.uk/flintlock)\].
- - Cerberus gun model - **[Andrew Maximov](https://twitter.com/divers1ty)** \[[link](http://artisaverb.info/Cerberus.html)\].
+ - Cerberus gun model - **[Andrew Maximov](https://twitter.com/_ArtIsAVerb)** \[[link](http://artisaverb.info/Cerberus.html)\].
  - Shack environment map - **[Jon Tojek](https://twitter.com/Tojek_VFX)** \[[link](http://tojek.com/vfx/?attachment_id=139)\].
  - Bolonga environment map - **[Marmoset pano pack](http://www.marmoset.co/panos)**
 
