@@ -67,10 +67,12 @@ void configFromFile(Config& _config, const char* _path)
 
     enum
     {
-        CONFIG_RENDERER_SET       = 0x01,
-        CONFIG_WINDOWSIZE_SET     = 0x02,
-        CONFIG_MEMORY_SET         = 0x04,
-        CONFIG_STARTUPPROJECT_SET = 0x08,
+        CONFIG_RENDERER_SET        = 0x01,
+        CONFIG_WINDOWSIZE_SET      = 0x02,
+        CONFIG_MEMORY_SET          = 0x04,
+        CONFIG_STARTUPPROJECT_SET  = 0x08,
+        CONFIG_DEFAULTLOADPATH_SET = 0x20,
+        CONFIG_DEFAULTSAVEPATH_SET = 0x10,
     };
 
     uint8_t parametersSet = 0;
@@ -183,6 +185,62 @@ void configFromFile(Config& _config, const char* _path)
             }
         }
 
+        // Default save path.
+        const char* defaultSavePath = bx::stristr(str, "DefaultSavePath", toEnd);
+        if (NULL != defaultSavePath)
+        {
+            enum { DefaultSavePathLen = 15 }; // "DefaultSavePath"
+            const char* cursor = defaultSavePath+DefaultSavePathLen;
+
+            const char* equals = bx::stristr(cursor, "=", eol-cursor);
+            if (NULL != equals)
+            {
+                const char* begin = bx::strws(equals+1);
+                if (begin[0] == '\"')
+                {
+                    ++begin;
+                }
+                const char* closingQuotes = bx::stristr(begin, "\"", eol-begin);
+                const char* endValue = (NULL != closingQuotes) ? closingQuotes : eol;
+                const size_t valueLen = endValue - begin;
+
+                if (valueLen < DM_PATH_LEN)
+                {
+                    memcpy(_config.m_defaultSavePath, begin, valueLen);
+                    _config.m_defaultSavePath[valueLen] = '\0';
+                    parametersSet |= CONFIG_DEFAULTSAVEPATH_SET;
+                }
+            }
+        }
+
+        // Default load path.
+        const char* defaultLoadPath = bx::stristr(str, "DefaultLoadPath", toEnd);
+        if (NULL != defaultLoadPath)
+        {
+            enum { DefaultLoadPathLen = 15 }; // "DefaultLoadPath"
+            const char* cursor = defaultLoadPath+DefaultLoadPathLen;
+
+            const char* equals = bx::stristr(cursor, "=", eol-cursor);
+            if (NULL != equals)
+            {
+                const char* begin = bx::strws(equals+1);
+                if (begin[0] == '\"')
+                {
+                    ++begin;
+                }
+                const char* closingQuotes = bx::stristr(begin, "\"", eol-begin);
+                const char* endValue = (NULL != closingQuotes) ? closingQuotes : eol;
+                const size_t valueLen = endValue - begin;
+
+                if (valueLen < DM_PATH_LEN)
+                {
+                    memcpy(_config.m_defaultLoadPath, begin, valueLen);
+                    _config.m_defaultLoadPath[valueLen] = '\0';
+                    parametersSet |= CONFIG_DEFAULTLOADPATH_SET;
+                }
+            }
+        }
+
         // Memory.
         const char* memoryParam  = bx::stristr(str, "Memory", toEnd);
         if (NULL != memoryParam)
@@ -235,6 +293,16 @@ void configFromFile(Config& _config, const char* _path)
     if (0 == (parametersSet&CONFIG_STARTUPPROJECT_SET))
     {
         _config.m_startupProject[0] = '\0';
+    }
+    if (0 == (parametersSet&CONFIG_DEFAULTLOADPATH_SET))
+    {
+        _config.m_defaultLoadPath[0] = '.';
+        _config.m_defaultLoadPath[1] = '\0';
+    }
+    if (0 == (parametersSet&CONFIG_DEFAULTSAVEPATH_SET))
+    {
+        _config.m_defaultSavePath[0] = '.';
+        _config.m_defaultSavePath[1] = '\0';
     }
 
     _config.m_loaded = true;

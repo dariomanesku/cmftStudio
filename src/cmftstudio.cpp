@@ -2180,6 +2180,26 @@ public:
         guiInit();
         outputWindowInit(&m_widgets.m_outputWindow);
 
+        // Setup default save/load path.
+        char loadPath[DM_PATH_LEN];
+        char savePath[DM_PATH_LEN];
+        dm::realpath(loadPath, g_config.m_defaultLoadPath);
+        dm::realpath(savePath, g_config.m_defaultSavePath);
+
+        dm::strscpya(m_widgets.m_meshBrowser   .m_directory, loadPath);
+        dm::strscpya(m_widgets.m_skyboxBrowser .m_directory, loadPath);
+        dm::strscpya(m_widgets.m_pmremBrowser  .m_directory, loadPath);
+        dm::strscpya(m_widgets.m_iemBrowser    .m_directory, loadPath);
+        dm::strscpya(m_widgets.m_textureBrowser.m_directory, loadPath);
+
+        dm::strscpya(m_widgets.m_projectWindow.m_load.m_directory, loadPath);
+        dm::strscpya(m_widgets.m_projectWindow.m_save.m_directory, savePath);
+
+        dm::strscpya(m_widgets.m_cmftSaveSkybox.m_directory, savePath);
+        dm::strscpya(m_widgets.m_cmftSavePmrem .m_directory, savePath);
+        dm::strscpya(m_widgets.m_cmftSaveIem   .m_directory, savePath);
+        dm::strscpya(m_widgets.m_meshSave      .m_directory, savePath);
+
         // Initialization is done, wait for splash screen to finish.
         for (;;)
         {
