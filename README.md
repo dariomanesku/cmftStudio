@@ -33,7 +33,7 @@ Controls
 
 - Ctrl/Meta + F == Toggle fullscreen (where supported).
 - Ctrl/Meta + Q == Quit application.
-- On OSX, in case you don't have middle mouse click, use `Command + Left click` istead.
+- On OSX, in case you don't have middle mouse click, use `Command + Left click` instead.
 
 
 Supported formats
